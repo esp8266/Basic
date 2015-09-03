@@ -1257,10 +1257,10 @@ void SetMeThatVar(String VariableNameToFind, String NewContents)
 
 String Mid(String str, int pos1, int pos2)
 {
-  Serial.println("Doing mid");
-  Serial.println(pos1);
-  Serial.println(pos2);
-  Serial.println(str);
+//  Serial.println("Doing mid");
+//  Serial.println(pos1);
+//  Serial.println(pos2);
+//  Serial.println(str);
 
   int i;
   String temp = "";

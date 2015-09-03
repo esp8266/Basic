@@ -31,7 +31,7 @@
 #include <WiFiServer.h>
 #include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
-//#include <Ticker.h>
+#include <Wire.h>
 
 
 
@@ -312,6 +312,8 @@ if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"
   }
 }
 
+Wire.begin(0,2);
+
 server.begin();
 RunningProgram = 1;
 }
@@ -370,9 +372,6 @@ String BasicGraphics()
     if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*collor*", "Fuchsia");
     if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*collor*", "Yellow");
     if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*collor*", "White");
-
-
-
     BasicGraphicsOut += GraphicsEliment;
   }
   BasicGraphicsOut += "</svg>";
@@ -1186,7 +1185,8 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "len")   MyOut = String(MyOut.length());
   if (FunctionName == "mid")   MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
 
-
+  if (FunctionName == "i2cRead")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
+  if (FunctionName == "i2cWrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
 
   if (FunctionName == "sqr")   MyOut = String(sqrt(MyOut.toFloat()));
   if (FunctionName == "sin")   MyOut = String(sin(MyOut.toFloat()));
@@ -1257,10 +1257,10 @@ void SetMeThatVar(String VariableNameToFind, String NewContents)
 
 String Mid(String str, int pos1, int pos2)
 {
-//  Serial.println("Doing mid");
-//  Serial.println(pos1);
-//  Serial.println(pos2);
-//  Serial.println(str);
+  //  Serial.println("Doing mid");
+  //  Serial.println(pos1);
+  //  Serial.println(pos2);
+  //  Serial.println(str);
 
   int i;
   String temp = "";
@@ -1791,3 +1791,28 @@ String FetchWebUrl(String URLtoGet)
   return "";
 }
 
+
+
+//i2c stuff
+
+String i2cRead(byte DeviceNo, byte NoOfByteToRequest)
+{
+  String i2cReturn;
+  
+  Wire.requestFrom(DeviceNo, NoOfByteToRequest);
+
+  while (Wire.available())
+  {
+    delay(0);
+    i2cReturn += Wire.read();
+  }
+  return i2cReturn;
+}
+
+
+String i2cWrite(byte DeviceNo, String DataToSend)
+{
+  Wire.beginTransmission(DeviceNo);
+  Wire.write(DataToSend.c_str());
+  return String(Wire.endTransmission());
+}

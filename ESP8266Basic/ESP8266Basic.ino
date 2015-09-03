@@ -137,7 +137,8 @@ byte NumberOfReturns;
 bool BasicDebuggingOn;
 byte ReturnLocations[254];
 
-int GraphicsEliments[100][6];
+int GraphicsEliments[100][7];
+
 
 
 
@@ -352,7 +353,25 @@ String BasicGraphics()
     GraphicsEliment.replace("*x2*",  String(GraphicsEliments[i][3]));
     GraphicsEliment.replace("*y2*",  String(GraphicsEliments[i][4]));
 
-    GraphicsEliment.replace("*collor*", "black");
+    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*collor*", "black");
+    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*collor*", "Navy");
+    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*collor*", "Green");
+    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*collor*", "Teal");
+    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*collor*", "Maroon");
+    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*collor*", "Purple");
+    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*collor*", "Olive");
+    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*collor*", "Silver");
+    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*collor*", "Gray");
+    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*collor*", "Blue");
+    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*collor*", "Lime");
+    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*collor*", "Aqua");
+    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*collor*", "Red");
+    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*collor*", "Fuchsia");
+    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*collor*", "Yellow");
+    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*collor*", "White");
+
+
+
     BasicGraphicsOut += GraphicsEliment;
   }
   BasicGraphicsOut += "</svg>";
@@ -856,6 +875,7 @@ void ExicuteTheCurrentLine()
     GraphicsEliments[i][2] = GetMeThatVar(Param2).toInt();
     GraphicsEliments[i][3] = GetMeThatVar(Param3).toInt();
     GraphicsEliments[i][4] = GetMeThatVar(Param4).toInt();
+    GraphicsEliments[i][5] = GetMeThatVar(Param5).toInt();
     return;
   }
 
@@ -869,6 +889,7 @@ void ExicuteTheCurrentLine()
     GraphicsEliments[i][2] = GetMeThatVar(Param2).toInt();
     GraphicsEliments[i][3] = GetMeThatVar(Param3).toInt();
     GraphicsEliments[i][4] = GetMeThatVar(Param4).toInt();
+    GraphicsEliments[i][5] = GetMeThatVar(Param5).toInt();
     return;
   }
 
@@ -882,6 +903,7 @@ void ExicuteTheCurrentLine()
     GraphicsEliments[i][2] = GetMeThatVar(Param2).toInt();
     GraphicsEliments[i][3] = GetMeThatVar(Param3).toInt();
     GraphicsEliments[i][4] = GetMeThatVar(Param4).toInt();
+    GraphicsEliments[i][5] = GetMeThatVar(Param5).toInt();
     return;
   }
 
@@ -895,6 +917,7 @@ void ExicuteTheCurrentLine()
     GraphicsEliments[i][2] = GetMeThatVar(Param2).toInt();
     GraphicsEliments[i][3] = GetMeThatVar(Param3).toInt();
     GraphicsEliments[i][4] = GetMeThatVar(Param4).toInt();
+    GraphicsEliments[i][5] = GetMeThatVar(Param5).toInt();
     return;
   }
 
@@ -1385,7 +1408,7 @@ void CreateAP(String NetworkName, String NetworkPassword)
   SaveDataToFile("APpass", NetworkPassword);
 
 
-  
+
 }
 
 

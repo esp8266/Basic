@@ -235,6 +235,7 @@ void setup() {
     WaitForTheInterpertersResponse = 0 ;
     numberButtonInUse = 0;
     HTMLout = "";
+    GraphicsEliments[0][0] = 0;
     WebOut = R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====";
 
 server.send(200, "text/html", WebOut);
@@ -623,6 +624,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "run")
   {
+    GraphicsEliments[0][0] = 0;
     RunningProgram = 1;
     numberButtonInUse = 0;
     RunningProgramCurrentLine = 0;
@@ -678,6 +680,7 @@ void ExicuteTheCurrentLine()
   //Loading and saving basic program commands
   if (Param0 == "load")
   {
+    GraphicsEliments[0][0] = 0;
     PrintAndWebOut(String("Loading . . . . " + Param1));
     LoadBasicProgramFromFlash(Param1);
     numberButtonInUse = 0;
@@ -888,8 +891,7 @@ void ExicuteTheCurrentLine()
     GraphicsEliments[i][1] = GetMeThatVar(Param1).toInt();
     GraphicsEliments[i][2] = GetMeThatVar(Param2).toInt();
     GraphicsEliments[i][3] = GetMeThatVar(Param3).toInt();
-    GraphicsEliments[i][4] = GetMeThatVar(Param4).toInt();
-    GraphicsEliments[i][5] = GetMeThatVar(Param5).toInt();
+    GraphicsEliments[i][5] = GetMeThatVar(Param4).toInt();
     return;
   }
 

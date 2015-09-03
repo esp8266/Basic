@@ -1138,9 +1138,15 @@ String DoMathForMe(String cc, String f, String dd )
 String GetMeThatVar(String VariableNameToFind)
 {
   //PrintAndWebOut(String("Looking for variable " + VariableNameToFind));
-  String MyOut = VariableNameToFind;
+
   String FunctionName;
 
+  String Param0;
+  String Param1;
+  String Param2;
+  String Param3;
+  String Param4;
+  String Param5;
 
   if (VariableNameToFind.endsWith(")") == 1)
   {
@@ -1149,22 +1155,38 @@ String GetMeThatVar(String VariableNameToFind)
 
     FunctionName = VariableNameToFind.substring(0, FirstParenthasy);
     VariableNameToFind = VariableNameToFind.substring(FirstParenthasy + 1, LastParenthasy );
+
+    Param0 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 0));
+    Param1 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 1));
+    Param2 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 2));
+    Param3 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 3));
+
+    Param0.replace(",", "");
+    Param1.replace(",", "");
+    Param2.replace(",", "");
+    Param3.replace(",", "");
+
+
     FunctionName.toLowerCase();
   }
-  delay(1);
+  delay(0);
 
-  for (byte i = 0; i <= 50; i++)
-  {
-    if (AllMyVaribles[i][1] == VariableNameToFind)
-    {
-      MyOut =  AllMyVaribles[i][2];
-      LastVarNumberLookedUp = i;
-    }
-  }
+  String MyOut;
+  MyOut = VarialbeLookup(VariableNameToFind);
+
+
+  Param0 = VarialbeLookup(Param0);
+  Param1 = VarialbeLookup(Param1);
+  Param2 = VarialbeLookup(Param2);
+  Param3 = VarialbeLookup(Param3);
+
 
   if (VariableNameToFind == "millis") MyOut = String(millis());
 
   if (FunctionName == "len")   MyOut = String(MyOut.length());
+  if (FunctionName == "mid")   MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
+
+
 
   if (FunctionName == "sqr")   MyOut = String(sqrt(MyOut.toFloat()));
   if (FunctionName == "sin")   MyOut = String(sin(MyOut.toFloat()));
@@ -1189,6 +1211,21 @@ String GetMeThatVar(String VariableNameToFind)
   return MyOut;
 }
 
+String VarialbeLookup(String VariableNameToFind)
+{
+  String MyOut = VariableNameToFind;
+  for (byte i = 0; i <= 50; i++)
+  {
+    if (AllMyVaribles[i][1] == VariableNameToFind)
+    {
+      delay(0);
+      MyOut =  AllMyVaribles[i][2];
+      LastVarNumberLookedUp = i;
+
+    }
+  }
+  return MyOut;
+}
 
 void SetMeThatVar(String VariableNameToFind, String NewContents)
 {
@@ -1220,6 +1257,11 @@ void SetMeThatVar(String VariableNameToFind, String NewContents)
 
 String Mid(String str, int pos1, int pos2)
 {
+  Serial.println("Doing mid");
+  Serial.println(pos1);
+  Serial.println(pos2);
+  Serial.println(str);
+
   int i;
   String temp = "";
   for (i = pos1; i < pos2; i++)

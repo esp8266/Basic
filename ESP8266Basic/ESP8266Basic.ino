@@ -77,7 +77,9 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="apName" value="*ap name*"></th></tr>
 <tr><th><p align="right">Pass:</p></th><th><input type="text" name="apPass" value="*ap pass*"></th></tr>
 <tr><th>
-<input type="submit" value="Save" name="save"></th></tr>
+<input type="submit" value="Save" name="save"></th><th>
+<input type="submit" value="Format" name="format"></th>
+</tr>
 </table></form>
 <br>
 )=====";
@@ -191,6 +193,14 @@ void setup() {
       SaveDataToFile("APname" , apName);
       SaveDataToFile("APpass" , apPass);
     }
+
+    if ( server.arg("format") == "Format" )
+    {
+      Serial.println("Formating ");
+      SPIFFS.begin();
+      Serial.print(SPIFFS.format());
+    }
+    
     WebOut.replace("*sta name*", staName);
     WebOut.replace("*sta pass*", staPass);
     WebOut.replace("*ap name*",  apName);

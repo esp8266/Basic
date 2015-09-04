@@ -1186,8 +1186,8 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "len")   MyOut = String(MyOut.length());
   if (FunctionName == "mid")   MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
 
-  if (FunctionName == "i2cRead")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
-  if (FunctionName == "i2cWrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
+  if (FunctionName == "i2cread")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
+  if (FunctionName == "i2cwrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
 
   if (FunctionName == "sqr")   MyOut = String(sqrt(MyOut.toFloat()));
   if (FunctionName == "sin")   MyOut = String(sin(MyOut.toFloat()));

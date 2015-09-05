@@ -313,7 +313,7 @@ if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"
   }
 }
 
-Wire.begin(0,2);
+Wire.begin(0, 2);
 
 server.begin();
 RunningProgram = 1;
@@ -1166,6 +1166,10 @@ String GetMeThatVar(String VariableNameToFind)
     Param2.replace(",", "");
     Param3.replace(",", "");
 
+    Param0 = VarialbeLookup(Param0);
+    Param1 = VarialbeLookup(Param1);
+    Param2 = VarialbeLookup(Param2);
+    Param3 = VarialbeLookup(Param3);
 
     FunctionName.toLowerCase();
   }
@@ -1173,13 +1177,6 @@ String GetMeThatVar(String VariableNameToFind)
 
   String MyOut;
   MyOut = VarialbeLookup(VariableNameToFind);
-
-
-  Param0 = VarialbeLookup(Param0);
-  Param1 = VarialbeLookup(Param1);
-  Param2 = VarialbeLookup(Param2);
-  Param3 = VarialbeLookup(Param3);
-
 
   if (VariableNameToFind == "millis") MyOut = String(millis());
 
@@ -1799,7 +1796,7 @@ String FetchWebUrl(String URLtoGet)
 String i2cRead(byte DeviceNo, byte NoOfByteToRequest)
 {
   String i2cReturn;
-  
+
   Wire.requestFrom(DeviceNo, NoOfByteToRequest);
 
   while (Wire.available())

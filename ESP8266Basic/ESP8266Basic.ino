@@ -46,7 +46,7 @@ const String InputFormText = R"=====( <input type="text" name="input"><input typ
 
 const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue"><hr>)=====";
 const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name="gotonobranch">)=====";
-byte WaitForTheInterpertersResponse = 0;
+byte WaitForTheInterpertersResponse = 1;
 
 const String AdminBarHTML = R"=====(
 <a href="./vars">[ VARS ]</a> 
@@ -132,7 +132,7 @@ byte LastVarNumberLookedUp;                                 //Array to hold all 
 
 
 
-bool RunningProgram = 0;                                //Will be set to 1 if the program is currently running
+byte RunningProgram = 0;                                //Will be set to 1 if the program is currently running
 byte RunningProgramCurrentLine = 0;                     //Keeps track of the currently running line of code
 byte NumberOfReturns;
 bool BasicDebuggingOn;
@@ -170,7 +170,6 @@ void setup() {
 
   server.on("/settings", []()
   {
-    WaitForTheInterpertersResponse = 0;
     String WebOut = AdminBarHTML;
     WebOut += SettingsPageHTML;
     String staName;
@@ -246,7 +245,6 @@ server.send(200, "text/html", WebOut);
 
 server.on("/edit", []()
 {
-  WaitForTheInterpertersResponse = 0;
   String WebOut = AdminBarHTML;
   String TextboxProgramBeingEdited;
   String ProgramName;
@@ -319,23 +317,7 @@ Wire.begin(0, 2);
 
 server.begin();
 RunningProgram = 1;
-StartUpProgramTimer();
 }
-
-
-void StartUpProgramTimer()
-{
-  while  (millis() < 60000)
-  {
-    delay(1000);
-    //Serial.println(millis());
-    server.handleClient();
-  }
-  return;
-}
-
-
-
 
 
 String BasicGraphics()
@@ -410,7 +392,7 @@ String RunningProgramGui()
   {
     WaitForTheInterpertersResponse = 0;
     RunningProgram == 1;
-    //Serial.println("Running some code befor returning the web page");
+    Serial.println("Running some code befor returning the web page");
     RunBasicTillWait();
     WaitForTheInterpertersResponse = 1;
     //Serial.println("Got to the point Should be returning a web page");
@@ -466,11 +448,9 @@ String  getSerialInput()
 
 void loop()
 {
-
   RunBasicTillWait();
   server.handleClient();
 }
-
 
 
 int RunBasicTillWait()

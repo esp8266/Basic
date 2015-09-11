@@ -46,8 +46,10 @@ const String InputFormText = R"=====( <input type="text" name="input"><input typ
 
 const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue"><hr>)=====";
 const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name="gotonobranch">)=====";
-byte WaitForTheInterpertersResponse = 1;
+byte WaitForTheInterpertersResponse = 0;
 
+//add this back in to menue when bug with client send is fixed.
+//
 const String AdminBarHTML = R"=====(
 <a href="./vars">[ VARS ]</a> 
 <a href="./edit">[ EDIT ]</a>
@@ -56,16 +58,58 @@ const String AdminBarHTML = R"=====(
 <hr>)=====";
 
 const String EditorPageHTML =  R"=====(
+<script src="editor.js"></script>
 <form action='edit' id="usrform">
 <input type="text" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
-<input type="submit" value="Save" name="save">
 </form>
+<button onclick="SaveTheCode()">Save</button>
 <br>
-<textarea rows="25" cols="75" name="code" form="usrform">
-*program txt*
-</textarea>
+<textarea rows="25" cols="75" name="code" id="code">*program txt*</textarea><br>
+<input type="text" id="Status" value="">
 )=====";
+
+
+
+
+const String editCodeJavaScript =  R"=====(
+function SaveTheCode() {
+  var textArea = document.getElementById("code");
+  var arrayOfLines = textArea.value.split("\n");
+
+for (i = 0; i <= arrayOfLines.length; i++) 
+{ 
+  var x = i + 1;
+  if (arrayOfLines[i] != "undefined")
+  {
+    var WhatToSend = "/codein?line=" + x + "&code=" + arrayOfLines[i];
+    httpGet(WhatToSend);
+    document.getElementById("Status").value = i.toString();
+  }
+}
+httpGet("/codein?SaveTheCode=yes");
+document.getElementById("Status").value = "Saved";
+alert("Saved");
+}
+
+function httpGet(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+)=====";
+
+
+
+
+
+
+
+
+
+
 
 const String SettingsPageHTML =  R"=====(
 <form action='settings' id="usrform"><table>
@@ -125,14 +169,15 @@ String inData;
 
 int TotalNumberOfLines = 255;
 String BasicProgram[255];                                //Array of strings to hold basic program
-
+String ProgramName;
+byte noOfLinesForEdit;
 
 String AllMyVaribles[50][2];
 byte LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 
 
 
-byte RunningProgram = 0;                                //Will be set to 1 if the program is currently running
+bool RunningProgram = 0;                                //Will be set to 1 if the program is currently running
 byte RunningProgramCurrentLine = 0;                     //Keeps track of the currently running line of code
 byte NumberOfReturns;
 bool BasicDebuggingOn;
@@ -163,13 +208,26 @@ void setup() {
     server.send(200, "text/html", WebOut);
   });
 
+  server.on("/vars", []()
+  {
+    Serial.println("Startintg Var Dump");
+    String WebOut;
+    WebOut = AdminBarHTML;
+    WebOut += "Variable Dump";
+    Serial.println("Loaded up some vars");
+    for (byte yy = 0; yy <= 50; yy++)
+    {
+      Serial.println(yy);
+      WebOut = String(WebOut + "<hr>" + AllMyVaribles[yy][1] + " = " + AllMyVaribles[yy][2]);
+    }
 
-
-
+    server.send(200, "text/html", WebOut);
+  });
 
 
   server.on("/settings", []()
   {
+    WaitForTheInterpertersResponse = 0;
     String WebOut = AdminBarHTML;
     WebOut += SettingsPageHTML;
     String staName;
@@ -200,7 +258,14 @@ void setup() {
     {
       Serial.println("Formating ");
       SPIFFS.begin();
-      Serial.print(SPIFFS.format());
+      //Serial.print(SPIFFS.format());
+      SPIFFS.begin();
+      Dir dir = SPIFFS.openDir(String("/" ));
+      while (dir.next()) 
+        {
+          File f = dir.openFile("r");
+          SPIFFS.remove(dir.fileName());
+        }
     }
     
     WebOut.replace("*sta name*", staName);
@@ -212,28 +277,18 @@ void setup() {
   });
 
 
-
-  server.on("/vars", []()
-  {
-    String WebOut = AdminBarHTML;
-    //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-
-    WebOut += "Variable Dump";
-    for (byte i = 0; i <= 50; i++)
-    {
-      WebOut = String(WebOut + "<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
-    }
-
-    server.send(200, "text/html", WebOut);
-  });
-
-
   server.on("/run", []()
   {
     String WebOut;
     RunningProgram = 1;
     RunningProgramCurrentLine = 0;
     WaitForTheInterpertersResponse = 0 ;
+RunningProgram = 1;
+RunningProgramCurrentLine= 0;
+WaitForTheInterpertersResponse = 0;
+
+
+    
     numberButtonInUse = 0;
     HTMLout = "";
     GraphicsEliments[0][0] = 0;
@@ -245,9 +300,10 @@ server.send(200, "text/html", WebOut);
 
 server.on("/edit", []()
 {
+  WaitForTheInterpertersResponse = 0;
   String WebOut = AdminBarHTML;
   String TextboxProgramBeingEdited;
-  String ProgramName;
+  //  String ProgramName;
   //WebOut = String("<form action='input'>" + HTMLout + "</form>");
   ProgramName = server.arg("name");
 
@@ -263,18 +319,6 @@ server.on("/edit", []()
     }
   }
 
-  if ( server.arg("save") == "Save" )
-  {
-
-    TextboxProgramBeingEdited = GetRidOfurlCharacters(server.arg("code"));
-
-    TextboxProgramBeingEdited.replace("%0D%0A", String(" " + String('\n')));
-    for (int i = 1; i <= TotalNumberOfLines - 1; i++)
-    {
-      BasicProgram[i] = getValueforPrograming(TextboxProgramBeingEdited, '\n', i - 1);
-    }
-    SaveBasicProgramToFlash(ProgramName);
-  }
 
 
   WebOut += EditorPageHTML;
@@ -288,15 +332,36 @@ server.on("/edit", []()
 });
 
 
+server.on("/editor.js", []() {
+  server.send(200, "text/html", editCodeJavaScript);
+});
+
 
 
 server.on("/input", []() {
   server.send(200, "text/html", RunningProgramGui());
 });
 
+server.on("/codein", []() {
+  if (server.arg("SaveTheCode") != "yes")
+  {
+    String LineNoForWebEditorIn;
+    LineNoForWebEditorIn = server.arg("line");
+    int y = LineNoForWebEditorIn.toInt();
+    BasicProgram[y] = GetRidOfurlCharacters(server.arg("code"));
+    noOfLinesForEdit = y;
+  }
+  else
+  {
+    SaveBasicProgramToFlash(ProgramName);
+  }
+  server.send(200, "text/html", "good");
+});
+
 server.onNotFound ( []() {
   server.send(200, "text/html", RunningProgramGui());
 });
+
 
 LoadBasicProgramFromFlash("");
 
@@ -317,7 +382,26 @@ Wire.begin(0, 2);
 
 server.begin();
 RunningProgram = 1;
+StartUpProgramTimer();
 }
+
+
+
+
+
+void StartUpProgramTimer()
+{
+  while  (millis() < 60000)
+  {
+    delay(0);
+    //Serial.println(millis());
+    server.handleClient();
+  }
+  return;
+}
+
+
+
 
 
 String BasicGraphics()
@@ -392,7 +476,7 @@ String RunningProgramGui()
   {
     WaitForTheInterpertersResponse = 0;
     RunningProgram == 1;
-    Serial.println("Running some code befor returning the web page");
+    //Serial.println("Running some code befor returning the web page");
     RunBasicTillWait();
     WaitForTheInterpertersResponse = 1;
     //Serial.println("Got to the point Should be returning a web page");
@@ -448,9 +532,11 @@ String  getSerialInput()
 
 void loop()
 {
+
   RunBasicTillWait();
   server.handleClient();
 }
+
 
 
 int RunBasicTillWait()
@@ -545,11 +631,6 @@ String getValue(String data, char separator, int index)
 
 
 
-
-
-
-
-
 void ExicuteTheCurrentLine()
 {
   String Param0;
@@ -605,8 +686,6 @@ void ExicuteTheCurrentLine()
       Param0.toLowerCase();
     }
   }
-
-
 
 
   if (Param0 == "debugon")
@@ -745,8 +824,6 @@ void ExicuteTheCurrentLine()
   }
 
 
-
-
   //Feading and writing variables to flash memory
   if ( Param0 == "read")
   {
@@ -762,11 +839,6 @@ void ExicuteTheCurrentLine()
   }
 
 
-
-
-
-
-
   if ( Param0 == "delay")
   {
     valParam1 = GetMeThatVar(Param1).toInt();
@@ -775,18 +847,11 @@ void ExicuteTheCurrentLine()
   }
 
 
-
-
-
-
   if (Param0 == "print")
   {
     PrintAndWebOut(GetMeThatVar(Param1));
     return;
   }
-
-
-
 
 
   //Web Browser output commands
@@ -797,7 +862,6 @@ void ExicuteTheCurrentLine()
     //Serial.print(HTMLout);
     return;
   }
-
 
 
   if (Param0 == "button")
@@ -1796,9 +1860,7 @@ String FetchWebUrl(String URLtoGet)
 String i2cRead(byte DeviceNo, byte NoOfByteToRequest)
 {
   String i2cReturn;
-
   Wire.requestFrom(DeviceNo, NoOfByteToRequest);
-
   while (Wire.available())
   {
     delay(0);

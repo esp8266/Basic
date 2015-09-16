@@ -132,7 +132,11 @@ byte LastVarNumberLookedUp;                                 //Array to hold all 
 
 
 
+<<<<<<< HEAD
 bool RunningProgram = 1;                                //Will be set to 1 if the program is currently running
+=======
+byte RunningProgram = 0;                                //Will be set to 1 if the program is currently running
+>>>>>>> parent of 95617bf... Added auto run feature
 byte RunningProgramCurrentLine = 0;                     //Keeps track of the currently running line of code
 byte NumberOfReturns;
 bool BasicDebuggingOn;
@@ -170,7 +174,10 @@ void setup() {
 
   server.on("/settings", []()
   {
+<<<<<<< HEAD
     WaitForTheInterpertersResponse = 1;
+=======
+>>>>>>> parent of 95617bf... Added auto run feature
     String WebOut = AdminBarHTML;
     WebOut += SettingsPageHTML;
     String staName;
@@ -246,7 +253,10 @@ server.send(200, "text/html", WebOut);
 
 server.on("/edit", []()
 {
+<<<<<<< HEAD
   WaitForTheInterpertersResponse = 1;
+=======
+>>>>>>> parent of 95617bf... Added auto run feature
   String WebOut = AdminBarHTML;
   String TextboxProgramBeingEdited;
   String ProgramName;
@@ -322,6 +332,7 @@ if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"
 Wire.begin(0, 2);
 
 server.begin();
+<<<<<<< HEAD
 RunningProgram = 0;
 WaitForTheInterpertersResponse = 1;
 StartUpProgramTimer();
@@ -342,10 +353,10 @@ void StartUpProgramTimer()
     WaitForTheInterpertersResponse = 0 ;
     numberButtonInUse = 0;
   return;
+=======
+RunningProgram = 1;
+>>>>>>> parent of 95617bf... Added auto run feature
 }
-
-
-
 
 
 String BasicGraphics()
@@ -420,7 +431,7 @@ String RunningProgramGui()
   {
     WaitForTheInterpertersResponse = 0;
     RunningProgram == 1;
-    //Serial.println("Running some code befor returning the web page");
+    Serial.println("Running some code befor returning the web page");
     RunBasicTillWait();
     WaitForTheInterpertersResponse = 1;
     //Serial.println("Got to the point Should be returning a web page");
@@ -476,11 +487,9 @@ String  getSerialInput()
 
 void loop()
 {
-
   RunBasicTillWait();
   server.handleClient();
 }
-
 
 
 int RunBasicTillWait()

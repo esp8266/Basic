@@ -78,6 +78,9 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="apName" value="*ap name*"></th></tr>
 <tr><th><p align="right">Pass:</p></th><th><input type="text" name="apPass" value="*ap pass*"></th></tr>
 <tr><th>
+<br><br>Log In Key (For Security):</th></tr>
+<tr><th><p align="right">Log In Key:</p></th><th><input type="text" name="LoginKey" value="*LoginKey*"></th></tr>
+<tr><th>
 <input type="submit" value="Save" name="save"></th><th>
 <input type="submit" value="Format" name="format"></th>
 </tr>
@@ -86,6 +89,18 @@ Station Mode (Connect to your router):</th></tr>
 )=====";
 
 
+
+
+
+
+
+const String LogInPage =  R"=====(
+<form action='settings' id="usrform">
+Log In Key
+<input type="text" name="key" value="">
+<input type="submit" value="login" name="login">
+</form>
+)=====";
 
 
 //Graphics HTML CODE
@@ -145,7 +160,7 @@ int GraphicsEliments[100][7];
 
 bool inputPromptActive = 0;
 
-
+int LoggedIn = 0;
 
 
 
@@ -170,6 +185,13 @@ void setup() {
 
   server.on("/settings", []()
   {
+
+    if ( server.arg("key") == LoadDataFromFile("LoginKey"))
+    {
+      LoggedIn = millis();
+    }
+
+    
     WaitForTheInterpertersResponse = 1;
     String WebOut = AdminBarHTML;
     WebOut += SettingsPageHTML;
@@ -177,37 +199,52 @@ void setup() {
     String staPass;
     String apName;
     String apPass;
+    String LoginKey;
     Serial.print("Loading Settings Files");
   
-    staName = LoadDataFromFile("WIFIname");
-    staPass = LoadDataFromFile("WIFIpass");
-    apName  = LoadDataFromFile("APname");
-    apPass  = LoadDataFromFile("APpass");
+    staName  = LoadDataFromFile("WIFIname");
+    staPass  = LoadDataFromFile("WIFIpass");
+    apName   = LoadDataFromFile("APname");
+    apPass   = LoadDataFromFile("APpass");
+    LoginKey = LoadDataFromFile("LoginKey");
 
-    if ( server.arg("save") == "Save" )
+
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 ) 
     {
-      staName = server.arg("staName");
-      staPass = server.arg("staPass");
-      apName  = server.arg("apName");
-      apPass  = server.arg("apPass");
-
-      SaveDataToFile("WIFIname" , staName);
-      SaveDataToFile("WIFIpass" , staPass);
-      SaveDataToFile("APname" , apName);
-      SaveDataToFile("APpass" , apPass);
+      WebOut = LogInPage;
+    }
+    else
+    {
+      if ( server.arg("save") == "Save" )
+      {
+        staName = server.arg("staName");
+        staPass = server.arg("staPass");
+        apName  = server.arg("apName");
+        apPass  = server.arg("apPass");
+        LoginKey = server.arg("LoginKey");
+  
+        SaveDataToFile("WIFIname" , staName);
+        SaveDataToFile("WIFIpass" , staPass);
+        SaveDataToFile("APname" , apName);
+        SaveDataToFile("APpass" , apPass);
+        SaveDataToFile("LoginKey" , LoginKey);
+      }
+  
+      if ( server.arg("format") == "Format" )
+      {
+        Serial.println("Formating ");
+        SPIFFS.begin();
+        //Serial.print(SPIFFS.format());
+      }
+      
+      WebOut.replace("*sta name*", staName);
+      WebOut.replace("*sta pass*", staPass);
+      WebOut.replace("*ap name*",  apName);
+      WebOut.replace("*ap pass*",  apPass);
+      WebOut.replace("*LoginKey*", LoginKey);
     }
 
-    if ( server.arg("format") == "Format" )
-    {
-      Serial.println("Formating ");
-      SPIFFS.begin();
-      //Serial.print(SPIFFS.format());
-    }
-    
-    WebOut.replace("*sta name*", staName);
-    WebOut.replace("*sta pass*", staPass);
-    WebOut.replace("*ap name*",  apName);
-    WebOut.replace("*ap pass*",  apPass);
+
     
     server.send(200, "text/html", WebOut);
   });
@@ -217,12 +254,21 @@ void setup() {
   server.on("/vars", []()
   {
     String WebOut = AdminBarHTML;
-    //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-
-    WebOut += "Variable Dump";
-    for (byte i = 0; i <= 50; i++)
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 ) 
     {
-      WebOut = String(WebOut + "<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
+      WebOut = LogInPage;
+    }
+    else
+    {
+    
+
+      //WebOut = String("<form action='input'>" + HTMLout + "</form>");
+  
+      WebOut += "Variable Dump";
+      for (byte i = 0; i <= 50; i++)
+      {
+        WebOut = String(WebOut + "<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
+      }
     }
 
     server.send(200, "text/html", WebOut);
@@ -246,50 +292,58 @@ server.send(200, "text/html", WebOut);
 
 server.on("/edit", []()
 {
-  WaitForTheInterpertersResponse = 1;
   String WebOut = AdminBarHTML;
-  String TextboxProgramBeingEdited;
-  String ProgramName;
-  //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-  ProgramName = server.arg("name");
-
-
-  if ( server.arg("open") == "Open" )
+  if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+  {
+    WebOut = LogInPage;
+  }
+  else
   {
 
-    LoadBasicProgramFromFlash(ProgramName);
-    TextboxProgramBeingEdited = "";
-    for (int i = TotalNumberOfLines - 1; i >= 0; i--)
+    WaitForTheInterpertersResponse = 1;
+
+    String TextboxProgramBeingEdited;
+    String ProgramName;
+    //WebOut = String("<form action='input'>" + HTMLout + "</form>");
+    ProgramName = server.arg("name");
+
+
+    if ( server.arg("open") == "Open" )
     {
-      delay(0);
-      String yada;
-      yada = BasicProgram[i];
-      yada.trim();
-      if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram[i] + String('\n') + TextboxProgramBeingEdited);
+
+      LoadBasicProgramFromFlash(ProgramName);
+      TextboxProgramBeingEdited = "";
+      for (int i = TotalNumberOfLines - 1; i >= 0; i--)
+      {
+        delay(0);
+        String yada;
+        yada = BasicProgram[i];
+        yada.trim();
+        if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram[i] + String('\n') + TextboxProgramBeingEdited);
+      }
     }
-  }
 
-  if ( server.arg("save") == "Save" )
-  {
-
-    TextboxProgramBeingEdited = GetRidOfurlCharacters(server.arg("code"));
-
-    TextboxProgramBeingEdited.replace("%0D%0A", String(" " + String('\n')));
-    for (int i = 1; i <= TotalNumberOfLines - 1; i++)
+    if ( server.arg("save") == "Save" )
     {
-      BasicProgram[i] = getValueforPrograming(TextboxProgramBeingEdited, '\n', i - 1);
+
+      TextboxProgramBeingEdited = GetRidOfurlCharacters(server.arg("code"));
+
+      TextboxProgramBeingEdited.replace("%0D%0A", String(" " + String('\n')));
+      for (int i = 1; i <= TotalNumberOfLines - 1; i++)
+      {
+        BasicProgram[i] = getValueforPrograming(TextboxProgramBeingEdited, '\n', i - 1);
+      }
+      SaveBasicProgramToFlash(ProgramName);
     }
-    SaveBasicProgramToFlash(ProgramName);
+
+
+    WebOut += EditorPageHTML;
+
+    WebOut.replace("*program txt*", TextboxProgramBeingEdited);
+    WebOut.replace("*program name*", ProgramName);
+
+    //TextboxProgramBeingEdited
   }
-
-
-  WebOut += EditorPageHTML;
-
-  WebOut.replace("*program txt*", TextboxProgramBeingEdited);
-  WebOut.replace("*program name*", ProgramName);
-
-  //TextboxProgramBeingEdited
-
   server.send(200, "text/html", WebOut);
 });
 
@@ -337,10 +391,10 @@ void StartUpProgramTimer()
     server.handleClient();
     if (WaitForTheInterpertersResponse == 0) return;
   }
-    RunningProgram = 1;
-    RunningProgramCurrentLine = 0;
-    WaitForTheInterpertersResponse = 0 ;
-    numberButtonInUse = 0;
+  RunningProgram = 1;
+  RunningProgramCurrentLine = 0;
+  WaitForTheInterpertersResponse = 0 ;
+  numberButtonInUse = 0;
   return;
 }
 
@@ -1216,7 +1270,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "i2cread")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
   if (FunctionName == "i2cwrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
   if (FunctionName == "i2cend ")    MyOut = String(Wire.endTransmission());
-  
+
 
   if (FunctionName == "sqr")   MyOut = String(sqrt(MyOut.toFloat()));
   if (FunctionName == "sin")   MyOut = String(sin(MyOut.toFloat()));

@@ -33,7 +33,7 @@
 #include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
-
+#include <ESP8266httpUpdate.h>
 
 
 
@@ -81,8 +81,9 @@ Station Mode (Connect to your router):</th></tr>
 <br><br>Log In Key (For Security):</th></tr>
 <tr><th><p align="right">Log In Key:</p></th><th><input type="text" name="LoginKey" value="*LoginKey*"></th></tr>
 <tr><th>
-<input type="submit" value="Save" name="save"></th><th>
-<input type="submit" value="Format" name="format"></th>
+<input type="submit" value="Save" name="save"></th>
+<th><input type="submit" value="Format" name="format"></th>
+<th><input type="submit" value="Update" name="update"></th>
 </tr>
 </table></form>
 <br>
@@ -215,6 +216,26 @@ void setup() {
     }
     else
     {
+
+      if ( server.arg("update") == "Update" )
+      {
+        t_httpUpdate_return  ret = ESPhttpUpdate.update("172.16.0.5", 80, "/test.bin", "");
+        switch(ret){
+          case HTTP_UPDATE_FAILD:
+          Serial.println("HTTP_UPDATE_FAILD");
+          break;
+          
+          case HTTP_UPDATE_NO_UPDATES:
+          Serial.println("HTTP_UPDATE_NO_UPDATES");
+          break;
+          
+          case HTTP_UPDATE_OK:
+          Serial.println("HTTP_UPDATE_OK");
+          break;
+        }
+      }
+
+      
       if ( server.arg("save") == "Save" )
       {
         staName = server.arg("staName");
@@ -235,6 +256,12 @@ void setup() {
         Serial.println("Formating ");
         SPIFFS.begin();
         //Serial.print(SPIFFS.format());
+        Dir dir = SPIFFS.openDir(String("/" ));
+        while (dir.next()) 
+        {
+          File f = dir.openFile("r");
+          SPIFFS.remove(dir.fileName());
+        }
       }
       
       WebOut.replace("*sta name*", staName);

@@ -1,4 +1,5 @@
 //ESP8266 Basic Interperter
+//HTTP://ESP8266BASIC.COM
 //The MIT License (MIT)
 //
 //Copyright (c) 2015 Michael Molinari
@@ -737,6 +738,28 @@ void ExicuteTheCurrentLine()
       Param5 = getValue(inData, ' ', 10);
       Param0.toLowerCase();
     }
+    else
+    {
+      for (int i = 7; i <= 17; i++)
+      {
+        delay(0);
+        Serial.println(i);
+        Serial.println(Param0);
+        Param0 = getValue(inData, ' ', i);
+        Param0.toLowerCase();
+        if ( Param0 == "else")
+        {
+          Serial.println("Found else");
+          Param0 = getValue(inData, ' ', i + 1);
+          Param1 = getValue(inData, ' ', i + 2);
+          Param2 = getValue(inData, ' ', i + 3);
+          Param3 = getValue(inData, ' ', i + 4);
+          Param4 = getValue(inData, ' ', i + 5);
+          Param5 = getValue(inData, ' ', i + 6);
+          break;
+        }
+      }
+    }
   }
 
 
@@ -1110,7 +1133,10 @@ void ExicuteTheCurrentLine()
   if (Param0 == "gosub")
   {
     for (int i = 0; i <= TotalNumberOfLines; i++) {
-      if (BasicProgram[i] == Param1)
+      String gotoTest = BasicProgram[i];
+      gotoTest.trim();
+
+      if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
       {
         RunningProgramCurrentLine = i - 1;
 
@@ -1262,16 +1288,19 @@ String DoMathForMe(String cc, String f, String dd )
   }
 
 
-  if (f == "==" || f == "=")
+  if (f == "==")
   {
-    if (cc == dd) {
+    if (cc == dd)
+    {
       ee = "1";
     }
-    else
+  }
+  
+  if (f == "=")
+  {
+    if (c == d)
     {
-      if (c == d) {
-        ee = "1";
-      }
+      ee = "1";
     }
   }
 
@@ -1876,7 +1905,11 @@ byte CheckFOrWebGOTO()
   {
     for (int i = 0; i <= 254; i++) {
       delay(1);
-      if (getValue(BasicProgram[i], ' ', 0) == ButtonsInUse[x])
+
+      String gotoTest = BasicProgram[i];
+      gotoTest.trim();
+      
+      if (gotoTest == ButtonsInUse[x] | String(gotoTest + ":") == ButtonsInUse[x])
       {
         //Serial.println("This is the line I am going to");
         Serial.println(BasicProgram[i]);

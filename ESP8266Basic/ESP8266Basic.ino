@@ -155,6 +155,10 @@ byte NumberOfReturns;
 bool BasicDebuggingOn;
 byte ReturnLocations[254];
 
+int TimerWaitTime;
+int timerLastActiveTime;
+String TimerBranch;
+
 int GraphicsEliments[100][7];
 
 
@@ -333,6 +337,7 @@ void setup() {
     WaitForTheInterpertersResponse = 0 ;
     numberButtonInUse = 0;
     HTMLout = "";
+    TimerWaitTime = 0;
     GraphicsEliments[0][0] = 0;
     WebOut = R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====";
 
@@ -601,8 +606,21 @@ int RunBasicTillWait()
   if (RunningProgramCurrentLine > TotalNumberOfLines)
   {
     RunningProgram = 0 ;
+    TimerWaitTime = 0;
   }
 
+  //Serial.println(TimerWaitTime);
+  //Serial.println(timerLastActiveTime );
+  //Serial.println(TimerBranch );
+  
+  if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
+  {
+    Serial.println("Doing that timere bit");
+    inData = String(" goto "+TimerBranch+" ");
+    WaitForTheInterpertersResponse = 0;
+    timerLastActiveTime = millis() ;
+    ExicuteTheCurrentLine();
+  }
 }
 
 
@@ -785,6 +803,7 @@ void ExicuteTheCurrentLine()
     numberButtonInUse = 0;
     RunningProgramCurrentLine = 0;
     HTMLout = "";
+    TimerWaitTime = 0;
     //RunBasicProgram();
     return;
   }
@@ -842,6 +861,7 @@ void ExicuteTheCurrentLine()
     numberButtonInUse = 0;
     RunningProgramCurrentLine = 0;
     HTMLout = "";
+    TimerWaitTime = 0;
     return;
   }
 
@@ -945,6 +965,12 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if ( Param0 == "timer")
+  {
+    TimerWaitTime = GetMeThatVar(Param1).toInt();
+    TimerBranch = Param2;
+    return;
+  }
 
 
 

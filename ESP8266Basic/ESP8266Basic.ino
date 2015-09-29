@@ -615,7 +615,7 @@ int RunBasicTillWait()
   
   if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
   {
-    Serial.println("Doing that timere bit");
+    //Serial.println("Doing that timere bit");
     inData = String(" goto "+TimerBranch+" ");
     WaitForTheInterpertersResponse = 0;
     timerLastActiveTime = millis() ;

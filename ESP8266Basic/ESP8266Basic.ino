@@ -612,11 +612,11 @@ int RunBasicTillWait()
   //Serial.println(TimerWaitTime);
   //Serial.println(timerLastActiveTime );
   //Serial.println(TimerBranch );
-  
+
   if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
   {
     //Serial.println("Doing that timere bit");
-    inData = String(" goto "+TimerBranch+" ");
+    inData = String(" goto " + TimerBranch + " ");
     WaitForTheInterpertersResponse = 0;
     timerLastActiveTime = millis() ;
     ExicuteTheCurrentLine();
@@ -1331,7 +1331,7 @@ String DoMathForMe(String cc, String f, String dd )
       ee = "1";
     }
   }
-  
+
   if (f == "=")
   {
     if (c == d)
@@ -1392,8 +1392,18 @@ String GetMeThatVar(String VariableNameToFind)
 
   if (VariableNameToFind == "millis") MyOut = String(millis());
 
-  if (FunctionName == "len")   MyOut = String(MyOut.length());
-  if (FunctionName == "mid")   MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
+
+  if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1)+1);
+  if (FunctionName == "len")     MyOut = String(MyOut.length());
+
+  if (FunctionName == "mid")     MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
+  if (FunctionName == "right")   MyOut = Right(Param0, Param1.toFloat());
+  if (FunctionName == "left")    MyOut = Left(Param0, Param1.toFloat());
+  if (FunctionName == "replace")
+  {
+    MyOut = Param0;
+    MyOut.replace(Param1,   Param2);
+  }
 
   if (FunctionName == "i2cread")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
   if (FunctionName == "i2cwrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
@@ -1414,7 +1424,7 @@ String GetMeThatVar(String VariableNameToFind)
   }
 
 
-  delay(1);
+  delay(0);
 
   //  Serial.println("VariableNameToFind=");
   //  Serial.println(VariableNameToFind);
@@ -1483,6 +1493,33 @@ String Mid(String str, int pos1, int pos2)
 
   return temp;
 }
+
+
+
+String Left(String str, int pos)
+{
+  int i;
+  String temp = "";
+  for (i = 0; i < pos; i++)
+  {
+    temp += str.charAt(i);
+  }
+
+  return temp;
+}
+
+
+String Right(String str, int pos)
+{
+  int i;
+  String temp = "";
+  for (i = pos; i < strlen(str.c_str()); i++)
+  {
+    temp += str.charAt(i);
+  }
+  return temp;
+}
+
 
 
 void PrintAllMyVars()
@@ -1944,7 +1981,7 @@ byte CheckFOrWebGOTO()
 
       String gotoTest = BasicProgram[i];
       gotoTest.trim();
-      
+
       if (gotoTest == ButtonsInUse[x] | String(gotoTest + ":") == ButtonsInUse[x])
       {
         //Serial.println("This is the line I am going to");

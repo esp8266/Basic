@@ -982,7 +982,17 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if (Param0 == "serialprint")
+  {
+    Serial.print(GetMeThatVar(Param1));
+    return;
+  }
 
+  if (Param0 == "serialprintln")
+  {
+    Serial.println(GetMeThatVar(Param1));
+    return;
+  }
 
 
   //Web Browser output commands

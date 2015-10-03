@@ -1,5 +1,9 @@
 //ESP8266 Basic Interperter
 //HTTP://ESP8266BASIC.COM
+//
+//To compile install esp8266 package from boards manager using the folowing URL
+//http://arduino.esp8266.com/versions/1.6.5-1044-g170995a/package_esp8266com_index.json
+//
 //The MIT License (MIT)
 //
 //Copyright (c) 2015 Michael Molinari
@@ -205,6 +209,24 @@ void setup() {
     WebOut += RunningProgramGui();
     server.send(200, "text/html", WebOut);
   });
+
+
+
+//  server.on("/png", []()
+//  {
+//    String fileNameToServeUp;
+//    fileNameToServeUp = server.arg("name");
+//    File mySuperFile = SPIFFS.open(String("/files/"+fileNameToServeUp), "r");
+//    if (mySuperFile)
+//    {
+//      server.send(200, "image/png", mySuperFile.readString());
+//      mySuperFile.close();
+//    }
+//    else
+//    {
+//      server.send(404, "text/plain", "file not found.");
+//    }
+//  });
 
 
 
@@ -661,6 +683,16 @@ String getValue(String data, char separator, int index)
       while (i <= maxIndex && data[i] != '\"' ) {
         chunkVal.concat(data[i]);
         i++;
+        delay(0);
+      }
+    }
+    else if (data[i] == '|' )
+    {
+      i++;
+      while (i <= maxIndex && data[i] != '|' ) {
+        chunkVal.concat(data[i]);
+        i++;
+        delay(0);
       }
     }
     else
@@ -1350,7 +1382,7 @@ String DoMathForMe(String cc, String f, String dd )
 String GetMeThatVar(String VariableNameToFind)
 {
   //PrintAndWebOut(String("Looking for variable " + VariableNameToFind));
-
+  byte i2cPinNo;
   String FunctionName;
 
   String Param0;
@@ -1393,7 +1425,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (VariableNameToFind == "millis") MyOut = String(millis());
 
 
-  if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1)+1);
+  if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1) + 1);
   if (FunctionName == "len")     MyOut = String(MyOut.length());
 
   if (FunctionName == "mid")     MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
@@ -1405,9 +1437,28 @@ String GetMeThatVar(String VariableNameToFind)
     MyOut.replace(Param1,   Param2);
   }
 
-  if (FunctionName == "i2cread")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
-  if (FunctionName == "i2cwrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
-  if (FunctionName == "i2cend ")    MyOut = String(Wire.endTransmission());
+  //  if (FunctionName == "i2cread")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
+  //  if (FunctionName == "i2cwrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
+  //  if (FunctionName == "i2cend ")    MyOut = String(Wire.endTransmission());
+
+
+  if (FunctionName == "i2c.start")
+  {
+    i2cPinNo = Param0.toInt();
+    MyOut = "";
+    Wire.beginTransmission(i2cPinNo);
+  }
+  if (FunctionName == "i2c.write")       MyOut =  String(Wire.write(Param0.c_str()));
+  if (FunctionName == "i2c.end")         MyOut =  String(Wire.endTransmission());
+  if (FunctionName == "i2c.request")
+  {
+    i2cPinNo = Param0.toInt();
+    byte i2cParamB = Param1.toInt();
+    MyOut =  String(Wire.requestFrom(i2cPinNo, i2cParamB));
+  }
+  if (FunctionName == "i2c.available")   MyOut =  String(Wire.available());
+  if (FunctionName == "i2c.read")        MyOut =  String(Wire.read());
+
 
 
   if (FunctionName == "sqr")   MyOut = String(sqrt(MyOut.toFloat()));
@@ -1415,7 +1466,9 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "cos")   MyOut = String(cos(MyOut.toFloat()));
   if (FunctionName == "tan")   MyOut = String(tan(MyOut.toFloat()));
 
-  if (FunctionName == "wget")   MyOut = String(FetchWebUrl(MyOut));
+  //  if (FunctionName == "ip")   MyOut = String(WiFi.localIP().toString());
+
+
 
   if (FunctionName == "rnd")
   {
@@ -2158,37 +2211,5 @@ void SetTheServo(byte pinForIO, int ValueForIO, bool AtachOrDetach)
     if (pinForIO == 16)   Servo16.detach();
 
   }
-
-
-
-}
-
-
-
-
-
-
-//i2c stuff
-
-String i2cRead(byte DeviceNo, byte NoOfByteToRequest)
-{
-  String i2cReturn;
-
-  Wire.requestFrom(DeviceNo, NoOfByteToRequest);
-
-  while (Wire.available())
-  {
-    delay(0);
-    i2cReturn += Wire.read();
-  }
-  return i2cReturn;
-}
-
-
-String i2cWrite(byte DeviceNo, String DataToSend)
-{
-  Wire.beginTransmission(DeviceNo);
-  Wire.write(DataToSend.c_str());
-  return String();
 }
 

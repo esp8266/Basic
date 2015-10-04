@@ -1425,6 +1425,14 @@ String GetMeThatVar(String VariableNameToFind)
   if (VariableNameToFind == "millis") MyOut = String(millis());
 
 
+  if (FunctionName == "htmlvar")
+  {
+    VarialbeLookup(Param0);
+    MyOut = String("VARS|" + String(LastVarNumberLookedUp));
+  }
+
+
+
   if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1) + 1);
   if (FunctionName == "len")     MyOut = String(MyOut.length());
 
@@ -1466,7 +1474,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "cos")   MyOut = String(cos(MyOut.toFloat()));
   if (FunctionName == "tan")   MyOut = String(tan(MyOut.toFloat()));
 
-  //  if (FunctionName == "ip")   MyOut = String(WiFi.localIP().toString());
+//  if (FunctionName == "ip")  { MyOut = String(WiFi.localIP().toString());
 
 
 
@@ -1869,9 +1877,9 @@ String GetRidOfurlCharacters(String urlChars)
   urlChars.replace("%78", "x");
   urlChars.replace("%79", "y");
   urlChars.replace("%7A", "z");
-  //urlChars.replace("%7B","{");
+  urlChars.replace("%7B",String(char(123)));
   urlChars.replace("%7C", "|");
-  //urlChars.replace("%7D","}");
+  urlChars.replace("%7D",String(char(125)));
   urlChars.replace("%7E", "~");
   urlChars.replace("%7F", "Â");
   urlChars.replace("%80", "`");
@@ -2212,4 +2220,6 @@ void SetTheServo(byte pinForIO, int ValueForIO, bool AtachOrDetach)
 
   }
 }
+
+
 

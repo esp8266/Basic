@@ -1474,7 +1474,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "cos")   MyOut = String(cos(MyOut.toFloat()));
   if (FunctionName == "tan")   MyOut = String(tan(MyOut.toFloat()));
 
-//  if (FunctionName == "ip")  { MyOut = String(WiFi.localIP().toString());
+  if (FunctionName == "ip")    MyOut = String(WiFi.localIP().toString());
 
 
 

@@ -1279,6 +1279,9 @@ void ExicuteTheCurrentLine()
     SetMeThatVar(Param1, DoMathForMe(GetMeThatVar(Param3), Param4, GetMeThatVar(Param5)));
     return;
   }
+
+
+  GetMeThatVar(Param0); //will exicure any functions if no other commands were found.
   return;
 }
 
@@ -1450,7 +1453,7 @@ String GetMeThatVar(String VariableNameToFind)
   //  if (FunctionName == "i2cend ")    MyOut = String(Wire.endTransmission());
 
 
-  if (FunctionName == "i2c.start")
+  if (FunctionName == "i2c.begin")
   {
     i2cPinNo = Param0.toInt();
     MyOut = "";
@@ -1458,7 +1461,7 @@ String GetMeThatVar(String VariableNameToFind)
   }
   if (FunctionName == "i2c.write")       MyOut =  String(Wire.write(Param0.c_str()));
   if (FunctionName == "i2c.end")         MyOut =  String(Wire.endTransmission());
-  if (FunctionName == "i2c.request")
+  if (FunctionName == "i2c.requestfrom")
   {
     i2cPinNo = Param0.toInt();
     byte i2cParamB = Param1.toInt();

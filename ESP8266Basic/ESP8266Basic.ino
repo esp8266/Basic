@@ -61,16 +61,45 @@ const String AdminBarHTML = R"=====(
 <hr>)=====";
 
 const String EditorPageHTML =  R"=====(
+<script src="editor.js"></script>
 <form action='edit' id="usrform">
 <input type="text" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
-<input type="submit" value="Save" name="save">
 </form>
+<button onclick="SaveTheCode()">Save</button>
 <br>
-<textarea rows="25" cols="75" name="code" form="usrform">
-*program txt*
-</textarea>
+<textarea rows="30" cols="75" name="code" id="code">*program txt*</textarea><br>
+<input type="text" id="Status" value="">
 )=====";
+
+
+const String editCodeJavaScript =  R"=====(
+function SaveTheCode() {
+  var textArea = document.getElementById("code");
+  var arrayOfLines = textArea.value.split("\n");
+for (i = 0; i <= arrayOfLines.length; i++) 
+{ 
+  var x = i + 1;
+  if (arrayOfLines[i] != "undefined")
+  {
+    var WhatToSend = "/codein?line=" + x + "&code=" + arrayOfLines[i];
+    httpGet(WhatToSend);
+    document.getElementById("Status").value = i.toString();
+  }
+}
+httpGet("/codein?SaveTheCode=yes");
+document.getElementById("Status").value = "Saved";
+alert("Saved");
+}
+function httpGet(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+}
+)=====";
+
 
 const String SettingsPageHTML =  R"=====(
 <form action='settings' id="usrform"><table>
@@ -165,6 +194,10 @@ String TimerBranch;
 
 int GraphicsEliments[100][7];
 
+
+
+int noOfLinesForEdit;
+String ProgramName;
 
 //int IOstatus[20][2];
 
@@ -423,6 +456,30 @@ server.on("/edit", []()
   }
   server.send(200, "text/html", WebOut);
 });
+
+
+
+server.on("/editor.js", []() {
+  server.send(200, "text/html", editCodeJavaScript);
+});
+
+
+server.on("/codein", []() {
+  if (server.arg("SaveTheCode") != "yes")
+  {
+    String LineNoForWebEditorIn;
+    LineNoForWebEditorIn = server.arg("line");
+    int y = LineNoForWebEditorIn.toInt();
+    BasicProgram[y] = GetRidOfurlCharacters(server.arg("code"));
+    noOfLinesForEdit = y;
+  }
+  else
+  {
+    SaveBasicProgramToFlash(ProgramName);
+  }
+  server.send(200, "text/html", "good");
+});
+
 
 
 

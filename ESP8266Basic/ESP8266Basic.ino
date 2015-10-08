@@ -413,7 +413,7 @@ server.on("/edit", []()
     WaitForTheInterpertersResponse = 1;
 
     String TextboxProgramBeingEdited;
-    String ProgramName;
+    //String ProgramName;
     //WebOut = String("<form action='input'>" + HTMLout + "</form>");
     ProgramName = server.arg("name");
 

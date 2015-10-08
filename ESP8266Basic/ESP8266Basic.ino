@@ -467,7 +467,7 @@ server.on("/codein", []() {
   }
   else
   {
-    Dir dir = SPIFFS.openDir(String("/data/" + ProgramName ));
+    Dir dir = SPIFFS.openDir(String(" /data/" + ProgramName ));
     while (dir.next())
     {
       delay(0);
@@ -1653,7 +1653,7 @@ void SaveDataToFile(String fileNameForSave, String DataToSave)
 {
   Serial.println(fileNameForSave);
   SPIFFS.begin();
-  File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "w");
+  File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "w");
   if (!f)
   {
     PrintAndWebOut("file open failed");
@@ -1672,7 +1672,7 @@ String LoadDataFromFile(String fileNameForSave)
 {
   String WhatIwillReturn;
   SPIFFS.begin();
-  File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "r");
+  File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "r");
   if (!f)
   {
     //PrintAndWebOut("file open failed");

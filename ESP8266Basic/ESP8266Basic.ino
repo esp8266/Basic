@@ -77,7 +77,8 @@ const String editCodeJavaScript =  R"=====(
 function SaveTheCode() {
   var textArea = document.getElementById("code");
   var arrayOfLines = textArea.value.split("\n");
-for (i = 0; i <= arrayOfLines.length; i++) 
+  httpGet("/codein?SaveTheCode=yes");
+for (i = 0; i <= arrayOfLines.length - 1; i++) 
 { 
   var x = i + 1;
   if (arrayOfLines[i] != "undefined")
@@ -87,7 +88,7 @@ for (i = 0; i <= arrayOfLines.length; i++)
     document.getElementById("Status").value = i.toString();
   }
 }
-httpGet("/codein?SaveTheCode=yes");
+
 document.getElementById("Status").value = "Saved";
 alert("Saved");
 }
@@ -174,7 +175,7 @@ String ButtonsInUse[11];
 String inData;
 
 int TotalNumberOfLines = 255;
-String BasicProgram[255];                                //Array of strings to hold basic program
+//String BasicProgram[255];                                //Array of strings to hold basic program
 
 
 String AllMyVaribles[50][2];
@@ -341,6 +342,7 @@ void setup() {
         Dir dir = SPIFFS.openDir(String("/" ));
         while (dir.next()) 
         {
+          delay(0);
           File f = dir.openFile("r");
           SPIFFS.remove(dir.fileName());
         }
@@ -421,29 +423,16 @@ server.on("/edit", []()
     if ( server.arg("open") == "Open" )
     {
 
-      LoadBasicProgramFromFlash(ProgramName);
+      //LoadBasicProgramFromFlash(ProgramName);
       TextboxProgramBeingEdited = "";
       for (int i = TotalNumberOfLines - 1; i >= 0; i--)
       {
         delay(0);
         String yada;
-        yada = BasicProgram[i];
+        yada = BasicProgram(i);
         yada.trim();
-        if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram[i] + String('\n') + TextboxProgramBeingEdited);
+        if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram(i) + String('\n') + TextboxProgramBeingEdited);
       }
-    }
-
-    if ( server.arg("save") == "Save" )
-    {
-
-      TextboxProgramBeingEdited = GetRidOfurlCharacters(server.arg("code"));
-
-      TextboxProgramBeingEdited.replace("%0D%0A", String(" " + String('\n')));
-      for (int i = 1; i <= TotalNumberOfLines - 1; i++)
-      {
-        BasicProgram[i] = getValueforPrograming(TextboxProgramBeingEdited, '\n', i - 1);
-      }
-      SaveBasicProgramToFlash(ProgramName);
     }
 
 
@@ -470,12 +459,21 @@ server.on("/codein", []() {
     String LineNoForWebEditorIn;
     LineNoForWebEditorIn = server.arg("line");
     int y = LineNoForWebEditorIn.toInt();
-    BasicProgram[y] = GetRidOfurlCharacters(server.arg("code"));
+    delay(0);
+    BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
+    delay(0);
     noOfLinesForEdit = y;
+
   }
   else
   {
-    SaveBasicProgramToFlash(ProgramName);
+    Dir dir = SPIFFS.openDir(String("/data/" + ProgramName ));
+    while (dir.next())
+    {
+      delay(0);
+      File f = dir.openFile("r");
+      SPIFFS.remove(dir.fileName());
+    }
   }
   server.send(200, "text/html", "good");
 });
@@ -492,7 +490,7 @@ server.onNotFound ( []() {
   server.send(200, "text/html", RunningProgramGui());
 });
 
-LoadBasicProgramFromFlash("");
+//LoadBasicProgramFromFlash("");
 
 
 if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass")) == 0)
@@ -678,7 +676,7 @@ int RunBasicTillWait()
 
     delay(1);
     RunningProgramCurrentLine++;
-    inData = BasicProgram[RunningProgramCurrentLine];
+    inData = BasicProgram(RunningProgramCurrentLine);
 
     ExicuteTheCurrentLine();
   }
@@ -908,10 +906,10 @@ void ExicuteTheCurrentLine()
   {
     for (int i = 0; i <= TotalNumberOfLines; i++)
     {
-      if (BasicProgram[i].length() > 0)
+      if (BasicProgram(i).length() > 0)
       {
         //PrintAndWebOut(BasicProgram[i].length());
-        PrintAndWebOut(String(String(i) + " " + BasicProgram[i]));
+        PrintAndWebOut(String(String(i) + " " + BasicProgram(i)));
       }
     }
     return;
@@ -946,7 +944,7 @@ void ExicuteTheCurrentLine()
   {
     GraphicsEliments[0][0] = 0;
     PrintAndWebOut(String("Loading . . . . " + Param1));
-    LoadBasicProgramFromFlash(Param1);
+    ProgramName = Param1;
     numberButtonInUse = 0;
     RunningProgramCurrentLine = 0;
     HTMLout = "";
@@ -954,12 +952,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (Param0 == "save")
-  {
-    PrintAndWebOut("Saving . . . . ");
-    SaveBasicProgramToFlash(Param1);
-    return;
-  }
+
 
 
 
@@ -1243,7 +1236,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == "goto")
   {
     for (int i = 0; i <= 50; i++) {
-      String gotoTest = BasicProgram[i];
+      String gotoTest = BasicProgram(i);
       gotoTest.trim();
 
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
@@ -1258,7 +1251,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == "gosub")
   {
     for (int i = 0; i <= TotalNumberOfLines; i++) {
-      String gotoTest = BasicProgram[i];
+      String gotoTest = BasicProgram(i);
       gotoTest.trim();
 
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
@@ -1656,63 +1649,11 @@ void PrintAllMyVars()
 
 //File System Stuff
 
-
-
-void SaveBasicProgramToFlash(String fileNameForSave)
-{
-  String bla;
-  Serial.println("Saving that file");
-  SPIFFS.begin();
-  File f = SPIFFS.open(String("/" + fileNameForSave + ".bas"), "w");
-  if (!f)
-  {
-    PrintAndWebOut("file open failed");
-  }
-  else
-  {
-    for (int i = 0; i <= TotalNumberOfLines; i++)
-    {
-      //Serial.println(String(BasicProgram[i]  + "---"));
-      //f.println(BasicProgram[i]);
-      bla = BasicProgram[i];
-      bla.trim();
-      bla = String(bla + " ");
-      f.println(bla);
-    }
-    f.close();
-  }
-
-  Serial.println("done Saving File");
-  return;
-}
-
-
-
-void LoadBasicProgramFromFlash(String fileNameForSave)
-{
-  SPIFFS.begin();
-  File f = SPIFFS.open(String("/" + fileNameForSave + ".bas"), "r");
-  if (!f)
-  {
-    PrintAndWebOut("file open failed");
-  }
-  else
-  {
-    for (int i = 0; i <= TotalNumberOfLines; i++)
-    {
-      BasicProgram[i] = f.readStringUntil('\r');
-      BasicProgram[i].replace("\n", "");
-    }
-    f.close();
-  }
-  return;
-}
-
-
 void SaveDataToFile(String fileNameForSave, String DataToSave)
 {
+  Serial.println(fileNameForSave);
   SPIFFS.begin();
-  File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "w");
+  File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "w");
   if (!f)
   {
     PrintAndWebOut("file open failed");
@@ -1731,10 +1672,10 @@ String LoadDataFromFile(String fileNameForSave)
 {
   String WhatIwillReturn;
   SPIFFS.begin();
-  File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "r");
+  File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "r");
   if (!f)
   {
-    PrintAndWebOut("file open failed");
+    //PrintAndWebOut("file open failed");
   }
   else
   {
@@ -1769,8 +1710,8 @@ byte ConnectToTheWIFI(String NetworkName, String NetworkPassword)
   while (WiFi.status() != WL_CONNECTED) {
     numberOfAtempts = numberOfAtempts  + 1;
     delay(1000);
-    Serial.print(numberOfAtempts);
-    if (numberOfAtempts >= 10)
+    Serial.println(numberOfAtempts);
+    if (numberOfAtempts >= 12)
     {
       Serial.println("");
       Serial.println("Failed Wifi Connect ");
@@ -1937,9 +1878,9 @@ String GetRidOfurlCharacters(String urlChars)
   urlChars.replace("%78", "x");
   urlChars.replace("%79", "y");
   urlChars.replace("%7A", "z");
-  urlChars.replace("%7B",String(char(123)));
+  urlChars.replace("%7B", String(char(123)));
   urlChars.replace("%7C", "|");
-  urlChars.replace("%7D",String(char(125)));
+  urlChars.replace("%7D", String(char(125)));
   urlChars.replace("%7E", "~");
   urlChars.replace("%7F", "Â");
   urlChars.replace("%80", "`");
@@ -2100,13 +2041,13 @@ byte CheckFOrWebGOTO()
     for (int i = 0; i <= 254; i++) {
       delay(1);
 
-      String gotoTest = BasicProgram[i];
+      String gotoTest = BasicProgram(i);
       gotoTest.trim();
 
       if (gotoTest == ButtonsInUse[x] | String(gotoTest + ":") == ButtonsInUse[x])
       {
         //Serial.println("This is the line I am going to");
-        Serial.println(BasicProgram[i]);
+        Serial.println(BasicProgram(i));
         RunningProgramCurrentLine = i - 1;
         return 1;
       }
@@ -2279,6 +2220,41 @@ void SetTheServo(byte pinForIO, int ValueForIO, bool AtachOrDetach)
     if (pinForIO == 16)   Servo16.detach();
 
   }
+}
+
+
+
+String BasicProgram(int LineNumberToLookUp)
+{
+  String ProgramNameforfile;
+  if (ProgramName != "")
+  {
+    ProgramNameforfile = ProgramName;
+  }
+  else
+  {
+    ProgramNameforfile = "default";
+  }
+  delay(0);
+  return LoadDataFromFile(String(ProgramNameforfile + "/" + String(LineNumberToLookUp)));
+  delay(0);
+}
+
+
+void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramLine)
+{
+  String ProgramNameforfile;
+  if (ProgramName != "")
+  {
+    ProgramNameforfile = ProgramName;
+  }
+  else
+  {
+    ProgramNameforfile = "default";
+  }
+  delay(0);
+  SaveDataToFile(String(ProgramNameforfile + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
+  delay(0);
 }
 
 

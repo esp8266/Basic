@@ -454,6 +454,13 @@ server.on("/editor.js", []() {
 
 
 server.on("/codein", []() {
+
+  if (ProgramName == "")
+  {
+    ProgramName = "default";
+  }
+
+
   if (server.arg("SaveTheCode") != "yes")
   {
     String LineNoForWebEditorIn;
@@ -467,12 +474,15 @@ server.on("/codein", []() {
   }
   else
   {
-    Dir dir = SPIFFS.openDir(String(" /data/" + ProgramName ));
-    while (dir.next())
+    String directoryToDeleteFilesFrom;
+    directoryToDeleteFilesFrom = String(" /data/" + ProgramName );
+    Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
+
+    while (dir1.next())
     {
       delay(0);
-      File f = dir.openFile("r");
-      SPIFFS.remove(dir.fileName());
+      File f = dir1.openFile("r");
+      if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
     }
   }
   server.send(200, "text/html", "good");
@@ -2226,34 +2236,24 @@ void SetTheServo(byte pinForIO, int ValueForIO, bool AtachOrDetach)
 
 String BasicProgram(int LineNumberToLookUp)
 {
-  String ProgramNameforfile;
-  if (ProgramName != "")
+  if (ProgramName == "")
   {
-    ProgramNameforfile = ProgramName;
-  }
-  else
-  {
-    ProgramNameforfile = "default";
+    ProgramName = "default";
   }
   delay(0);
-  return LoadDataFromFile(String(ProgramNameforfile + "/" + String(LineNumberToLookUp)));
+  return LoadDataFromFile(String(ProgramName  + "/" + String(LineNumberToLookUp)));
   delay(0);
 }
 
 
 void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramLine)
 {
-  String ProgramNameforfile;
-  if (ProgramName != "")
+  if (ProgramName == "")
   {
-    ProgramNameforfile = ProgramName;
-  }
-  else
-  {
-    ProgramNameforfile = "default";
+    ProgramName = "default";
   }
   delay(0);
-  SaveDataToFile(String(ProgramNameforfile + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
+  SaveDataToFile(String(ProgramName  + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
   delay(0);
 }
 

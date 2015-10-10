@@ -65,8 +65,7 @@ const String EditorPageHTML =  R"=====(
 <form action='edit' id="usrform">
 <input type="text" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
-</form>
-<button onclick="SaveTheCode()">Save</button>
+</form><button onclick="SaveTheCode()">Save</button>
 <br>
 <textarea rows="30" cols="75" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
@@ -879,6 +878,54 @@ void ExicuteTheCurrentLine()
 
 
 
+  if (Param0 == "for")
+  {
+    Param0 = "let";
+  }
+
+
+
+  if (Param0 == "next")
+  {
+    //for x = 1 to 10
+
+    for (int i = RunningProgramCurrentLine; i >= 1; i--)
+    {
+      String gotoTestFor = BasicProgram(i);
+      gotoTestFor.trim();
+
+      String ForTest = getValue(gotoTestFor, ' ', 0);
+      ForTest.toLowerCase();
+      String VarTest = getValue(gotoTestFor, ' ', 1);
+
+      String VarTestIfDone = getValue(gotoTestFor, ' ', 5);
+      if (ForTest == "for" &  VarTest == Param1)
+      {
+        float test1 = GetMeThatVar(VarTest).toFloat();
+        float test2 = GetMeThatVar(VarTestIfDone).toFloat();
+
+        //Serial.println(test1);
+        //Serial.println(test2);
+
+        if ( test1  !=  test2 )
+        {
+          RunningProgramCurrentLine = i;
+          Param0 = "let";
+          Param3 = Param1;
+          Param4 = "+";
+          Param5 = "1";
+        }
+        else
+        {
+          return;
+        }
+      }
+    }
+
+  }
+
+
+
 
   if (Param0 == "debugon")
   {
@@ -1245,7 +1292,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "goto")
   {
-    for (int i = 0; i <= 50; i++) {
+    for (int i = 0; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
 

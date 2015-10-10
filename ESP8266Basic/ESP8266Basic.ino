@@ -2076,10 +2076,8 @@ byte CheckFOrWebGOTO()
 {
   String bla;
   byte x = 0;
-
-
-
-  for (int i = 0; i <= 50; i++)
+  
+  for (int i = 0; i <= TotalNumberOfLines - 1; i++)
   {
     int str_len = String(i).length() + 1 + 4;
     char ArgumentToTest[str_len];
@@ -2092,10 +2090,10 @@ byte CheckFOrWebGOTO()
     }
   }
 
-  Serial.println(x);
+  //Serial.println(x);
   if (x != 0)
   {
-    for (int i = 0; i <= 254; i++) {
+    for (int i = 0; i <= TotalNumberOfLines - 1; i++) {
       delay(1);
 
       String gotoTest = BasicProgram(i);

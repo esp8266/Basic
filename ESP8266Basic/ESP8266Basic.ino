@@ -58,7 +58,10 @@ const String AdminBarHTML = R"=====(
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>
 <a href="./settings">[ SETTINGS ]</a>
+
 <hr>)=====";
+
+//<a href="http://www.esp8266basic.com/help"  target="_blank">[ HELP ]</a>
 
 const String EditorPageHTML =  R"=====(
 <script src="editor.js"></script>
@@ -1052,6 +1055,7 @@ void ExicuteTheCurrentLine()
     valParam2 = GetMeThatVar(Param2).toInt();
     SetTheServo(valParam1, 0, 0);
     pinMode(valParam1, OUTPUT);
+    analogWrite(valParam1, 0);
     analogWrite(valParam1, valParam2);
     return;
   }
@@ -2102,7 +2106,7 @@ byte CheckFOrWebGOTO()
       if (gotoTest == ButtonsInUse[x] | String(gotoTest + ":") == ButtonsInUse[x])
       {
         //Serial.println("This is the line I am going to");
-        Serial.println(BasicProgram(i));
+        //Serial.println(BasicProgram(i));
         RunningProgramCurrentLine = i - 1;
         return 1;
       }

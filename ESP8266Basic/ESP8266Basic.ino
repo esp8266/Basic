@@ -48,9 +48,13 @@ ESP8266WebServer server(80);
 //String HTMLout = "<input type='text' name='firstname'>";
 String HTMLout;
 const String InputFormText = R"=====( <input type="text" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
-
 const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue"><hr>)=====";
 const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name="gotonobranch">)=====";
+const String DropDownList =  R"=====(<select name="variablenumber">options</select>)=====";
+const String DropDownListOpptions =  R"=====(<option>item</option>)=====";
+
+
+
 byte WaitForTheInterpertersResponse = 1;
 
 const String AdminBarHTML = R"=====(
@@ -1177,6 +1181,39 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if (Param0 == "dropdown")
+  {
+    String tempDropDownList = DropDownList;
+    String tempDropDownListOpptions	= DropDownListOpptions;
+    String TempItems;
+    String TempBla;
+
+    Param1 = GetMeThatVar(Param1);
+
+    for (int i = 0; i <= 20; i++)
+    {
+      tempDropDownListOpptions	= DropDownListOpptions;
+      TempBla = getValue(Param1, ',', i);
+      TempBla.replace(",", "");
+      if (TempBla != "") {
+
+        tempDropDownListOpptions.replace("item",  TempBla);
+        TempItems = String( TempItems + tempDropDownListOpptions);
+      }
+      delay(0);
+    }
+
+    //Serial.println(Param2);
+    Param2 = GetMeThatVar(Param2);
+    //Serial.println(Param2);
+    //Serial.println(LastVarNumberLookedUp);
+
+    tempDropDownList.replace("variablenumber",  String(LastVarNumberLookedUp));
+    tempDropDownList.replace("options",  TempItems);
+
+    HTMLout = String(HTMLout + tempDropDownList);
+    return;
+  }
 
 
 
@@ -2080,7 +2117,7 @@ byte CheckFOrWebGOTO()
 {
   String bla;
   byte x = 0;
-  
+
   for (int i = 0; i <= TotalNumberOfLines - 1; i++)
   {
     int str_len = String(i).length() + 1 + 4;

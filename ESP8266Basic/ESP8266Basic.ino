@@ -656,7 +656,7 @@ String  getSerialInput()
   String someInput;
   while (donereceivinginfo == 0)
   {
-    delay(10);
+    delay(0);
     while (Serial.available() > 0)
     {
       char recieved = Serial.read();
@@ -1319,7 +1319,7 @@ void ExicuteTheCurrentLine()
     }
     else
     {
-      PrintAndWebOut(GetMeThatVar(Param1));
+      Serial.print(GetMeThatVar(Param1));
       SetMeThatVar(Param2, getSerialInput());
     }
     PrintAndWebOut("");

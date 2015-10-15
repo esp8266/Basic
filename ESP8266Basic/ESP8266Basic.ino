@@ -90,6 +90,7 @@ for (i = 0; i <= arrayOfLines.length - 1; i++)
   if (arrayOfLines[i] != "undefined")
   {
     var WhatToSend = "/codein?line=" + x + "&code=" + arrayOfLines[i];
+    WhatToSend = WhatToSend.replace("+", "%2B");
     httpGet(WhatToSend);
     document.getElementById("Status").value = i.toString();
   }
@@ -201,7 +202,7 @@ String TimerBranch;
 
 int GraphicsEliments[100][7];
 
-
+File fsUploadFile;
 
 int noOfLinesForEdit;
 String ProgramName;
@@ -407,7 +408,7 @@ void setup() {
 server.send(200, "text/html", WebOut);
 });
 
-
+server.onFileUpload(handleFileUpdate);
 server.on("/edit", []()
 {
   String WebOut = AdminBarHTML;
@@ -548,6 +549,26 @@ void StartUpProgramTimer()
 
 
 
+void handleFileUpdate() {
+  if (server.uri() != "/edit") return;
+  HTTPUpload& upload = server.upload();
+  if (upload.status == UPLOAD_FILE_START) {
+    String filename = upload.filename;
+    //DBG_OUTPUT_PORT.print("Upload Name: "); DBG_OUTPUT_PORT.println(filename);
+    fsUploadFile = SPIFFS.open(filename, "w");
+    filename = String();
+  } else if (upload.status == UPLOAD_FILE_WRITE) {
+    //DBG_OUTPUT_PORT.print("Upload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
+    if (fsUploadFile)
+      fsUploadFile.write(upload.buf, upload.currentSize);
+  } else if (upload.status == UPLOAD_FILE_END) {
+    if (fsUploadFile)
+      fsUploadFile.close();
+    //DBG_OUTPUT_PORT.print("Upload Size: "); DBG_OUTPUT_PORT.println(upload.totalSize);
+  }
+}
+
+
 
 
 String BasicGraphics()
@@ -680,31 +701,21 @@ void loop()
 {
 
   RunBasicTillWait();
+
   server.handleClient();
 }
 
 
 
-int RunBasicTillWait()
+void RunBasicTillWait()
 {
-  while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 )
-  {
-
-    delay(1);
-    RunningProgramCurrentLine++;
-    inData = BasicProgram(RunningProgramCurrentLine);
-
-    ExicuteTheCurrentLine();
-  }
+  runTillWaitPart2();
   if (RunningProgramCurrentLine > TotalNumberOfLines)
   {
     RunningProgram = 0 ;
     TimerWaitTime = 0;
+    return;
   }
-
-  //Serial.println(TimerWaitTime);
-  //Serial.println(timerLastActiveTime );
-  //Serial.println(TimerBranch );
 
   if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
   {
@@ -713,8 +724,23 @@ int RunBasicTillWait()
     WaitForTheInterpertersResponse = 0;
     timerLastActiveTime = millis() ;
     ExicuteTheCurrentLine();
+    runTillWaitPart2();
   }
 }
+
+
+void runTillWaitPart2()
+{
+  while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 )
+  {
+    delay(0);
+    RunningProgramCurrentLine++;
+    inData = BasicProgram(RunningProgramCurrentLine);
+    ExicuteTheCurrentLine();
+  }
+}
+
+
 
 
 

@@ -45,11 +45,13 @@
 ESP8266WebServer server(80);
 
 //Web Server Variables
-//String HTMLout = "<input type='text' name='firstname'>";
 String HTMLout;
 const String InputFormText = R"=====( <input type="text" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
 const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue"><hr>)=====";
 const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name="gotonobranch">)=====";
+const String GOTOimagebutton =  R"=====(<input type="image" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
+const String normalImage =  R"=====(<img src="/file?file=name")=====";
+const String javascript =  R"=====(<script src="/file?file=name"></script>)=====";
 const String DropDownList =  R"=====(<select name="variablenumber">options</select>)=====";
 const String DropDownListOpptions =  R"=====(<option>item</option>)=====";
 
@@ -62,8 +64,26 @@ const String AdminBarHTML = R"=====(
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>
 <a href="./settings">[ SETTINGS ]</a>
-
+<a href="./filemng">[ FILE MANAGER ]</a>
 <hr>)=====";
+
+
+
+const String UploadPage = R"=====(
+<form method='POST' action='/filemng' enctype='multipart/form-data'>
+<input type='file' name='Upload'>
+<input type='submit' value='Upload'>
+</form>
+<form id="filelist">
+<input type="submit" value="Delete" name="Delete">
+</form>
+
+<select name="fileName" size="25" form="filelist">*table*</select>
+)=====";
+
+const String FileMngUploads = R"=====(<tr><td>*name*</td><td>*size*</td><td><a href='./filemng?delete=*name*'>X</a></td></tr>)=====";
+
+
 
 //<a href="http://www.esp8266basic.com/help"  target="_blank">[ HELP ]</a>
 
@@ -238,6 +258,7 @@ Servo Servo16;
 
 
 void setup() {
+      SPIFFS.begin();
   Serial.begin(9600);
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut("Simple Basic Interperter For ESP8266...");
@@ -257,7 +278,7 @@ void setup() {
 //  {
 //    String fileNameToServeUp;
 //    fileNameToServeUp = server.arg("name");
-//    File mySuperFile = SPIFFS.open(String("/files/"+fileNameToServeUp), "r");
+//    File mySuperFile = SPIFFS.open(String("uploads/"+fileNameToServeUp), "r");
 //    if (mySuperFile)
 //    {
 //      server.send(200, "image/png", mySuperFile.readString());
@@ -291,7 +312,7 @@ void setup() {
     String apName;
     String apPass;
     String LoginKey;
-    Serial.print("Loading Settings Files");
+    //Serial.print("Loading Settings Files");
   
     staName  = LoadDataFromFile("WIFIname");
     staPass  = LoadDataFromFile("WIFIpass");
@@ -344,15 +365,16 @@ void setup() {
       if ( server.arg("format") == "Format" )
       {
         Serial.println("Formating ");
-        SPIFFS.begin();
-        //Serial.print(SPIFFS.format());
-        Dir dir = SPIFFS.openDir(String("/" ));
-        while (dir.next()) 
-        {
-          delay(0);
-          File f = dir.openFile("r");
-          SPIFFS.remove(dir.fileName());
-        }
+        //SPIFFS.begin();
+        Serial.print(SPIFFS.format());
+//        Dir dir = SPIFFS.openDir(String(""));
+//        while (dir.next()) 
+//        {
+//          delay(0);
+//          Serial.println(dir.fileName());
+//          File f = dir.openFile("r");
+//          SPIFFS.remove(dir.fileName());
+//        }
       }
       
       WebOut.replace("*sta name*", staName);
@@ -393,7 +415,7 @@ void setup() {
   });
 
 
-  server.on("/run", []()
+server.on("/run", []()
   {
     String WebOut;
     RunningProgram = 1;
@@ -409,6 +431,16 @@ server.send(200, "text/html", WebOut);
 });
 
 server.onFileUpload(handleFileUpdate);
+
+
+
+
+server.on("/filemng", []()
+{
+  DoSomeFileManagerCode();
+});
+
+
 server.on("/edit", []()
 {
   String WebOut = AdminBarHTML;
@@ -481,6 +513,7 @@ server.on("/codein", []() {
   }
   else
   {
+
     String directoryToDeleteFilesFrom;
     directoryToDeleteFilesFrom = String(" /data/" + ProgramName );
     Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
@@ -504,7 +537,19 @@ server.on("/input", []() {
 });
 
 server.onNotFound ( []() {
-  server.send(200, "text/html", RunningProgramGui());
+  String fileNameToServeUp;
+  fileNameToServeUp = server.arg("file");
+  File mySuperFile = SPIFFS.open(String("uploads/" + fileNameToServeUp), "r");
+  if (mySuperFile)
+  {
+    server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
+    //server.send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
+    mySuperFile.close();
+  }
+  else
+  {
+    server.send(200, "text/html", RunningProgramGui());
+  }
 });
 
 //LoadBasicProgramFromFlash("");
@@ -531,6 +576,23 @@ StartUpProgramTimer();
 }
 
 
+String getContentType(String filename) {
+  if (filename.endsWith(".htm")) return "text/html";
+  else if (filename.endsWith(".html")) return "text/html";
+  else if (filename.endsWith(".htm")) return "text/html";
+  else if (filename.endsWith(".css")) return "text/css";
+  else if (filename.endsWith(".js")) return "application/javascript";
+  else if (filename.endsWith(".png")) return "image/png";
+  else if (filename.endsWith(".gif")) return "image/gif";
+  else if (filename.endsWith(".jpg")) return "image/jpeg";
+  else if (filename.endsWith(".ico")) return "image/x-icon";
+  else if (filename.endsWith(".xml")) return "text/xml";
+  else if (filename.endsWith(".pdf")) return "application/x-pdf";
+  else if (filename.endsWith(".zip")) return "application/x-zip";
+  else if (filename.endsWith(".gz")) return "application/x-gzip";
+  return "text/plain";
+}
+
 void StartUpProgramTimer()
 {
   while  (millis() < 30000)
@@ -544,18 +606,53 @@ void StartUpProgramTimer()
   RunningProgramCurrentLine = 0;
   WaitForTheInterpertersResponse = 0 ;
   numberButtonInUse = 0;
+  HTMLout = "";
   return;
 }
 
 
 
-void handleFileUpdate() {
-  if (server.uri() != "/edit") return;
+void DoSomeFileManagerCode()
+{
+  String WholeUploadPage = UploadPage;
+  String FileListForPage ;
+
+  if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+  {
+    WholeUploadPage = LogInPage;
+  }
+  else
+  {
+    if (server.arg("Delete") == "Delete")
+    {
+      String FIleNameForDelete = server.arg("fileName");
+      FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
+      Serial.println(FIleNameForDelete);
+      Serial.println(SPIFFS.remove(FIleNameForDelete));
+      Serial.println(SPIFFS.remove("uploads/settings.png"));
+    }
+
+    Dir dir = SPIFFS.openDir(String("uploads" ));
+    while (dir.next()) {
+      FileListForPage += String("<option>" + dir.fileName() + "</option>");
+      delay(0);
+    }
+
+    WholeUploadPage.replace("*table*", FileListForPage);
+  }
+  server.send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
+}
+
+
+
+void handleFileUpdate()
+{
+  //if (server.uri() != "/edit") return;
   HTTPUpload& upload = server.upload();
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
     //DBG_OUTPUT_PORT.print("Upload Name: "); DBG_OUTPUT_PORT.println(filename);
-    fsUploadFile = SPIFFS.open(filename, "w");
+    fsUploadFile = SPIFFS.open(String("uploads/" + filename), "w");
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
     //DBG_OUTPUT_PORT.print("Upload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
@@ -1008,7 +1105,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "dir")
   {
-    SPIFFS.begin();
+    //SPIFFS.begin();
     Dir dir = SPIFFS.openDir(String("/" ));
     while (dir.next()) {
       File f = dir.openFile("r");
@@ -1019,7 +1116,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "del")
   {
-    SPIFFS.begin();
+    //SPIFFS.begin();
 
     PrintAndWebOut(String("/" + Param1));
     PrintAndWebOut(String(SPIFFS.remove(String("/" + Param1))));
@@ -1179,10 +1276,47 @@ void ExicuteTheCurrentLine()
 
 
 
+  if (Param0 == "image")
+  {
+    String tempInfo = normalImage;
+    tempInfo.replace("name", GetMeThatVar(Param1));
+    HTMLout += tempInfo;
+    //Serial.print(HTMLout);
+    return;
+  }
+
+
+  if (Param0 == "javascript")
+  {
+    String tempInfo = javascript;
+    tempInfo.replace("name", GetMeThatVar(Param1));
+    HTMLout += tempInfo;
+    //Serial.print(HTMLout);
+    return;
+  }
+
+
   if (Param0 == "button")
   {
     numberButtonInUse++;
     String tempButton = GOTObutton;
+    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
+    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
+
+    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
+
+    ButtonsInUse[numberButtonInUse] = Param2;
+    //Serial.println(ButtonsInUse[numberButtonInUse]);
+    HTMLout = String(HTMLout + tempButton);
+    return;
+  }
+
+
+
+  if (Param0 == "imagebutton")
+  {
+    numberButtonInUse++;
+    String tempButton = GOTOimagebutton;
     tempButton.replace("gotonotext",  GetMeThatVar(Param1));
     //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
 
@@ -1776,7 +1910,7 @@ void PrintAllMyVars()
 void SaveDataToFile(String fileNameForSave, String DataToSave)
 {
   Serial.println(fileNameForSave);
-  SPIFFS.begin();
+  //SPIFFS.begin();
   File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "w");
   if (!f)
   {
@@ -1795,7 +1929,7 @@ void SaveDataToFile(String fileNameForSave, String DataToSave)
 String LoadDataFromFile(String fileNameForSave)
 {
   String WhatIwillReturn;
-  SPIFFS.begin();
+  //SPIFFS.begin();
   File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "r");
   if (!f)
   {
@@ -1902,9 +2036,7 @@ void PrintAndWebOut(String itemToBePrinted)
 
 String GetRidOfurlCharacters(String urlChars)
 {
-  urlChars.replace("+++",   "***fuck***");
   urlChars.replace("+",   " ");
-  urlChars.replace("***fuck***", "+");
   urlChars.replace("%2B", "+");
   urlChars.replace("%2F", "/");
   urlChars.replace("%21", "!");

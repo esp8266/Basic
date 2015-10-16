@@ -76,6 +76,7 @@ const String UploadPage = R"=====(
 </form>
 <form id="filelist">
 <input type="submit" value="Delete" name="Delete">
+<input type="submit" value="View" name="View">
 </form>
 
 <select name="fileName" size="25" form="filelist">*table*</select>
@@ -430,10 +431,9 @@ server.on("/run", []()
 server.send(200, "text/html", WebOut);
 });
 
+
+
 server.onFileUpload(handleFileUpdate);
-
-
-
 
 server.on("/filemng", []()
 {
@@ -623,13 +623,13 @@ void DoSomeFileManagerCode()
   }
   else
   {
-    if (server.arg("Delete") == "Delete")
+    if (server.arg("Delete") != "")
     {
       String FIleNameForDelete = server.arg("fileName");
       FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
       Serial.println(FIleNameForDelete);
-      Serial.println(SPIFFS.remove(FIleNameForDelete));
-      Serial.println(SPIFFS.remove("uploads/settings.png"));
+      SPIFFS.remove(FIleNameForDelete);
+      //Serial.println(SPIFFS.remove("uploads/settings.png"));
     }
 
     Dir dir = SPIFFS.openDir(String("uploads" ));
@@ -639,6 +639,16 @@ void DoSomeFileManagerCode()
     }
 
     WholeUploadPage.replace("*table*", FileListForPage);
+    
+    if (server.arg("View") != "")
+    {
+      String FileNameToView = server.arg("fileName");
+      FileNameToView = GetRidOfurlCharacters(FileNameToView);
+      FileNameToView.replace("uploads/", "");
+      WholeUploadPage = R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====";
+      WholeUploadPage.replace("item", FileNameToView);
+    }
+        
   }
   server.send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
 }

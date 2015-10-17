@@ -29,18 +29,20 @@
 
 #include "spiffs/spiffs.h"
 #include <FS.h>
-#include <ESP8266mDNS.h>
+//#include <ESP8266mDNS.h>
 
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
+//#include <ESP8266WiFiMulti.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 //#include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
-#include <ESP8266httpUpdate.h>
+//#include <ESP8266httpUpdate.h>
 #include <Servo.h>
 
+
+const String BasicVersion = "1.00";
 
 ESP8266WebServer server(80);
 
@@ -82,11 +84,8 @@ const String UploadPage = R"=====(
 <select name="fileName" size="25" form="filelist">*table*</select>
 )=====";
 
-const String FileMngUploads = R"=====(<tr><td>*name*</td><td>*size*</td><td><a href='./filemng?delete=*name*'>X</a></td></tr>)=====";
+//const String FileMngUploads = R"=====(<tr><td>*name*</td><td>*size*</td><td><a href='./filemng?delete=*name*'>X</a></td></tr>)=====";
 
-
-
-//<a href="http://www.esp8266basic.com/help"  target="_blank">[ HELP ]</a>
 
 const String EditorPageHTML =  R"=====(
 <script src="editor.js"></script>
@@ -94,8 +93,7 @@ const String EditorPageHTML =  R"=====(
 <input type="text" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
 </form><button onclick="SaveTheCode()">Save</button>
-<br>
-<textarea rows="30" cols="75" name="code" id="code">*program txt*</textarea><br>
+<br><textarea rows="30" cols="75" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
 )=====";
 
@@ -175,20 +173,20 @@ const String GraphicsStartCode =  R"=====(
 
 
 const String GraphicsLineCode =  R"=====(
-<line x1="*x1*" y1="*y1*" x2="*x2*" y2="*y2*" stroke="*collor*"/>
+<line x1="*x1*" y1="*y1*" x2="*x2*" y2="*y2*" stroke="*col*"/>
 )=====";
 
 const String GraphicsCircleCode =  R"=====(
-<circle cx="*x1*" cy="*y1*" r="*x2*" fill="*collor*"/>
+<circle cx="*x1*" cy="*y1*" r="*x2*" fill="*col*"/>
 )=====";
 
 
 const String GraphicsEllipseCode =  R"=====(
-<ellipse cx="*x1*" cy="*y1*" rx="*x2*" ry="*y2*" fill="*collor*"/>
+<ellipse cx="*x1*" cy="*y1*" rx="*x2*" ry="*y2*" fill="*col*"/>
 )=====";
 
 const String GraphicsRectangleCode =  R"=====(
-<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>
+<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*col*"/>
 )=====";
   
 
@@ -263,6 +261,8 @@ void setup() {
   Serial.begin(9600);
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut("Simple Basic Interperter For ESP8266...");
+  PrintAndWebOut("Version");
+  PrintAndWebOut(BasicVersion);
 
   //CheckWaitForRunningCode();
 
@@ -272,29 +272,6 @@ void setup() {
     WebOut += RunningProgramGui();
     server.send(200, "text/html", WebOut);
   });
-
-
-
-//  server.on("/png", []()
-//  {
-//    String fileNameToServeUp;
-//    fileNameToServeUp = server.arg("name");
-//    File mySuperFile = SPIFFS.open(String("uploads/"+fileNameToServeUp), "r");
-//    if (mySuperFile)
-//    {
-//      server.send(200, "image/png", mySuperFile.readString());
-//      mySuperFile.close();
-//    }
-//    else
-//    {
-//      server.send(404, "text/plain", "file not found.");
-//    }
-//  });
-
-
-
-
-
 
   server.on("/settings", []()
   {
@@ -313,7 +290,6 @@ void setup() {
     String apName;
     String apPass;
     String LoginKey;
-    //Serial.print("Loading Settings Files");
   
     staName  = LoadDataFromFile("WIFIname");
     staPass  = LoadDataFromFile("WIFIpass");
@@ -326,26 +302,8 @@ void setup() {
     {
       WebOut = LogInPage;
     }
-    else
-    {
-
-      if ( server.arg("update") == "Update" )
-      {
-        t_httpUpdate_return  ret = ESPhttpUpdate.update("172.16.0.5", 80, "/test.bin");
-        switch(ret){
-          case HTTP_UPDATE_FAILD:
-          Serial.println("HTTP_UPDATE_FAILD");
-          break;
-          
-          case HTTP_UPDATE_NO_UPDATES:
-          Serial.println("HTTP_UPDATE_NO_UPDATES");
-          break;
-          
-          case HTTP_UPDATE_OK:
-          Serial.println("HTTP_UPDATE_OK");
-          break;
-        }
-      }
+else
+{
 
       
       if ( server.arg("save") == "Save" )
@@ -368,14 +326,7 @@ void setup() {
         Serial.println("Formating ");
         //SPIFFS.begin();
         Serial.print(SPIFFS.format());
-//        Dir dir = SPIFFS.openDir(String(""));
-//        while (dir.next()) 
-//        {
-//          delay(0);
-//          Serial.println(dir.fileName());
-//          File f = dir.openFile("r");
-//          SPIFFS.remove(dir.fileName());
-//        }
+
       }
       
       WebOut.replace("*sta name*", staName);
@@ -383,8 +334,8 @@ void setup() {
       WebOut.replace("*ap name*",  apName);
       WebOut.replace("*ap pass*",  apPass);
       WebOut.replace("*LoginKey*", LoginKey);
-    }
-
+    
+}
 
     
     server.send(200, "text/html", WebOut);
@@ -401,10 +352,6 @@ void setup() {
     }
     else
     {
-    
-
-      //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-  
       WebOut += "Variable Dump";
       for (byte i = 0; i <= 50; i++)
       {
@@ -479,8 +426,6 @@ server.on("/edit", []()
 
     WebOut.replace("*program txt*", TextboxProgramBeingEdited);
     WebOut.replace("*program name*", ProgramName);
-
-    //TextboxProgramBeingEdited
   }
   server.send(200, "text/html", WebOut);
 });
@@ -551,8 +496,6 @@ server.onNotFound ( []() {
     server.send(200, "text/html", RunningProgramGui());
   }
 });
-
-//LoadBasicProgramFromFlash("");
 
 
 if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass")) == 0)
@@ -629,7 +572,6 @@ void DoSomeFileManagerCode()
       FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
       Serial.println(FIleNameForDelete);
       SPIFFS.remove(FIleNameForDelete);
-      //Serial.println(SPIFFS.remove("uploads/settings.png"));
     }
 
     Dir dir = SPIFFS.openDir(String("uploads" ));
@@ -639,7 +581,7 @@ void DoSomeFileManagerCode()
     }
 
     WholeUploadPage.replace("*table*", FileListForPage);
-    
+
     if (server.arg("View") != "")
     {
       String FileNameToView = server.arg("fileName");
@@ -648,7 +590,7 @@ void DoSomeFileManagerCode()
       WholeUploadPage = R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====";
       WholeUploadPage.replace("item", FileNameToView);
     }
-        
+
   }
   server.send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
 }
@@ -715,22 +657,22 @@ String BasicGraphics()
     GraphicsEliment.replace("*x2*",  String(GraphicsEliments[i][3]));
     GraphicsEliment.replace("*y2*",  String(GraphicsEliments[i][4]));
 
-    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*collor*", "black");
-    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*collor*", "Navy");
-    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*collor*", "Green");
-    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*collor*", "Teal");
-    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*collor*", "Maroon");
-    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*collor*", "Purple");
-    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*collor*", "Olive");
-    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*collor*", "Silver");
-    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*collor*", "Gray");
-    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*collor*", "Blue");
-    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*collor*", "Lime");
-    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*collor*", "Aqua");
-    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*collor*", "Red");
-    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*collor*", "Fuchsia");
-    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*collor*", "Yellow");
-    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*collor*", "White");
+    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*col*", "black");
+    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*col*", "Navy");
+    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*col*", "Green");
+    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*col*", "Teal");
+    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*col*", "Maroon");
+    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*col*", "Purple");
+    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*col*", "Olive");
+    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*col*", "Silver");
+    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*col*", "Gray");
+    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*col*", "Blue");
+    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*col*", "Lime");
+    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*col*", "Aqua");
+    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*col*", "Red");
+    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*col*", "Fuchsia");
+    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*col*", "Yellow");
+    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*col*", "White");
     BasicGraphicsOut += GraphicsEliment;
   }
   BasicGraphicsOut += "</svg>";

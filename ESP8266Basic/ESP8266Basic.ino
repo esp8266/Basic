@@ -95,7 +95,7 @@ const String EditorPageHTML =  R"=====(
 <input type="submit" value="Open" name="open">
 </form><button onclick="SaveTheCode()">Save</button>
 <br>
-<textarea rows="30" cols="75" name="code" id="code">*program txt*</textarea><br>
+<textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
 )=====";
 
@@ -169,28 +169,16 @@ Log In Key
 
 //Graphics HTML CODE
 
-const String GraphicsStartCode =  R"=====(
-<svg width="*wid*" height="*hei*">
-)=====";
+const String GraphicsStartCode =  R"=====(<svg width="*wid*" height="*hei*">)=====";
 
+const String GraphicsLineCode =  R"=====(<line x1="*x1*" y1="*y1*" x2="*x2*" y2="*y2*" stroke="*collor*"/>)=====";
 
-const String GraphicsLineCode =  R"=====(
-<line x1="*x1*" y1="*y1*" x2="*x2*" y2="*y2*" stroke="*collor*"/>
-)=====";
+const String GraphicsCircleCode =  R"=====(<circle cx="*x1*" cy="*y1*" r="*x2*" fill="*collor*"/>)=====";
 
-const String GraphicsCircleCode =  R"=====(
-<circle cx="*x1*" cy="*y1*" r="*x2*" fill="*collor*"/>
-)=====";
+const String GraphicsEllipseCode =  R"=====(<ellipse cx="*x1*" cy="*y1*" rx="*x2*" ry="*y2*" fill="*collor*"/>)=====";
 
+const String GraphicsRectangleCode =  R"=====(<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>)=====";
 
-const String GraphicsEllipseCode =  R"=====(
-<ellipse cx="*x1*" cy="*y1*" rx="*x2*" ry="*y2*" fill="*collor*"/>
-)=====";
-
-const String GraphicsRectangleCode =  R"=====(
-<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>
-)=====";
-  
 
 
 String WebArgumentsReceived;
@@ -259,7 +247,7 @@ Servo Servo16;
 
 
 void setup() {
-      SPIFFS.begin();
+  SPIFFS.begin();
   Serial.begin(9600);
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut("Simple Basic Interperter For ESP8266...");
@@ -275,21 +263,21 @@ void setup() {
 
 
 
-//  server.on("/png", []()
-//  {
-//    String fileNameToServeUp;
-//    fileNameToServeUp = server.arg("name");
-//    File mySuperFile = SPIFFS.open(String("uploads/"+fileNameToServeUp), "r");
-//    if (mySuperFile)
-//    {
-//      server.send(200, "image/png", mySuperFile.readString());
-//      mySuperFile.close();
-//    }
-//    else
-//    {
-//      server.send(404, "text/plain", "file not found.");
-//    }
-//  });
+  //  server.on("/png", []()
+  //  {
+  //    String fileNameToServeUp;
+  //    fileNameToServeUp = server.arg("name");
+  //    File mySuperFile = SPIFFS.open(String("uploads/"+fileNameToServeUp), "r");
+  //    if (mySuperFile)
+  //    {
+  //      server.send(200, "image/png", mySuperFile.readString());
+  //      mySuperFile.close();
+  //    }
+  //    else
+  //    {
+  //      server.send(404, "text/plain", "file not found.");
+  //    }
+  //  });
 
 
 
@@ -304,7 +292,7 @@ void setup() {
       LoggedIn = millis();
     }
 
-    
+
     WaitForTheInterpertersResponse = 1;
     String WebOut = AdminBarHTML;
     WebOut += SettingsPageHTML;
@@ -314,7 +302,7 @@ void setup() {
     String apPass;
     String LoginKey;
     //Serial.print("Loading Settings Files");
-  
+
     staName  = LoadDataFromFile("WIFIname");
     staPass  = LoadDataFromFile("WIFIpass");
     apName   = LoadDataFromFile("APname");
@@ -322,7 +310,7 @@ void setup() {
     LoginKey = LoadDataFromFile("LoginKey");
 
 
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 ) 
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
     {
       WebOut = LogInPage;
     }
@@ -332,22 +320,22 @@ void setup() {
       if ( server.arg("update") == "Update" )
       {
         t_httpUpdate_return  ret = ESPhttpUpdate.update("172.16.0.5", 80, "/test.bin");
-        switch(ret){
+        switch (ret) {
           case HTTP_UPDATE_FAILD:
-          Serial.println("HTTP_UPDATE_FAILD");
-          break;
-          
+            Serial.println("HTTP_UPDATE_FAILD");
+            break;
+
           case HTTP_UPDATE_NO_UPDATES:
-          Serial.println("HTTP_UPDATE_NO_UPDATES");
-          break;
-          
+            Serial.println("HTTP_UPDATE_NO_UPDATES");
+            break;
+
           case HTTP_UPDATE_OK:
-          Serial.println("HTTP_UPDATE_OK");
-          break;
+            Serial.println("HTTP_UPDATE_OK");
+            break;
         }
       }
 
-      
+
       if ( server.arg("save") == "Save" )
       {
         staName = server.arg("staName");
@@ -355,29 +343,29 @@ void setup() {
         apName  = server.arg("apName");
         apPass  = server.arg("apPass");
         LoginKey = server.arg("LoginKey");
-  
+
         SaveDataToFile("WIFIname" , staName);
         SaveDataToFile("WIFIpass" , staPass);
         SaveDataToFile("APname" , apName);
         SaveDataToFile("APpass" , apPass);
         SaveDataToFile("LoginKey" , LoginKey);
       }
-  
+
       if ( server.arg("format") == "Format" )
       {
         Serial.println("Formating ");
         //SPIFFS.begin();
         Serial.print(SPIFFS.format());
-//        Dir dir = SPIFFS.openDir(String(""));
-//        while (dir.next()) 
-//        {
-//          delay(0);
-//          Serial.println(dir.fileName());
-//          File f = dir.openFile("r");
-//          SPIFFS.remove(dir.fileName());
-//        }
+        //        Dir dir = SPIFFS.openDir(String(""));
+        //        while (dir.next())
+        //        {
+        //          delay(0);
+        //          Serial.println(dir.fileName());
+        //          File f = dir.openFile("r");
+        //          SPIFFS.remove(dir.fileName());
+        //        }
       }
-      
+
       WebOut.replace("*sta name*", staName);
       WebOut.replace("*sta pass*", staPass);
       WebOut.replace("*ap name*",  apName);
@@ -386,7 +374,7 @@ void setup() {
     }
 
 
-    
+
     server.send(200, "text/html", WebOut);
   });
 
@@ -395,16 +383,16 @@ void setup() {
   server.on("/vars", []()
   {
     String WebOut = AdminBarHTML;
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 ) 
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
     {
       WebOut = LogInPage;
     }
     else
     {
-    
+
 
       //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-  
+
       WebOut += "Variable Dump";
       for (byte i = 0; i <= 50; i++)
       {
@@ -416,7 +404,7 @@ void setup() {
   });
 
 
-server.on("/run", []()
+  server.on("/run", []()
   {
     String WebOut;
     RunningProgram = 1;
@@ -428,151 +416,151 @@ server.on("/run", []()
     GraphicsEliments[0][0] = 0;
     WebOut = R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====";
 
-server.send(200, "text/html", WebOut);
-});
+    server.send(200, "text/html", WebOut);
+  });
 
 
 
-server.onFileUpload(handleFileUpdate);
+  server.onFileUpload(handleFileUpdate);
 
-server.on("/filemng", []()
-{
-  DoSomeFileManagerCode();
-});
-
-
-server.on("/edit", []()
-{
-  String WebOut = AdminBarHTML;
-  if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+  server.on("/filemng", []()
   {
-    WebOut = LogInPage;
-  }
-  else
+    DoSomeFileManagerCode();
+  });
+
+
+  server.on("/edit", []()
   {
-
-    WaitForTheInterpertersResponse = 1;
-
-    String TextboxProgramBeingEdited;
-    //String ProgramName;
-    //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-    ProgramName = server.arg("name");
-
-
-    if ( server.arg("open") == "Open" )
+    String WebOut = AdminBarHTML;
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+    {
+      WebOut = LogInPage;
+    }
+    else
     {
 
-      //LoadBasicProgramFromFlash(ProgramName);
-      TextboxProgramBeingEdited = "";
-      for (int i = TotalNumberOfLines - 1; i >= 0; i--)
+      WaitForTheInterpertersResponse = 1;
+
+      String TextboxProgramBeingEdited;
+      //String ProgramName;
+      //WebOut = String("<form action='input'>" + HTMLout + "</form>");
+      ProgramName = server.arg("name");
+
+
+      if ( server.arg("open") == "Open" )
+      {
+
+        //LoadBasicProgramFromFlash(ProgramName);
+        TextboxProgramBeingEdited = "";
+        for (int i = TotalNumberOfLines - 1; i >= 0; i--)
+        {
+          delay(0);
+          String yada;
+          yada = BasicProgram(i);
+          yada.trim();
+          if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram(i) + String('\n') + TextboxProgramBeingEdited);
+        }
+      }
+
+
+      WebOut += EditorPageHTML;
+
+      WebOut.replace("*program txt*", TextboxProgramBeingEdited);
+      WebOut.replace("*program name*", ProgramName);
+
+      //TextboxProgramBeingEdited
+    }
+    server.send(200, "text/html", WebOut);
+  });
+
+
+
+  server.on("/editor.js", []() {
+    server.send(200, "text/html", editCodeJavaScript);
+  });
+
+
+  server.on("/codein", []() {
+
+    if (ProgramName == "")
+    {
+      ProgramName = "default";
+    }
+
+
+    if (server.arg("SaveTheCode") != "yes")
+    {
+      String LineNoForWebEditorIn;
+      LineNoForWebEditorIn = server.arg("line");
+      int y = LineNoForWebEditorIn.toInt();
+      delay(0);
+      BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
+      delay(0);
+      noOfLinesForEdit = y;
+
+    }
+    else
+    {
+
+      String directoryToDeleteFilesFrom;
+      directoryToDeleteFilesFrom = String(" /data/" + ProgramName );
+      Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
+
+      while (dir1.next())
       {
         delay(0);
-        String yada;
-        yada = BasicProgram(i);
-        yada.trim();
-        if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram(i) + String('\n') + TextboxProgramBeingEdited);
+        File f = dir1.openFile("r");
+        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
       }
     }
-
-
-    WebOut += EditorPageHTML;
-
-    WebOut.replace("*program txt*", TextboxProgramBeingEdited);
-    WebOut.replace("*program name*", ProgramName);
-
-    //TextboxProgramBeingEdited
-  }
-  server.send(200, "text/html", WebOut);
-});
+    server.send(200, "text/html", "good");
+  });
 
 
 
-server.on("/editor.js", []() {
-  server.send(200, "text/html", editCodeJavaScript);
-});
 
 
-server.on("/codein", []() {
+  server.on("/input", []() {
+    server.send(200, "text/html", RunningProgramGui());
+  });
 
-  if (ProgramName == "")
-  {
-    ProgramName = "default";
-  }
-
-
-  if (server.arg("SaveTheCode") != "yes")
-  {
-    String LineNoForWebEditorIn;
-    LineNoForWebEditorIn = server.arg("line");
-    int y = LineNoForWebEditorIn.toInt();
-    delay(0);
-    BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
-    delay(0);
-    noOfLinesForEdit = y;
-
-  }
-  else
-  {
-
-    String directoryToDeleteFilesFrom;
-    directoryToDeleteFilesFrom = String(" /data/" + ProgramName );
-    Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
-
-    while (dir1.next())
+  server.onNotFound ( []() {
+    String fileNameToServeUp;
+    fileNameToServeUp = GetRidOfurlCharacters(server.arg("file"));
+    File mySuperFile = SPIFFS.open(String("uploads/" + fileNameToServeUp), "r");
+    if (mySuperFile)
     {
-      delay(0);
-      File f = dir1.openFile("r");
-      if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
+      server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
+      //server.send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
+      mySuperFile.close();
+    }
+    else
+    {
+      server.send(200, "text/html", RunningProgramGui());
+    }
+  });
+
+  //LoadBasicProgramFromFlash("");
+
+
+  if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass")) == 0)
+  {
+    if (LoadDataFromFile("APname") == "")
+    {
+      CreateAP("ESP", "");
+    }
+    else
+    {
+      CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"));
     }
   }
-  server.send(200, "text/html", "good");
-});
 
+  Wire.begin(0, 2);
 
-
-
-
-server.on("/input", []() {
-  server.send(200, "text/html", RunningProgramGui());
-});
-
-server.onNotFound ( []() {
-  String fileNameToServeUp;
-  fileNameToServeUp = server.arg("file");
-  File mySuperFile = SPIFFS.open(String("uploads/" + fileNameToServeUp), "r");
-  if (mySuperFile)
-  {
-    server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
-    //server.send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
-    mySuperFile.close();
-  }
-  else
-  {
-    server.send(200, "text/html", RunningProgramGui());
-  }
-});
-
-//LoadBasicProgramFromFlash("");
-
-
-if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass")) == 0)
-{
-  if (LoadDataFromFile("APname") == "")
-  {
-    CreateAP("ESP", "");
-  }
-  else
-  {
-    CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"));
-  }
-}
-
-Wire.begin(0, 2);
-
-server.begin();
-RunningProgram = 0;
-WaitForTheInterpertersResponse = 1;
-StartUpProgramTimer();
+  server.begin();
+  RunningProgram = 0;
+  WaitForTheInterpertersResponse = 1;
+  StartUpProgramTimer();
 }
 
 
@@ -597,11 +585,12 @@ void StartUpProgramTimer()
 {
   while  (millis() < 30000)
   {
-    delay(1000);
-    Serial.println(millis());
+    //delay(1000);
+    //Serial.println(millis());
     server.handleClient();
     if (WaitForTheInterpertersResponse == 0) return;
   }
+  Serial.println("Starting Default Program");
   RunningProgram = 1;
   RunningProgramCurrentLine = 0;
   WaitForTheInterpertersResponse = 0 ;
@@ -639,7 +628,7 @@ void DoSomeFileManagerCode()
     }
 
     WholeUploadPage.replace("*table*", FileListForPage);
-    
+
     if (server.arg("View") != "")
     {
       String FileNameToView = server.arg("fileName");
@@ -648,7 +637,7 @@ void DoSomeFileManagerCode()
       WholeUploadPage = R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====";
       WholeUploadPage.replace("item", FileNameToView);
     }
-        
+
   }
   server.send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
 }
@@ -756,22 +745,33 @@ String RunningProgramGui()
     //Serial.println("Got to the point Should be returning a web page");
   }
 
-  String WebOut;
-  WebOut = String("<form action='input'>" + HTMLout + "</form>");
+  String WebOut = String("<form action='input'>" + HTMLout + "</form>");
 
-  String WebOutFinal;
-  WebOutFinal = WebOut;
+
+  if (BasicDebuggingOn == 1)
+  {
+    Serial.println("Web out first");
+    Serial.println( WebOut);
+    Serial.println("HTML out");
+    Serial.println( HTMLout);
+  }
+  //String WebOutFinal;
+  //WebOutFinal = WebOut;
 
   for (int i = 0; i <= 50; i++)
   {
-    WebOutFinal.replace(String("VARS|" + String(i)), AllMyVaribles[i][2]);
+    delay(0);
+    WebOut.replace(String("VARS|" + String(i)), AllMyVaribles[i][2]);
   }
 
 
-  WebOutFinal.replace("**graphics**", BasicGraphics());
+  WebOut.replace("**graphics**", BasicGraphics());
 
-
-  return WebOutFinal;
+  if (BasicDebuggingOn == 1)
+  {
+    Serial.println( WebOut);
+  }
+  return WebOut;
 }
 
 
@@ -967,14 +967,14 @@ void ExicuteTheCurrentLine()
 
   if (BasicDebuggingOn == 1)
   {
-    PrintAndWebOut("Exicuting line Debug Statement");
-    PrintAndWebOut(String(String(RunningProgramCurrentLine) + " " + inData));
-    PrintAndWebOut(Param0);
-    PrintAndWebOut(Param1);
-    PrintAndWebOut(Param2);
-    PrintAndWebOut(Param3);
-    PrintAndWebOut(Param4);
-    PrintAndWebOut(Param5);
+    Serial.println("Exicuting line Debug Statement");
+    Serial.println(String(String(RunningProgramCurrentLine) + " " + inData));
+    Serial.println(Param0);
+    Serial.println(Param1);
+    Serial.println(Param2);
+    Serial.println(Param3);
+    Serial.println(Param4);
+    Serial.println(Param5);
   }
 
 
@@ -1031,6 +1031,7 @@ void ExicuteTheCurrentLine()
 
     for (int i = RunningProgramCurrentLine; i >= 1; i--)
     {
+      delay(0);
       String gotoTestFor = BasicProgram(i);
       gotoTestFor.trim();
 
@@ -1105,6 +1106,7 @@ void ExicuteTheCurrentLine()
     {
       if (BasicProgram(i).length() > 0)
       {
+        delay(0);
         //PrintAndWebOut(BasicProgram[i].length());
         PrintAndWebOut(String(String(i) + " " + BasicProgram(i)));
       }
@@ -1492,7 +1494,7 @@ void ExicuteTheCurrentLine()
       Serial.print(GetMeThatVar(Param1));
       SetMeThatVar(Param2, getSerialInput());
     }
-    PrintAndWebOut("");
+    //PrintAndWebOut("");
     return;
   }
 
@@ -2029,9 +2031,6 @@ void CreateAP(String NetworkName, String NetworkPassword)
 
   SaveDataToFile("APname" ,  NetworkName);
   SaveDataToFile("APpass", NetworkPassword);
-
-
-
 }
 
 
@@ -2510,6 +2509,3 @@ void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramL
   SaveDataToFile(String(ProgramName  + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
   delay(0);
 }
-
-
-

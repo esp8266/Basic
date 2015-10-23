@@ -112,8 +112,9 @@ for (i = 0; i <= arrayOfLines.length - 1; i++)
   var x = i + 1;
   if (arrayOfLines[i] != "undefined")
   {
-    var WhatToSend = "/codein?line=" + x + "&code=" + arrayOfLines[i];
-    WhatToSend = WhatToSend.replace("+", "%2B");
+    arrayOfLines[i] = arrayOfLines[i].replace("+", "%2B");
+    arrayOfLines[i] = arrayOfLines[i].replace("&", "%26");
+    var WhatToSend = "/codein?line=" + x + "&code=" + encodeURI(arrayOfLines[i]);
     httpGet(WhatToSend);
     document.getElementById("Status").value = i.toString();
   }
@@ -903,7 +904,7 @@ String getValueforPrograming(String data, char separator, int index)
 
 String getValue(String data, char separator, int index)
 {
-  data = String(data + " ");
+  data = String(data + "           ");
   int maxIndex = data.length() - 1;
   int j = 0;
   byte WaitingForQuote;
@@ -931,7 +932,7 @@ String getValue(String data, char separator, int index)
     }
     else
     {
-      chunkVal.concat(data[i]);
+      if (data[i] != separator) chunkVal.concat(data[i]);
     }
 
     if (data[i] == separator)
@@ -939,7 +940,7 @@ String getValue(String data, char separator, int index)
       j++;
       if (j > index)
       {
-        chunkVal.trim();
+        //chunkVal.trim();
         if (chunkVal != String(separator))
         {
           ChunkReturnVal = chunkVal;

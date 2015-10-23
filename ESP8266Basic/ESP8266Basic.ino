@@ -42,6 +42,8 @@
 #include <Servo.h>
 
 
+String BasicVersion = "ESP Basic 1.0";
+
 ESP8266WebServer server(80);
 
 //Web Server Variables
@@ -132,6 +134,7 @@ function httpGet(theUrl)
 
 const String SettingsPageHTML =  R"=====(
 <form action='settings' id="usrform"><table>
+*BasicVersion*
 <tr><th>
 Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="staName" value="*sta name*"></th></tr>
@@ -185,6 +188,10 @@ String WebArgumentsReceived;
 String WebArgumentsReceivedInput;
 byte numberButtonInUse = 0;
 String ButtonsInUse[11];
+
+
+String   msgbranch;
+String   MsgBranchRetrnData;
 
 
 // Buffer to store incoming commands from serial port
@@ -250,7 +257,7 @@ void setup() {
   SPIFFS.begin();
   Serial.begin(9600);
   WiFi.mode(WIFI_AP_STA);
-  PrintAndWebOut("Simple Basic Interperter For ESP8266...");
+  PrintAndWebOut(BasicVersion);
 
   //CheckWaitForRunningCode();
 
@@ -371,6 +378,8 @@ void setup() {
       WebOut.replace("*ap name*",  apName);
       WebOut.replace("*ap pass*",  apPass);
       WebOut.replace("*LoginKey*", LoginKey);
+      WebOut.replace("*BasicVersion*", BasicVersion);
+
     }
 
 
@@ -520,6 +529,26 @@ void setup() {
 
 
 
+  server.on("/msg", []() {
+
+    MsgBranchRetrnData = "";
+
+    if (msgbranch != "")
+    {
+      inData = String(" goto " + msgbranch + " ");
+      WaitForTheInterpertersResponse = 0;
+      ExicuteTheCurrentLine();
+      runTillWaitPart2();
+    }
+
+
+    server.send(200, "text/html", MsgBranchRetrnData);
+  });
+
+
+
+
+
   server.on("/input", []() {
     server.send(200, "text/html", RunningProgramGui());
   });
@@ -532,12 +561,13 @@ void setup() {
     {
       server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
       //server.send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
-      mySuperFile.close();
+
     }
     else
     {
       server.send(200, "text/html", RunningProgramGui());
     }
+    mySuperFile.close();
   });
 
   //LoadBasicProgramFromFlash("");
@@ -1066,8 +1096,6 @@ void ExicuteTheCurrentLine()
   }
 
 
-
-
   if (Param0 == "debugon")
   {
     BasicDebuggingOn = 1;
@@ -1578,7 +1606,32 @@ void ExicuteTheCurrentLine()
   }
 
 
+  //Code to handle MSG Branch
 
+
+  if (Param0 == "msgbranch")
+  {
+    msgbranch = Param1;
+    return;
+  }
+
+  if (Param0 == "msgreturn")
+  {
+    MsgBranchRetrnData = GetMeThatVar(Param1);
+    return;
+  }
+
+
+  if (Param0 == "msgget")
+  {
+
+    Param1 = GetMeThatVar(Param1);
+    int str_len = Param1.length() + 1;
+    char MgetToTest[str_len];
+    Param1.toCharArray(MgetToTest, str_len);
+    SetMeThatVar(Param2, GetRidOfurlCharacters(server.arg( MgetToTest  )));
+    return;
+  }
 
 
   // let command down here for a reason

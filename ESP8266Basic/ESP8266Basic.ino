@@ -532,7 +532,7 @@ void setup() {
 
   server.on("/msg", []() {
 
-    MsgBranchRetrnData = "";
+    MsgBranchRetrnData = "No MSG Branch Defined";
 
     if (msgbranch != "")
     {

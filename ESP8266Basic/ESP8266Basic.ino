@@ -1028,13 +1028,13 @@ void ExicuteTheCurrentLine()
       for (int i = 7; i <= 17; i++)
       {
         delay(0);
-        Serial.println(i);
-        Serial.println(Param0);
+        //Serial.println(i);
+        //Serial.println(Param0);
         Param0 = getValue(inData, ' ', i);
         Param0.toLowerCase();
         if ( Param0 == "else")
         {
-          Serial.println("Found else");
+          //Serial.println("Found else");
           Param0 = getValue(inData, ' ', i + 1);
           Param1 = getValue(inData, ' ', i + 2);
           Param2 = getValue(inData, ' ', i + 3);
@@ -1555,11 +1555,10 @@ void ExicuteTheCurrentLine()
 
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
       {
-        RunningProgramCurrentLine = i - 1;
-
-
         NumberOfReturns = NumberOfReturns + 1;
         ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine;
+        RunningProgramCurrentLine = i - 1;
+        i = TotalNumberOfLines + 1;
       }
     }
 
@@ -1640,6 +1639,7 @@ void ExicuteTheCurrentLine()
 
   if ( Param1 == "=")
   {
+    Param0 = getValue(inData, ' ', 0);
     Param5 = Param4;
     Param4 = Param3;
     Param3 = Param2;

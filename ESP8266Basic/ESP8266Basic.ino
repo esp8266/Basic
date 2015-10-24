@@ -42,7 +42,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.01";
+String BasicVersion = "ESP Basic 1.02";
 
 ESP8266WebServer server(80);
 
@@ -822,7 +822,7 @@ String  getSerialInput()
       // Process message when new line character is recieved
       if (recieved == '\n')
       {
-        Serial.print(someInput);
+        Serial.println(someInput);
         donereceivinginfo = 1;
         return someInput;
       }

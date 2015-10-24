@@ -42,7 +42,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.0";
+String BasicVersion = "ESP Basic 1.01";
 
 ESP8266WebServer server(80);
 

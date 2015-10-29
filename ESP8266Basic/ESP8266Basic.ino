@@ -42,7 +42,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.02";
+String BasicVersion = "ESP Basic 1.03";
 
 ESP8266WebServer server(80);
 
@@ -257,6 +257,7 @@ Servo Servo16;
 void setup() {
   SPIFFS.begin();
   Serial.begin(9600);
+  //Serial.setDebugOutput(true);
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
 
@@ -935,7 +936,7 @@ String getValue(String data, char separator, int index)
       if (data[i] != separator) chunkVal.concat(data[i]);
     }
 
-    if (data[i] == separator)
+    if (data[i] == separator & data[i - 1] != separator)
     {
       j++;
       if (j > index)
@@ -1189,9 +1190,8 @@ void ExicuteTheCurrentLine()
   if ( Param0 == "pi")
   {
     valParam1 = GetMeThatVar(Param1).toInt();
-    SetTheServo(valParam1, 0, 0);
-    pinMode(valParam1, INPUT);
-    SetMeThatVar(Param2, String(digitalRead(valParam1)));
+
+    SetMeThatVar(Param2, String(UniversalPinIO("po", valParam1, 0)));
     return;
   }
 
@@ -1199,11 +1199,8 @@ void ExicuteTheCurrentLine()
   {
     valParam1 = GetMeThatVar(Param1).toInt();
     valParam2 = GetMeThatVar(Param2).toInt();
-    SetTheServo(valParam1, 0, 0);
-    pinMode(valParam1, OUTPUT);
-    analogWrite(valParam1, 0);
-    pinMode(valParam1, OUTPUT);
-    digitalWrite(valParam1, valParam2);
+
+    UniversalPinIO("po", valParam1, valParam2);
     return;
   }
 
@@ -1211,9 +1208,8 @@ void ExicuteTheCurrentLine()
   if ( Param0 == "pwi")
   {
     valParam1 = GetMeThatVar(Param1).toInt();
-    SetTheServo(valParam1, 0, 0);
-    pinMode(valParam1, INPUT);
-    SetMeThatVar(Param2, String(analogRead(valParam1)));
+
+    SetMeThatVar(Param2, String(UniversalPinIO("pwi", valParam1, 0)));
     return;
   }
 
@@ -1221,10 +1217,8 @@ void ExicuteTheCurrentLine()
   {
     valParam1 = GetMeThatVar(Param1).toInt();
     valParam2 = GetMeThatVar(Param2).toInt();
-    SetTheServo(valParam1, 0, 0);
-    pinMode(valParam1, OUTPUT);
-    analogWrite(valParam1, 0);
-    analogWrite(valParam1, valParam2);
+
+    UniversalPinIO("pwo", valParam1, 0);
     return;
   }
 
@@ -1239,9 +1233,8 @@ void ExicuteTheCurrentLine()
   {
     valParam1 = GetMeThatVar(Param1).toInt();
     valParam2 = GetMeThatVar(Param2).toInt();
-    //pinMode(valParam1, OUTPUT);
-    //analogWrite(valParam1, valParam2);
-    SetTheServo(valParam1, valParam2, 1);
+
+    UniversalPinIO("servo", valParam1, valParam2);
     return;
   }
 
@@ -2425,119 +2418,152 @@ String FetchWebUrl(String URLtoGet)
 
 
 
-void SetTheServo(byte pinForIO, int ValueForIO, bool AtachOrDetach)
-{
-  if (AtachOrDetach == 1)
-  {
-    analogWrite(pinForIO, 0);
-    if (pinForIO == 0)
-    {
-      Servo0.attach(0);
-      Servo0.write(ValueForIO);
-    }
-    if (pinForIO == 1)
-    {
-      Servo1.attach(1);
-      Servo1.write(ValueForIO);
-    }
-    if (pinForIO == 2)
-    {
-      Servo2.attach(2);
-      Servo2.write(ValueForIO);
-    }
-    if (pinForIO == 3)
-    {
-      Servo3.attach(3);
-      Servo3.write(ValueForIO);
-    }
-    if (pinForIO == 4)
-    {
-      Servo4.attach(4);
-      Servo4.write(ValueForIO);
-    }
-    if (pinForIO == 5)
-    {
-      Servo5.attach(5);
-      Servo5.write(ValueForIO);
-    }
-    if (pinForIO == 6)
-    {
-      Servo6.attach(6);
-      Servo6.write(ValueForIO);
-    }
-    if (pinForIO == 7)
-    {
-      Servo7.attach(7);
-      Servo7.write(ValueForIO);
-    }
-    if (pinForIO == 8)
-    {
-      Servo8.attach(8);
-      Servo8.write(ValueForIO);
-    }
-    if (pinForIO == 9)
-    {
-      Servo9.attach(9);
-      Servo9.write(ValueForIO);
-    }
-    if (pinForIO == 10)
-    {
-      Servo10.attach(10);
-      Servo10.write(ValueForIO);
-    }
-    if (pinForIO == 11)
-    {
-      Servo11.attach(11);
-      Servo11.write(ValueForIO);
-    }
-    if (pinForIO == 12)
-    {
-      Servo12.attach(12);
-      Servo12.write(ValueForIO);
-    }
-    if (pinForIO == 13)
-    {
-      Servo13.attach(13);
-      Servo13.write(ValueForIO);
-    }
-    if (pinForIO == 14)
-    {
-      Servo14.attach(14);
-      Servo14.write(ValueForIO);
-    }
-    if (pinForIO == 15)
-    {
-      Servo15.attach(15);
-      Servo15.write(ValueForIO);
-    }
-    if (pinForIO == 16)
-    {
-      Servo16.attach(16);
-      Servo16.write(ValueForIO);
-    }
-  }
-  else
-  {
-    if (pinForIO == 0)   Servo0.detach();
-    if (pinForIO == 1)   Servo1.detach();
-    if (pinForIO == 2)   Servo2.detach();
-    if (pinForIO == 3)   Servo3.detach();
-    if (pinForIO == 4)   Servo4.detach();
-    if (pinForIO == 5)   Servo5.detach();
-    if (pinForIO == 6)   Servo6.detach();
-    if (pinForIO == 7)   Servo7.detach();
-    if (pinForIO == 8)   Servo8.detach();
-    if (pinForIO == 9)   Servo9.detach();
-    if (pinForIO == 10)   Servo10.detach();
-    if (pinForIO == 11)   Servo11.detach();
-    if (pinForIO == 12)   Servo12.detach();
-    if (pinForIO == 13)   Servo13.detach();
-    if (pinForIO == 14)   Servo14.detach();
-    if (pinForIO == 15)   Servo15.detach();
-    if (pinForIO == 16)   Servo16.detach();
 
+//begin all of the i/o code
+float UniversalPinIO(String PinCommand, byte pin, float PinValue)
+{
+  SetThePinMode(PinCommand, pin);
+  if (PinCommand == "po") digitalWrite(pin, PinValue);
+  else if (PinCommand == "pi") return digitalRead(pin);
+  else if (PinCommand == "ai") return analogRead(pin);
+  else if (PinCommand == "ao") analogWrite(pin, PinValue);
+  else if (PinCommand == "servo") servoWrite(pin, PinValue);
+  return 0;
+}
+
+void SetThePinMode(String PinCommand, byte pin)
+{
+  delay(0);
+  if (PinCommand != "servo")
+  {
+    if (pin == 0)   Servo0.detach();
+    if (pin == 1)   Servo1.detach();
+    if (pin == 2)   Servo2.detach();
+    if (pin == 3)   Servo3.detach();
+    if (pin == 4)   Servo4.detach();
+    if (pin == 5)   Servo5.detach();
+    if (pin == 6)   Servo6.detach();
+    if (pin == 7)   Servo7.detach();
+    if (pin == 8)   Servo8.detach();
+    if (pin == 9)   Servo9.detach();
+    if (pin == 10)   Servo10.detach();
+    if (pin == 11)   Servo11.detach();
+    if (pin == 12)   Servo12.detach();
+    if (pin == 13)   Servo13.detach();
+    if (pin == 14)   Servo14.detach();
+    if (pin == 15)   Servo15.detach();
+    if (pin == 16)   Servo16.detach();
+  }
+
+  if (PinCommand == "po" | PinCommand == "pwo" ) pinMode(pin, OUTPUT);
+  if (PinCommand == "pi" | PinCommand == "pwi" ) pinMode(pin, INPUT);
+}
+
+void servoWrite(byte pin, int ValueForIO)
+{
+  if (pin == 0)
+  {
+    Servo0.attach(0);
+    Servo0.write(ValueForIO);
+  }
+  if (pin == 1)
+  {
+    Servo1.attach(1);
+    Servo1.write(ValueForIO);
+  }
+  if (pin == 2)
+  {
+    Servo2.attach(2);
+    Servo2.write(ValueForIO);
+  }
+  if (pin == 3)
+  {
+    Servo3.attach(3);
+    Servo3.write(ValueForIO);
+  }
+  if (pin == 4)
+  {
+    Servo4.attach(4);
+    Servo4.write(ValueForIO);
+  }
+  if (pin == 5)
+  {
+    Servo5.attach(5);
+    Servo5.write(ValueForIO);
+  }
+  if (pin == 6)
+  {
+    Servo6.attach(6);
+    Servo6.write(ValueForIO);
+  }
+  if (pin == 7)
+  {
+    Servo7.attach(7);
+    Servo7.write(ValueForIO);
+  }
+  if (pin == 8)
+  {
+    Servo8.attach(8);
+    Servo8.write(ValueForIO);
+  }
+  if (pin == 9)
+  {
+    Servo9.attach(9);
+    Servo9.write(ValueForIO);
+  }
+  if (pin == 10)
+  {
+    Servo10.attach(10);
+    Servo10.write(ValueForIO);
+  }
+  if (pin == 11)
+  {
+    Servo11.attach(11);
+    Servo11.write(ValueForIO);
+  }
+  if (pin == 12)
+  {
+    Servo12.attach(12);
+    Servo12.write(ValueForIO);
+  }
+  if (pin == 13)
+  {
+    Servo13.attach(13);
+    Servo13.write(ValueForIO);
+  }
+  if (pin == 14)
+  {
+    Servo14.attach(14);
+    Servo14.write(ValueForIO);
+  }
+  if (pin == 15)
+  {
+    Servo15.attach(15);
+    Servo15.write(ValueForIO);
+  }
+  if (pin == 16)
+  {
+    Servo16.attach(16);
+    Servo16.write(ValueForIO);
   }
 }
+
+
+//  End all of the I/O code
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

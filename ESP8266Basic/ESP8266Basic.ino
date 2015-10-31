@@ -1,9 +1,6 @@
 //ESP8266 Basic Interperter
 //HTTP://ESP8266BASIC.COM
 //
-//To compile install esp8266 package from boards manager using the folowing URL
-//http://arduino.esp8266.com/versions/1.6.5-1044-g170995a/package_esp8266com_index.json
-//
 //The MIT License (MIT)
 //
 //Copyright (c) 2015 Michael Molinari

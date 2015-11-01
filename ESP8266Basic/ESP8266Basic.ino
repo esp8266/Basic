@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.04";
+String BasicVersion = "ESP Basic 1.05";
 
 ESP8266WebServer server(80);
 
@@ -1215,7 +1215,7 @@ void ExicuteTheCurrentLine()
     valParam1 = GetMeThatVar(Param1).toInt();
     valParam2 = GetMeThatVar(Param2).toInt();
 
-    UniversalPinIO("pwo", valParam1, 0);
+    UniversalPinIO("pwo", valParam1, valParam2);
     return;
   }
 
@@ -2422,8 +2422,8 @@ float UniversalPinIO(String PinCommand, byte pin, float PinValue)
   SetThePinMode(PinCommand, pin);
   if (PinCommand == "po") digitalWrite(pin, PinValue);
   else if (PinCommand == "pi") return digitalRead(pin);
-  else if (PinCommand == "ai") return analogRead(pin);
-  else if (PinCommand == "ao") analogWrite(pin, PinValue);
+  else if (PinCommand == "pwi") return analogRead(pin);
+  else if (PinCommand == "pwo") analogWrite(pin, PinValue);
   else if (PinCommand == "servo") servoWrite(pin, PinValue);
   return 0;
 }
@@ -2431,6 +2431,11 @@ float UniversalPinIO(String PinCommand, byte pin, float PinValue)
 void SetThePinMode(String PinCommand, byte pin)
 {
   delay(0);
+
+    pinMode(pin, OUTPUT);
+    analogWrite(pin, 0);
+
+  
   if (PinCommand != "servo")
   {
     if (pin == 0)   Servo0.detach();

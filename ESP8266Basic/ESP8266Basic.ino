@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.05";
+String BasicVersion = "ESP Basic 1.06";
 
 ESP8266WebServer server(80);
 
@@ -246,7 +246,8 @@ Servo Servo14;
 Servo Servo15;
 Servo Servo16;
 
-
+String  PinListOfStatus[16];
+int  PinListOfStatusValues[16];
 
 
 
@@ -397,15 +398,19 @@ void setup() {
     }
     else
     {
-
-
-      //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-
-      WebOut += "Variable Dump";
+      WebOut += "<div>Variable Dump:";
       for (byte i = 0; i <= 50; i++)
       {
         WebOut = String(WebOut + "<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
       }
+
+
+      WebOut += "</div><div>Pin Stats";
+      for (byte i = 0; i <= 16; i++)
+      {
+        WebOut = String(WebOut + "<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
+      }
+      WebOut += "</div>";
     }
 
     server.send(200, "text/html", WebOut);
@@ -1812,9 +1817,18 @@ String GetMeThatVar(String VariableNameToFind)
     MyOut.replace(Param1,   Param2);
   }
 
-  //  if (FunctionName == "i2cread")    MyOut =  i2cRead(Param0.toFloat(), Param1.toFloat());
-  //  if (FunctionName == "i2cwrite")   MyOut = i2cWrite(Param0.toFloat(), Param1);
-  //  if (FunctionName == "i2cend ")    MyOut = String(Wire.endTransmission());
+  if (FunctionName == "chr")
+  {
+    MyOut = char(Param0.toInt());
+  }
+  if (FunctionName == "asc")
+  {
+    char bla = Param0.charAt(0);
+    int blabla = bla ;
+    MyOut = String(blabla);
+  }
+
+
 
 
   if (FunctionName == "i2c.begin")
@@ -2419,6 +2433,8 @@ String FetchWebUrl(String URLtoGet)
 //begin all of the i/o code
 float UniversalPinIO(String PinCommand, byte pin, float PinValue)
 {
+  PinListOfStatus[pin] = PinCommand;
+  PinListOfStatusValues[pin] = PinValue;
   SetThePinMode(PinCommand, pin);
   if (PinCommand == "po") digitalWrite(pin, PinValue);
   else if (PinCommand == "pi") return digitalRead(pin);
@@ -2432,10 +2448,10 @@ void SetThePinMode(String PinCommand, byte pin)
 {
   delay(0);
 
-    pinMode(pin, OUTPUT);
-    analogWrite(pin, 0);
+  pinMode(pin, OUTPUT);
+  analogWrite(pin, 0);
 
-  
+
   if (PinCommand != "servo")
   {
     if (pin == 0)   Servo0.detach();

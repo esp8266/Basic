@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.09";
+String BasicVersion = "ESP Basic 1.10";
 
 ESP8266WebServer server(80);
 
@@ -1834,7 +1834,8 @@ String GetMeThatVar(String VariableNameToFind)
     MyOut = "";
     Wire.beginTransmission(i2cPinNo);
   }
-  if (FunctionName == "i2c.write")       MyOut =  String(Wire.write(Param0.c_str()));
+  if (FunctionName == "i2c.write")       MyOut = String(Wire.write(Param0.toInt()));
+  //if (FunctionName == "i2c.write")       MyOut =  String(Wire.write(Param0.c_str()));
   if (FunctionName == "i2c.end")         MyOut =  String(Wire.endTransmission());
   if (FunctionName == "i2c.requestfrom")
   {

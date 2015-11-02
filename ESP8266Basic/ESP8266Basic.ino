@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.08";
+String BasicVersion = "ESP Basic 1.09";
 
 ESP8266WebServer server(80);
 
@@ -1665,11 +1665,7 @@ String DoMathForMe(String cc, String f, String dd )
   float d = dd.toFloat();
 
   f.trim();
-  //  Serial.println(c);
-  //  Serial.println(f);
-  //  Serial.println(d);
 
-  //sscanf(s, " % d % c % d", c, f, d);
   if (f == "-") {
     e = c - d;
     ee = String(e);

@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.10";
+String BasicVersion = "ESP Basic 1.11";
 
 ESP8266WebServer server(80);
 
@@ -1824,7 +1824,10 @@ String GetMeThatVar(String VariableNameToFind)
     int blabla = bla ;
     MyOut = String(blabla);
   }
-
+  if (FunctionName == "int")
+  {
+    MyOut = String(Param0.toInt());
+  }
 
 
 

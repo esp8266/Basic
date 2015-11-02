@@ -1661,8 +1661,8 @@ String DoMathForMe(String cc, String f, String dd )
   float e;
   String ee = cc;
 
-  float c = cc.toInt();
-  float d = dd.toInt();
+  float c = cc.toFloat();
+  float d = dd.toFloat();
 
   f.trim();
   //  Serial.println(c);

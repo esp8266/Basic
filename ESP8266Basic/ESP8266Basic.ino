@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.06";
+String BasicVersion = "ESP Basic 1.07";
 
 ESP8266WebServer server(80);
 
@@ -401,14 +401,14 @@ void setup() {
       WebOut += "<div>Variable Dump:";
       for (byte i = 0; i <= 50; i++)
       {
-        WebOut = String(WebOut + "<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
+        if (AllMyVaribles[i][1] != "" ) WebOut += String("<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
       }
 
 
-      WebOut += "</div><div>Pin Stats";
+      WebOut += "<hr></div><div>Pin Stats";
       for (byte i = 0; i <= 16; i++)
       {
-        WebOut = String(WebOut + "<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
+        WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
       }
       WebOut += "</div>";
     }

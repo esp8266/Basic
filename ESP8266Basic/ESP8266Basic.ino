@@ -214,6 +214,8 @@ int TimerWaitTime;
 int timerLastActiveTime;
 String TimerBranch;
 
+String refreshBranch;
+
 int GraphicsEliments[100][7];
 
 File fsUploadFile;
@@ -267,28 +269,6 @@ void setup() {
     WebOut += RunningProgramGui();
     server.send(200, "text/html", WebOut);
   });
-
-
-
-  //  server.on("/png", []()
-  //  {
-  //    String fileNameToServeUp;
-  //    fileNameToServeUp = server.arg("name");
-  //    File mySuperFile = SPIFFS.open(String("uploads/"+fileNameToServeUp), "r");
-  //    if (mySuperFile)
-  //    {
-  //      server.send(200, "image/png", mySuperFile.readString());
-  //      mySuperFile.close();
-  //    }
-  //    else
-  //    {
-  //      server.send(404, "text/plain", "file not found.");
-  //    }
-  //  });
-
-
-
-
 
 
   server.on("/settings", []()
@@ -773,10 +753,19 @@ String RunningProgramGui()
   {
     WaitForTheInterpertersResponse = 0;
     RunningProgram == 1;
-    //Serial.println("Running some code befor returning the web page");
     RunBasicTillWait();
     WaitForTheInterpertersResponse = 1;
-    //Serial.println("Got to the point Should be returning a web page");
+  }
+
+
+  if (refreshBranch != "")
+  {
+
+    inData = String(" goto " + refreshBranch + " ");
+    WaitForTheInterpertersResponse = 0;
+    ExicuteTheCurrentLine();
+    runTillWaitPart2();
+    RunBasicTillWait();
   }
 
   String WebOut = String("<form action='input'>" + HTMLout + "</form>");
@@ -789,8 +778,6 @@ String RunningProgramGui()
     Serial.println("HTML out");
     Serial.println( HTMLout);
   }
-  //String WebOutFinal;
-  //WebOutFinal = WebOut;
 
   for (int i = 0; i <= 50; i++)
   {
@@ -860,7 +847,6 @@ void RunBasicTillWait()
 
   if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
   {
-    //Serial.println("Doing that timere bit");
     inData = String(" goto " + TimerBranch + " ");
     WaitForTheInterpertersResponse = 0;
     timerLastActiveTime = millis() ;
@@ -1415,6 +1401,16 @@ void ExicuteTheCurrentLine()
     HTMLout = String(HTMLout + tempDropDownList);
     return;
   }
+
+
+
+  if (Param0 == "onload")
+  {
+    refreshBranch = Param1;
+    return;
+  }
+
+
 
 
 

@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.07";
+String BasicVersion = "ESP Basic 1.08";
 
 ESP8266WebServer server(80);
 
@@ -1018,13 +1018,16 @@ void ExicuteTheCurrentLine()
     //Serial.println(DoMathForMe(GetMeThatVar(Param1), Param2, GetMeThatVar(Param3)));
     if (DoMathForMe(GetMeThatVar(Param1), Param2, GetMeThatVar(Param3)) == "1" )
     {
+      
       Param0 = getValue(inData, ' ', 5);
       Param1 = getValue(inData, ' ', 6);
       Param2 = getValue(inData, ' ', 7);
       Param3 = getValue(inData, ' ', 8);
       Param4 = getValue(inData, ' ', 9);
       Param5 = getValue(inData, ' ', 10);
+      inData = String(Param0 +" "+Param1 +" "+Param2 +" "+Param3 +" "+Param4 +" "+Param5 +" ");
       Param0.toLowerCase();
+      
     }
     else
     {
@@ -1044,6 +1047,8 @@ void ExicuteTheCurrentLine()
           Param3 = getValue(inData, ' ', i + 4);
           Param4 = getValue(inData, ' ', i + 5);
           Param5 = getValue(inData, ' ', i + 6);
+          inData = String(Param0 +" "+Param1 +" "+Param2 +" "+Param3 +" "+Param4 +" "+Param5 +" ");
+          Param0.toLowerCase();
           break;
         }
       }

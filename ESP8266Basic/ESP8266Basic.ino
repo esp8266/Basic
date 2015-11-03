@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.13";
+String BasicVersion = "ESP Basic 1.14";
 
 ESP8266WebServer server(80);
 
@@ -1139,6 +1139,19 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+
+  if (Param0 == "memclear")
+  {
+    for (byte i = 0; i <= 50; i++)
+    {
+      AllMyVaribles[i][1] = "";
+      AllMyVaribles[i][2] = "";
+    }
+    return;
+  }
+
+
+
   if (Param0 == "list")
   {
     for (int i = 0; i <= TotalNumberOfLines; i++)
@@ -1553,6 +1566,7 @@ void ExicuteTheCurrentLine()
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
       {
         RunningProgramCurrentLine = i - 1;
+        break;
       }
     }
     return;
@@ -1571,6 +1585,7 @@ void ExicuteTheCurrentLine()
         ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine;
         RunningProgramCurrentLine = i - 1;
         i = TotalNumberOfLines + 1;
+        break;
       }
     }
 

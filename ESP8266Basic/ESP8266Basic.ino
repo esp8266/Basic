@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.12";
+String BasicVersion = "ESP Basic 1.13";
 
 ESP8266WebServer server(80);
 
@@ -201,7 +201,7 @@ int TotalNumberOfLines = 255;
 
 
 String AllMyVaribles[50][2];
-byte LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
+int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 
 
 
@@ -795,7 +795,7 @@ String RunningProgramGui()
     Serial.println( HTMLout);
   }
 
-  for (int i = 0; i <= 50; i++)
+  for (int i = 50; i >= 0; i--)
   {
     delay(0);
     WebOut.replace(String("VARS|" + String(i)), AllMyVaribles[i][2]);

@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.11";
+String BasicVersion = "ESP Basic 1.12";
 
 ESP8266WebServer server(80);
 
@@ -144,6 +144,7 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th>
 <br><br>Log In Key (For Security):</th></tr>
 <tr><th><p align="right">Log In Key:</p></th><th><input type="text" name="LoginKey" value="*LoginKey*"></th></tr>
+<tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
 <tr><th>
 <input type="submit" value="Save" name="save"></th>
 <th><input type="submit" value="Format" name="format"></th>
@@ -265,7 +266,8 @@ void setup() {
 
   server.on("/", []()
   {
-    String WebOut = AdminBarHTML;
+    String WebOut;
+    if (LoadDataFromFile("ShowMenueBar") != "off") WebOut =    AdminBarHTML;
     WebOut += RunningProgramGui();
     server.send(200, "text/html", WebOut);
   });
@@ -288,14 +290,15 @@ void setup() {
     String apName;
     String apPass;
     String LoginKey;
+    String ShowMenueBar;
     //Serial.print("Loading Settings Files");
 
-    staName  = LoadDataFromFile("WIFIname");
-    staPass  = LoadDataFromFile("WIFIpass");
-    apName   = LoadDataFromFile("APname");
-    apPass   = LoadDataFromFile("APpass");
-    LoginKey = LoadDataFromFile("LoginKey");
-
+    staName      = LoadDataFromFile("WIFIname");
+    staPass      = LoadDataFromFile("WIFIpass");
+    apName       = LoadDataFromFile("APname");
+    apPass       = LoadDataFromFile("APpass");
+    LoginKey     = LoadDataFromFile("LoginKey");
+    ShowMenueBar = LoadDataFromFile("ShowMenueBar");
 
     if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
     {
@@ -330,12 +333,14 @@ void setup() {
         apName  = server.arg("apName");
         apPass  = server.arg("apPass");
         LoginKey = server.arg("LoginKey");
+        ShowMenueBar = server.arg("showMenueBar");
 
         SaveDataToFile("WIFIname" , staName);
         SaveDataToFile("WIFIpass" , staPass);
         SaveDataToFile("APname" , apName);
         SaveDataToFile("APpass" , apPass);
         SaveDataToFile("LoginKey" , LoginKey);
+        SaveDataToFile("ShowMenueBar" , ShowMenueBar);
       }
 
       if ( server.arg("format") == "Format" )
@@ -359,6 +364,17 @@ void setup() {
       WebOut.replace("*ap pass*",  apPass);
       WebOut.replace("*LoginKey*", LoginKey);
       WebOut.replace("*BasicVersion*", BasicVersion);
+
+      if ( ShowMenueBar == "off")
+      {
+        WebOut.replace("**checked**", "checked");
+      }
+      else
+      {
+        WebOut.replace("**checked**", "");
+      }
+
+
 
     }
 
@@ -1004,16 +1020,16 @@ void ExicuteTheCurrentLine()
     //Serial.println(DoMathForMe(GetMeThatVar(Param1), Param2, GetMeThatVar(Param3)));
     if (DoMathForMe(GetMeThatVar(Param1), Param2, GetMeThatVar(Param3)) == "1" )
     {
-      
+
       Param0 = getValue(inData, ' ', 5);
       Param1 = getValue(inData, ' ', 6);
       Param2 = getValue(inData, ' ', 7);
       Param3 = getValue(inData, ' ', 8);
       Param4 = getValue(inData, ' ', 9);
       Param5 = getValue(inData, ' ', 10);
-      inData = String(Param0 +" "+Param1 +" "+Param2 +" "+Param3 +" "+Param4 +" "+Param5 +" ");
+      inData = String(Param0 + " " + Param1 + " " + Param2 + " " + Param3 + " " + Param4 + " " + Param5 + " ");
       Param0.toLowerCase();
-      
+
     }
     else
     {
@@ -1033,7 +1049,7 @@ void ExicuteTheCurrentLine()
           Param3 = getValue(inData, ' ', i + 4);
           Param4 = getValue(inData, ' ', i + 5);
           Param5 = getValue(inData, ' ', i + 6);
-          inData = String(Param0 +" "+Param1 +" "+Param2 +" "+Param3 +" "+Param4 +" "+Param5 +" ");
+          inData = String(Param0 + " " + Param1 + " " + Param2 + " " + Param3 + " " + Param4 + " " + Param5 + " ");
           Param0.toLowerCase();
           break;
         }

@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.14";
+String BasicVersion = "ESP Basic 1.15";
 
 ESP8266WebServer server(80);
 
@@ -1758,22 +1758,13 @@ String DoMathForMe(String cc, String f, String dd )
 
   if (f == "==")
   {
-    if (cc == dd)
-    {
-      ee = "1";
-    }
+    ee = String((cc == dd));
   }
 
   if (f == "=")
   {
-    if (c == d)
-    {
-      ee = "1";
-    }
+    ee = String((c == d));
   }
-
-  //printf(" % s % d\n", s, e);
-
   return ee;
 }
 

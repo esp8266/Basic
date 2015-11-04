@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.15";
+String BasicVersion = "ESP Basic 1.16";
 
 ESP8266WebServer server(80);
 
@@ -1096,6 +1096,7 @@ void ExicuteTheCurrentLine()
           Param3 = Param1;
           Param4 = "+";
           Param5 = "1";
+          break;
         }
         else
         {

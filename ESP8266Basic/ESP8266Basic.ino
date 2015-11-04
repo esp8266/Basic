@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.16";
+String BasicVersion = "ESP Basic 1.17";
 
 ESP8266WebServer server(80);
 
@@ -1808,13 +1808,14 @@ String GetMeThatVar(String VariableNameToFind)
     Param3 = VarialbeLookup(Param3);
 
     FunctionName.toLowerCase();
+	  FunctionName.trim();
   }
   delay(0);
 
   String MyOut;
   MyOut = VarialbeLookup(VariableNameToFind);
 
-  if (VariableNameToFind == "millis") MyOut = String(millis());
+  if (FunctionName == "millis") MyOut = String(millis());
 
 
   if (FunctionName == "htmlvar")

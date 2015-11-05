@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.18";
+String BasicVersion = "ESP Basic 1.19";
 
 ESP8266WebServer server(80);
 
@@ -1214,7 +1214,7 @@ void ExicuteTheCurrentLine()
   {
     valParam1 = GetMeThatVar(Param1).toInt();
 
-    SetMeThatVar(Param2, String(UniversalPinIO("po", valParam1, 0)));
+    SetMeThatVar(Param2, String(UniversalPinIO("pi", valParam1, 0)));
     return;
   }
 

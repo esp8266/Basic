@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.17";
+String BasicVersion = "ESP Basic 1.18";
 
 ESP8266WebServer server(80);
 
@@ -1808,7 +1808,7 @@ String GetMeThatVar(String VariableNameToFind)
     Param3 = VarialbeLookup(Param3);
 
     FunctionName.toLowerCase();
-	  FunctionName.trim();
+    FunctionName.trim();
   }
   delay(0);
 
@@ -1826,12 +1826,12 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
-  if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1) + 1);
+  if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1) );
   if (FunctionName == "len")     MyOut = String(MyOut.length());
 
-  if (FunctionName == "mid")     MyOut = Mid(Param0, Param1.toFloat(), Param2.toFloat());
-  if (FunctionName == "right")   MyOut = Right(Param0, Param1.toFloat());
-  if (FunctionName == "left")    MyOut = Left(Param0, Param1.toFloat());
+  if (FunctionName == "mid"   | FunctionName == "mid$")     MyOut = Mid(Param0, Param1.toInt(), Param2.toInt());
+  if (FunctionName == "right" | FunctionName == "right$")   MyOut = Right(Param0, Param1.toInt());
+  if (FunctionName == "left"  | FunctionName == "left$")    MyOut = Left(Param0, Param1.toInt());
   if (FunctionName == "replace")
   {
     MyOut = Param0;

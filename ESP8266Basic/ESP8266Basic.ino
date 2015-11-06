@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.20";
+String BasicVersion = "ESP Basic 1.21";
 
 ESP8266WebServer server(80);
 
@@ -1985,7 +1985,7 @@ String Right(String str, int pos)
 {
   int i;
   String temp = "";
-  for (i = pos; i < strlen(str.c_str()); i++)
+  for (i = strlen(str.c_str()) - pos; i <= strlen(str.c_str()); i++)
   {
     temp += str.charAt(i);
   }

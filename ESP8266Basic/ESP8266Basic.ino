@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.19";
+String BasicVersion = "ESP Basic 1.20";
 
 ESP8266WebServer server(80);
 
@@ -1826,19 +1826,24 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
-  if (FunctionName == "instr")   MyOut = String(Param0.indexOf(Param1) );
+  if (FunctionName == "instr")
+  {
+    int junk = Param0.indexOf(Param1);
+    junk++;
+    MyOut = String(junk );
+  }
   if (FunctionName == "len")     MyOut = String(MyOut.length());
 
-  if (FunctionName == "mid"   | FunctionName == "mid$")     MyOut = Mid(Param0, Param1.toInt(), Param2.toInt());
+  if (FunctionName == "mid"   | FunctionName == "mid$")     MyOut = Mid(Param0, Param1.toInt() - 1, Param2.toInt());
   if (FunctionName == "right" | FunctionName == "right$")   MyOut = Right(Param0, Param1.toInt());
   if (FunctionName == "left"  | FunctionName == "left$")    MyOut = Left(Param0, Param1.toInt());
-  if (FunctionName == "replace")
+  if (FunctionName == "replace" |FunctionName == "replace$")
   {
     MyOut = Param0;
     MyOut.replace(Param1,   Param2);
   }
 
-  if (FunctionName == "chr")
+  if (FunctionName == "chr" |FunctionName == "chr$")
   {
     MyOut = char(Param0.toInt());
   }
@@ -1953,7 +1958,7 @@ String Mid(String str, int pos1, int pos2)
 
   int i;
   String temp = "";
-  for (i = pos1; i < pos2; i++)
+  for (i = pos1; i < pos1 +pos2; i++)
   {
     temp += str.charAt(i);
   }

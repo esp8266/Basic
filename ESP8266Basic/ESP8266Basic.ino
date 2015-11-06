@@ -24,6 +24,9 @@
 //SOFTWARE.
 
 
+
+//Onewire tempture sensoor code conntributed by Rotohammer.
+
 #include "spiffs/spiffs.h"
 #include <FS.h>
 #include <ESP8266mDNS.h>
@@ -37,9 +40,18 @@
 #include <Wire.h>
 #include <ESP8266httpUpdate.h>
 #include <Servo.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+String BasicVersion = "ESP Basic 1.24";
 
 
-String BasicVersion = "ESP Basic 1.23";
+OneWire oneWire(5);
+DallasTemperature sensors(&oneWire);
+
+
+
+
 
 ESP8266WebServer server(80);
 
@@ -586,6 +598,7 @@ void setup() {
   }
 
   Wire.begin(0, 2);
+  sensors.begin();
 
   server.begin();
   RunningProgram = 0;
@@ -1246,6 +1259,18 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if ( Param0 == "temp" | Param0 == "ti")
+  {
+    valParam1 = GetMeThatVar(Param1).toInt();
+    // call sensors.requestTemperatures() to issue a global temperature
+    // request to all devices on the bus
+    sensors.requestTemperatures(); // Send the command to get temperatures
+
+    SetMeThatVar(Param2, String(sensors.getTempCByIndex(valParam1)));
+    return;
+  }
+
+
   if ( Param0 == "ai")
   {
     SetMeThatVar(Param1, String(analogRead(A0)));
@@ -1401,7 +1426,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == "dropdown")
   {
     String tempDropDownList = DropDownList;
-    String tempDropDownListOpptions	= DropDownListOpptions;
+    String tempDropDownListOpptions  = DropDownListOpptions;
     String TempItems;
     String TempBla;
 
@@ -1409,7 +1434,7 @@ void ExicuteTheCurrentLine()
 
     for (int i = 0; i <= 20; i++)
     {
-      tempDropDownListOpptions	= DropDownListOpptions;
+      tempDropDownListOpptions  = DropDownListOpptions;
       TempBla = getValue(Param1, ',', i);
       TempBla.replace(",", "");
       if (TempBla != "") {
@@ -1841,13 +1866,13 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "mid"   | FunctionName == "mid$")     MyOut = Mid(Param0, Param1.toInt() - 1, Param2.toInt());
   if (FunctionName == "right" | FunctionName == "right$")   MyOut = Right(Param0, Param1.toInt());
   if (FunctionName == "left"  | FunctionName == "left$")    MyOut = Left(Param0, Param1.toInt());
-  if (FunctionName == "replace" |FunctionName == "replace$")
+  if (FunctionName == "replace" | FunctionName == "replace$")
   {
     MyOut = Param0;
     MyOut.replace(Param1,   Param2);
   }
 
-  if (FunctionName == "chr" |FunctionName == "chr$")
+  if (FunctionName == "chr" | FunctionName == "chr$")
   {
     MyOut = char(Param0.toInt());
   }
@@ -1892,7 +1917,7 @@ String GetMeThatVar(String VariableNameToFind)
 
   if (FunctionName == "hex" | FunctionName == "hex$")   MyOut = String(MyOut.toInt(), HEX);
   if (FunctionName == "oct" | FunctionName == "oct$")   MyOut = String(MyOut.toInt(), OCT);
-  
+
 
   if (FunctionName == "ip")    MyOut = String(WiFi.localIP().toString());
 
@@ -1967,7 +1992,7 @@ String Mid(String str, int pos1, int pos2)
 
   int i;
   String temp = "";
-  for (i = pos1; i < pos1 +pos2; i++)
+  for (i = pos1; i < pos1 + pos2; i++)
   {
     temp += str.charAt(i);
   }

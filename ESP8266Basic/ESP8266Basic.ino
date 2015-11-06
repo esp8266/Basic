@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.22";
+String BasicVersion = "ESP Basic 1.23";
 
 ESP8266WebServer server(80);
 
@@ -1834,6 +1834,10 @@ String GetMeThatVar(String VariableNameToFind)
   }
   if (FunctionName == "len")     MyOut = String(MyOut.length());
 
+  if (FunctionName == "upper"  | FunctionName == "upper$")     MyOut.toUpperCase();
+  if (FunctionName == "lower"  | FunctionName == "lower$")     MyOut.toLowerCase();
+
+
   if (FunctionName == "mid"   | FunctionName == "mid$")     MyOut = Mid(Param0, Param1.toInt() - 1, Param2.toInt());
   if (FunctionName == "right" | FunctionName == "right$")   MyOut = Right(Param0, Param1.toInt());
   if (FunctionName == "left"  | FunctionName == "left$")    MyOut = Left(Param0, Param1.toInt());
@@ -1884,8 +1888,11 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "sin")   MyOut = String(sin(MyOut.toFloat()));
   if (FunctionName == "cos")   MyOut = String(cos(MyOut.toFloat()));
   if (FunctionName == "tan")   MyOut = String(tan(MyOut.toFloat()));
-
   if (FunctionName == "log")   MyOut = String(log(MyOut.toFloat()));
+
+  if (FunctionName == "hex" | FunctionName == "hex$")   MyOut = String(MyOut.toInt(), HEX);
+  if (FunctionName == "oct" | FunctionName == "oct$")   MyOut = String(MyOut.toInt(), OCT);
+  
 
   if (FunctionName == "ip")    MyOut = String(WiFi.localIP().toString());
 

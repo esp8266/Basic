@@ -39,7 +39,7 @@
 #include <Servo.h>
 
 
-String BasicVersion = "ESP Basic 1.21";
+String BasicVersion = "ESP Basic 1.22";
 
 ESP8266WebServer server(80);
 
@@ -1884,6 +1884,8 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "sin")   MyOut = String(sin(MyOut.toFloat()));
   if (FunctionName == "cos")   MyOut = String(cos(MyOut.toFloat()));
   if (FunctionName == "tan")   MyOut = String(tan(MyOut.toFloat()));
+
+  if (FunctionName == "log")   MyOut = String(log(MyOut.toFloat()));
 
   if (FunctionName == "ip")    MyOut = String(WiFi.localIP().toString());
 

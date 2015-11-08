@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.25";
+String BasicVersion = "ESP Basic 1.26";
 
 
 OneWire oneWire(5);
@@ -63,7 +63,8 @@ const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name=
 const String GOTOimagebutton =  R"=====(<input type="image" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
 const String normalImage =  R"=====(<img src="/file?file=name")=====";
 const String javascript =  R"=====(<script src="/file?file=name"></script>)=====";
-const String DropDownList =  R"=====(<select name="variablenumber">options</select>)=====";
+const String DropDownList =  R"=====(<select name="variablenumber" size="theSize">options</select>
+<script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
 const String DropDownListOpptions =  R"=====(<option>item</option>)=====";
 
 
@@ -92,8 +93,6 @@ const String UploadPage = R"=====(
 
 <select name="fileName" size="25" form="filelist">*table*</select>
 )=====";
-
-const String FileMngUploads = R"=====(<tr><td>*name*</td><td>*size*</td><td><a href='./filemng?delete=*name*'>X</a></td></tr>)=====";
 
 
 
@@ -358,16 +357,7 @@ void setup() {
       if ( server.arg("format") == "Format" )
       {
         Serial.println("Formating ");
-        //SPIFFS.begin();
         Serial.print(SPIFFS.format());
-        //        Dir dir = SPIFFS.openDir(String(""));
-        //        while (dir.next())
-        //        {
-        //          delay(0);
-        //          Serial.println(dir.fileName());
-        //          File f = dir.openFile("r");
-        //          SPIFFS.remove(dir.fileName());
-        //        }
       }
 
       WebOut.replace("*sta name*", staName);
@@ -596,6 +586,7 @@ void setup() {
       CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"));
     }
   }
+
 
   Wire.begin(0, 2);
   sensors.begin();
@@ -1423,7 +1414,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "dropdown")
+  if (Param0 == "dropdown" | Param0 == "listbox")
   {
     String tempDropDownList = DropDownList;
     String tempDropDownListOpptions  = DropDownListOpptions;
@@ -1445,13 +1436,12 @@ void ExicuteTheCurrentLine()
       delay(0);
     }
 
-    //Serial.println(Param2);
     Param2 = GetMeThatVar(Param2);
-    //Serial.println(Param2);
-    //Serial.println(LastVarNumberLookedUp);
 
     tempDropDownList.replace("variablenumber",  String(LastVarNumberLookedUp));
     tempDropDownList.replace("options",  TempItems);
+    if (Param3.toInt() > 1 | Param0 == "dropdown") Param3 = "1";
+    tempDropDownList.replace("theSize",  Param3);
 
     HTMLout = String(HTMLout + tempDropDownList);
     return;

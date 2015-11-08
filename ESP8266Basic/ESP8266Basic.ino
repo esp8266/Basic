@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.24";
+String BasicVersion = "ESP Basic 1.25";
 
 
 OneWire oneWire(5);
@@ -152,7 +152,7 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th>
 <br><br>Ap mode (ESP brocast out its own ap):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="apName" value="*ap name*"></th></tr>
-<tr><th><p align="right">Pass:</p></th><th><input type="text" name="apPass" value="*ap pass*"></th></tr>
+<tr><th><p align="right">Pass:<br>Must be at least 8 characters</p></th><th><input type="text" name="apPass" value="*ap pass*"></th></tr>
 <tr><th>
 <br><br>Log In Key (For Security):</th></tr>
 <tr><th><p align="right">Log In Key:</p></th><th><input type="text" name="LoginKey" value="*LoginKey*"></th></tr>
@@ -589,7 +589,7 @@ void setup() {
   {
     if (LoadDataFromFile("APname") == "")
     {
-      CreateAP("ESP", "");
+      CreateAP("", "");
     }
     else
     {
@@ -2130,7 +2130,23 @@ void CreateAP(String NetworkName, String NetworkPassword)
 {
   WiFi.mode(WIFI_AP_STA);
   Serial.println("Creating WIFI access point");
-  byte numberOfAtempts;
+
+
+  if (NetworkName == "")
+  {
+    NetworkName = LoadDataFromFile("APname");
+    NetworkPassword = LoadDataFromFile("APpass");
+
+    if (NetworkName == "")
+    {
+      NetworkName = "ESP";
+      NetworkPassword = "";
+    }
+  }
+
+  Serial.println(NetworkName);
+
+
   int str_len = NetworkName.length() + 1;
   char ssid[str_len];
   NetworkName.toCharArray(ssid, str_len);
@@ -2141,7 +2157,7 @@ void CreateAP(String NetworkName, String NetworkPassword)
 
   WiFi.disconnect();
   delay(2000);
-  if (password == "")
+  if (NetworkPassword.length() < 8)
   {
     WiFi.softAP(ssid);
   }

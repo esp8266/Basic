@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.26";
+String BasicVersion = "ESP Basic 1.27";
 
 
 OneWire oneWire(5);
@@ -575,7 +575,7 @@ void setup() {
   //LoadBasicProgramFromFlash("");
 
 
-  if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass")) == 0)
+  if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"), "", "", "") == 0)
   {
     if (LoadDataFromFile("APname") == "")
     {
@@ -1632,7 +1632,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "connect")
   {
-    ConnectToTheWIFI(GetMeThatVar(Param1), GetMeThatVar(Param2));
+    ConnectToTheWIFI(GetMeThatVar(Param1), GetMeThatVar(Param2), GetMeThatVar(Param3), GetMeThatVar(Param4), GetMeThatVar(Param5));
     return;
   }
 
@@ -2072,7 +2072,7 @@ String LoadDataFromFile(String fileNameForSave)
 
 //wifi code here
 
-byte ConnectToTheWIFI(String NetworkName, String NetworkPassword)
+bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
   WiFi.mode(WIFI_AP_STA);
   byte numberOfAtempts = 0;
@@ -2101,15 +2101,34 @@ byte ConnectToTheWIFI(String NetworkName, String NetworkPassword)
     }
   }
 
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
-  Serial.print("IP address : ");
-  Serial.println(WiFi.localIP());
 
+  if (NetworkStaticIP != "" & NetworkGateway != "" & NetworkSubnet != "" )
+  {
 
-  SaveDataToFile("WIFIname" ,  NetworkName);
-  SaveDataToFile("WIFIpass", NetworkPassword);
+    NetworkStaticIP += ".";
+    NetworkGateway += ".";
+    NetworkSubnet += ".";
+    IPAddress ip(     getValue(NetworkStaticIP, '.', 0).toInt(), getValue(NetworkStaticIP, '.', 1).toInt(), getValue(NetworkStaticIP, '.', 2).toInt(), getValue(NetworkStaticIP, '.', 3).toInt());
+    IPAddress gateway(getValue(NetworkGateway,  '.', 0).toInt(), getValue(NetworkGateway, '.', 1).toInt(), getValue(NetworkGateway, '.', 2).toInt(), getValue(NetworkGateway, '.', 3).toInt());
+    IPAddress subnet( getValue(NetworkSubnet,   '.', 0).toInt(), getValue(NetworkSubnet, '.', 1).toInt(), getValue(NetworkSubnet, '.', 2).toInt(), getValue(NetworkSubnet, '.', 3).toInt());
+    WiFi.config(ip, gateway, subnet);
+  }
+
+  if (WiFi.localIP().toString().endsWith(".0"))
+  {
+    CreateAP("", "");
+  }
+  else
+  {
+    Serial.println("");
+    Serial.print("Connected to ");
+    Serial.println(ssid);
+    Serial.print("IP address : ");
+    Serial.println(WiFi.localIP());
+    SaveDataToFile("WIFIname" ,  NetworkName);
+    SaveDataToFile("WIFIpass", NetworkPassword);
+  }
+
   return 1;
 }
 

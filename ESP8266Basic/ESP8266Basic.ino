@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.27";
+String BasicVersion = "ESP Basic 1.28";
 
 
 OneWire oneWire(5);
@@ -58,7 +58,8 @@ ESP8266WebServer server(80);
 //Web Server Variables
 String HTMLout;
 const String InputFormText = R"=====( <input type="text" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
-const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue"><hr>)=====";
+const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue">)=====";
+const String Slider = R"=====( <input type="range" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
 const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name="gotonobranch">)=====";
 const String GOTOimagebutton =  R"=====(<input type="image" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
 const String normalImage =  R"=====(<img src="/file?file=name")=====";
@@ -1412,6 +1413,23 @@ void ExicuteTheCurrentLine()
     HTMLout = String(HTMLout + tempTextBox);
     return;
   }
+
+
+  if (Param0 == "slider")
+  {
+    String tempSlider = Slider;
+    GetMeThatVar(Param1);
+    tempSlider.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
+    tempSlider.replace("variablenumber",  String(LastVarNumberLookedUp));
+
+    tempSlider.replace("minval",  GetMeThatVar(Param2));
+    tempSlider.replace("maxval",  GetMeThatVar(Param3));
+
+    HTMLout = String(HTMLout + tempSlider);
+    return;
+  }
+
+
 
 
   if (Param0 == "dropdown" | Param0 == "listbox")

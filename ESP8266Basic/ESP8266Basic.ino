@@ -25,7 +25,7 @@
 
 
 
-//Onewire tempture sensoor code conntributed by Rotohammer.
+//Onewire tempture sensor code conntributed by Rotohammer.
 
 #include "spiffs/spiffs.h"
 #include <FS.h>
@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.30";
+String BasicVersion = "ESP Basic 1.31";
 
 
 OneWire oneWire(5);
@@ -248,12 +248,12 @@ Servo Servo2;
 Servo Servo3;
 Servo Servo4;
 Servo Servo5;
-Servo Servo6;
-Servo Servo7;
-Servo Servo8;
-Servo Servo9;
-Servo Servo10;
-Servo Servo11;
+//Servo Servo6;
+//Servo Servo7;
+//Servo Servo8;
+//Servo Servo9;
+//Servo Servo10;
+//Servo Servo11;
 Servo Servo12;
 Servo Servo13;
 Servo Servo14;
@@ -339,12 +339,12 @@ void setup() {
 
       if ( server.arg("save") == "Save" )
       {
-        staName = server.arg("staName");
-        staPass = server.arg("staPass");
-        apName  = server.arg("apName");
-        apPass  = server.arg("apPass");
-        LoginKey = server.arg("LoginKey");
-        ShowMenueBar = server.arg("showMenueBar");
+        staName = GetRidOfurlCharacters(server.arg("staName"));
+        staPass = GetRidOfurlCharacters(server.arg("staPass"));
+        apName  = GetRidOfurlCharacters(server.arg("apName"));
+        apPass  = GetRidOfurlCharacters(server.arg("apPass"));
+        LoginKey = GetRidOfurlCharacters(server.arg("LoginKey"));
+        ShowMenueBar = GetRidOfurlCharacters(server.arg("showMenueBar"));
 
         SaveDataToFile("WIFIname" , staName);
         SaveDataToFile("WIFIpass" , staPass);
@@ -399,9 +399,9 @@ void setup() {
 
 
       WebOut += "<hr></div><div style='float: right;'>Pin Stats";
-      for (byte i = 0; i <= 16; i++)
+      for (byte i = 0; i <= 15; i++)
       {
-        WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
+        if ( i < 6 | i > 11) WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
       }
       WebOut += "</div>";
     }
@@ -1335,7 +1335,7 @@ void ExicuteTheCurrentLine()
 
   //Web Browser output commands
 
-  if (Param0 == "wprint")
+  if (Param0 == "wprint" | Param0 == "html")
   {
     HTMLout += GetMeThatVar(Param1);
     //Serial.print(HTMLout);
@@ -2561,12 +2561,12 @@ void SetThePinMode(String PinCommand, byte pin)
     if (pin == 3)   Servo3.detach();
     if (pin == 4)   Servo4.detach();
     if (pin == 5)   Servo5.detach();
-    if (pin == 6)   Servo6.detach();
-    if (pin == 7)   Servo7.detach();
-    if (pin == 8)   Servo8.detach();
-    if (pin == 9)   Servo9.detach();
-    if (pin == 10)   Servo10.detach();
-    if (pin == 11)   Servo11.detach();
+    //    if (pin == 6)   Servo6.detach();
+    //    if (pin == 7)   Servo7.detach();
+    //    if (pin == 8)   Servo8.detach();
+    //    if (pin == 9)   Servo9.detach();
+    //    if (pin == 10)   Servo10.detach();
+    //    if (pin == 11)   Servo11.detach();
     if (pin == 12)   Servo12.detach();
     if (pin == 13)   Servo13.detach();
     if (pin == 14)   Servo14.detach();
@@ -2610,36 +2610,36 @@ void servoWrite(byte pin, int ValueForIO)
     Servo5.attach(5);
     Servo5.write(ValueForIO);
   }
-  if (pin == 6)
-  {
-    Servo6.attach(6);
-    Servo6.write(ValueForIO);
-  }
-  if (pin == 7)
-  {
-    Servo7.attach(7);
-    Servo7.write(ValueForIO);
-  }
-  if (pin == 8)
-  {
-    Servo8.attach(8);
-    Servo8.write(ValueForIO);
-  }
-  if (pin == 9)
-  {
-    Servo9.attach(9);
-    Servo9.write(ValueForIO);
-  }
-  if (pin == 10)
-  {
-    Servo10.attach(10);
-    Servo10.write(ValueForIO);
-  }
-  if (pin == 11)
-  {
-    Servo11.attach(11);
-    Servo11.write(ValueForIO);
-  }
+  //  if (pin == 6)
+  //  {
+  //    Servo6.attach(6);
+  //    Servo6.write(ValueForIO);
+  //  }
+  //  if (pin == 7)
+  //  {
+  //    Servo7.attach(7);
+  //    Servo7.write(ValueForIO);
+  //  }
+  //  if (pin == 8)
+  //  {
+  //    Servo8.attach(8);
+  //    Servo8.write(ValueForIO);
+  //  }
+  //  if (pin == 9)
+  //  {
+  //    Servo9.attach(9);
+  //    Servo9.write(ValueForIO);
+  //  }
+  //  if (pin == 10)
+  //  {
+  //    Servo10.attach(10);
+  //    Servo10.write(ValueForIO);
+  //  }
+  //  if (pin == 11)
+  //  {
+  //    Servo11.attach(11);
+  //    Servo11.write(ValueForIO);
+  //  }
   if (pin == 12)
   {
     Servo12.attach(12);

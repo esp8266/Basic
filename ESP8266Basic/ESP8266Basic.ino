@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.28";
+String BasicVersion = "ESP Basic 1.30";
 
 
 OneWire oneWire(5);
@@ -128,7 +128,6 @@ for (i = 0; i <= arrayOfLines.length - 1; i++)
     document.getElementById("Status").value = i.toString();
   }
 }
-
 document.getElementById("Status").value = "Saved";
 alert("Saved");
 }
@@ -376,12 +375,7 @@ void setup() {
       {
         WebOut.replace("**checked**", "");
       }
-
-
-
     }
-
-
 
     server.send(200, "text/html", WebOut);
   });
@@ -397,14 +391,14 @@ void setup() {
     }
     else
     {
-      WebOut += "<div>Variable Dump:";
+      WebOut += "<div style='float: left;'>Variable Dump:";
       for (byte i = 0; i <= 50; i++)
       {
         if (AllMyVaribles[i][1] != "" ) WebOut += String("<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
       }
 
 
-      WebOut += "<hr></div><div>Pin Stats";
+      WebOut += "<hr></div><div style='float: right;'>Pin Stats";
       for (byte i = 0; i <= 16; i++)
       {
         WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
@@ -461,8 +455,6 @@ void setup() {
 
       if ( server.arg("open") == "Open" )
       {
-
-        //LoadBasicProgramFromFlash(ProgramName);
         TextboxProgramBeingEdited = "";
         for (int i = TotalNumberOfLines - 1; i >= 0; i--)
         {
@@ -1018,6 +1010,8 @@ void ExicuteTheCurrentLine()
     Serial.println(Param5);
   }
 
+
+  if ( Param0 == "") return;
 
   if ( Param0 == "if")
   {

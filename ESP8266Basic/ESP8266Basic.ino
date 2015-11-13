@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.32";
+String BasicVersion = "ESP Basic 1.33";
 
 
 OneWire oneWire(5);
@@ -1891,6 +1891,11 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "int")
   {
     MyOut = String(Param0.toInt());
+  }
+
+  if (FunctionName == "wget")
+  {
+    MyOut = FetchWebUrl(Param0);
   }
 
 

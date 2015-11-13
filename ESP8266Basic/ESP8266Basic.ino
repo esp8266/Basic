@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.31";
+String BasicVersion = "ESP Basic 1.32";
 
 
 OneWire oneWire(5);
@@ -235,6 +235,8 @@ File fsUploadFile;
 int noOfLinesForEdit;
 String ProgramName;
 
+bool fileOpenFail;
+
 //int IOstatus[20][2];
 
 bool inputPromptActive = 0;
@@ -320,7 +322,7 @@ void setup() {
 
       if ( server.arg("update") == "Update" )
       {
-        t_httpUpdate_return  ret = ESPhttpUpdate.update("172.16.0.5", 80, "/test.bin");
+        t_httpUpdate_return  ret = ESPhttpUpdate.update("172.16.0.5", 80, "test.bin");
         switch (ret) {
           case HTTP_UPDATE_FAILD:
             Serial.println("HTTP_UPDATE_FAILD");
@@ -456,13 +458,14 @@ void setup() {
       if ( server.arg("open") == "Open" )
       {
         TextboxProgramBeingEdited = "";
-        for (int i = TotalNumberOfLines - 1; i >= 0; i--)
+        for (int i = 0; i <= TotalNumberOfLines; i++)
         {
           delay(0);
           String yada;
           yada = BasicProgram(i);
           yada.trim();
-          if (yada != "")  TextboxProgramBeingEdited = String( BasicProgram(i) + String('\n') + TextboxProgramBeingEdited);
+          if (yada != "")  TextboxProgramBeingEdited = String( TextboxProgramBeingEdited + String('\n') + BasicProgram(i) );
+          if (fileOpenFail == 1 & i > 1) break;
         }
       }
 
@@ -876,6 +879,7 @@ void runTillWaitPart2()
     delay(0);
     RunningProgramCurrentLine++;
     inData = BasicProgram(RunningProgramCurrentLine);
+    if (fileOpenFail == 1) inData  = "end";
     ExicuteTheCurrentLine();
   }
 }
@@ -2069,10 +2073,13 @@ String LoadDataFromFile(String fileNameForSave)
   File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "r");
   if (!f)
   {
-    //PrintAndWebOut("file open failed");
+    fileOpenFail = 1;
+    //Serial.print("file open failed  :");
+    //Serial.println(fileNameForSave);
   }
   else
   {
+    fileOpenFail = 0;
     WhatIwillReturn =  f.readStringUntil('\r');
     WhatIwillReturn.replace("\n", "");
     f.close();
@@ -2693,7 +2700,8 @@ String BasicProgram(int LineNumberToLookUp)
     ProgramName = "default";
   }
   delay(0);
-  return LoadDataFromFile(String(ProgramName  + "/" + String(LineNumberToLookUp)));
+
+  return LoadDataFromFile(String(ProgramName  + "/" + String(LineNumberToLookUp))) ;
   delay(0);
 }
 

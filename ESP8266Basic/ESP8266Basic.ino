@@ -323,7 +323,12 @@ void setup() {
 
       if ( server.arg("update") == "Update" )
       {
-        t_httpUpdate_return  ret = ESPhttpUpdate.update("172.16.0.5", 80, "test.bin");
+        t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
+       // t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266.SMBISOFT.COM", 80, "/4M/ESP8266Basic.cpp.bin");
+
+
+
+
         switch (ret) {
           case HTTP_UPDATE_FAILD:
             Serial.println("HTTP_UPDATE_FAILD");

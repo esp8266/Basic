@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.34";
+String BasicVersion = "ESP Basic 1.35";
 
 
 OneWire oneWire(5);

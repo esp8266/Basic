@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.33";
+String BasicVersion = "ESP Basic 1.34";
 
 
 OneWire oneWire(5);
@@ -115,6 +115,7 @@ const String editCodeJavaScript =  R"=====(
 function SaveTheCode() {
   var textArea = document.getElementById("code");
   var arrayOfLines = textArea.value.split("\n");
+  httpGet("/codein?SaveTheCode=start");
   httpGet("/codein?SaveTheCode=yes");
 for (i = 0; i <= arrayOfLines.length - 1; i++) 
 { 
@@ -494,8 +495,13 @@ void setup() {
       ProgramName = "default";
     }
 
-
-    if (server.arg("SaveTheCode") != "yes")
+    if (server.arg("SaveTheCode") == "start")
+    {
+      inData = "end";
+      ExicuteTheCurrentLine();
+    }
+    
+    if (server.arg("SaveTheCode") != "yes" & server.arg("SaveTheCode") != "start")
     {
       String LineNoForWebEditorIn;
       LineNoForWebEditorIn = server.arg("line");
@@ -506,7 +512,8 @@ void setup() {
       noOfLinesForEdit = y;
 
     }
-    else
+    
+    if (server.arg("SaveTheCode") == "yes")
     {
 
       String directoryToDeleteFilesFrom;
@@ -1637,6 +1644,7 @@ void ExicuteTheCurrentLine()
   {
     RunningProgram = 0;
     WaitForTheInterpertersResponse = 1;
+    TimerWaitTime = 0;
     PrintAndWebOut("Done...");
     return;
   }

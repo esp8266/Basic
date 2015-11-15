@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.35";
+String BasicVersion = "ESP Basic 1.36";
 
 
 OneWire oneWire(5);
@@ -324,7 +324,7 @@ void setup() {
       if ( server.arg("update") == "Update" )
       {
         t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
-       // t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266.SMBISOFT.COM", 80, "/4M/ESP8266Basic.cpp.bin");
+        // t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266.SMBISOFT.COM", 80, "/4M/ESP8266Basic.cpp.bin");
 
 
 
@@ -505,7 +505,7 @@ void setup() {
       inData = "end";
       ExicuteTheCurrentLine();
     }
-    
+
     if (server.arg("SaveTheCode") != "yes" & server.arg("SaveTheCode") != "start")
     {
       String LineNoForWebEditorIn;
@@ -517,7 +517,7 @@ void setup() {
       noOfLinesForEdit = y;
 
     }
-    
+
     if (server.arg("SaveTheCode") == "yes")
     {
 
@@ -597,6 +597,7 @@ void setup() {
 
 
   Wire.begin(0, 2);
+  StartUp_OLED();
   sensors.begin();
 
   server.begin();
@@ -1347,6 +1348,31 @@ void ExicuteTheCurrentLine()
     Serial.println(GetMeThatVar(Param1));
     return;
   }
+
+  //i2c led display
+  if (Param0 == "oledprint")
+  {
+    Param1 = GetMeThatVar(Param1);
+
+    int str_len = Param1.length() + 1;
+    char OLEDTString[str_len];
+    Param1.toCharArray(OLEDTString, str_len);
+    sendStrXY(OLEDTString, GetMeThatVar(Param2).toInt(), GetMeThatVar(Param3).toInt());
+    return;
+  }
+
+
+  if (Param0 == "oledcls")
+  {
+    clear_display();
+    return;
+  }
+
+
+  //end i2c display code
+
+
+
 
 
   //Web Browser output commands

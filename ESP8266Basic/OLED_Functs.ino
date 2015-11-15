@@ -1,3 +1,7 @@
+// Modified by DanBicks added OLED display to ESP01 using cheap Ebay 0.96" display
+// Lightweight Mike-Rankin OLED routines added in this project, Credits to Mike for this.
+// http://www.esp8266.com/viewtopic.php?f=29&t=3256
+
 #include "font.h"
 #define OLED_address  0x3c  //OLED I2C bus address... even if OLED states 0x78 !!!
 
@@ -186,6 +190,5 @@ static void init_OLED(void)
               Added to Mikes routine Draw routines
 ------------------------------------------------------------------------------------
 */
-
 
 

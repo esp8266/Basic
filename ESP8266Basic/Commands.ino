@@ -501,7 +501,7 @@ void ExicuteTheCurrentLine()
     for (int i = 0; i <= 20; i++)
     {
       tempDropDownListOpptions  = DropDownListOpptions;
-      TempBla = getValue(Param1, ',', i);
+      TempBla = getValue(String(Param1 + ","), ',', i);
       TempBla.replace(",", "");
       if (TempBla != "") {
 
@@ -521,7 +521,7 @@ void ExicuteTheCurrentLine()
     tempDropDownList.replace("variablenumber",  String(LastVarNumberLookedUp));
     tempDropDownList.replace("options",  TempItems);
     if (Param3.toInt() > 1 | Param0 == "dropdown") Param3 = "1";
-    tempDropDownList.replace("theSize",  Param3);
+    tempDropDownList.replace("theSize", String(Param3.toInt()));
 
     HTMLout = String(HTMLout + tempDropDownList);
     return;

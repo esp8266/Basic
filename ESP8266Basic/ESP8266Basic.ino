@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.36";
+String BasicVersion = "ESP Basic 1.37";
 
 
 OneWire oneWire(5);
@@ -1357,7 +1357,7 @@ void ExicuteTheCurrentLine()
     int str_len = Param1.length() + 1;
     char OLEDTString[str_len];
     Param1.toCharArray(OLEDTString, str_len);
-    sendStrXY(OLEDTString, GetMeThatVar(Param2).toInt(), GetMeThatVar(Param3).toInt());
+    sendStrXY(OLEDTString, GetMeThatVar(Param3).toInt(), GetMeThatVar(Param2).toInt());
     return;
   }
 

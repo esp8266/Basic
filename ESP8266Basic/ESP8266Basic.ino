@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.38";
+String BasicVersion = "ESP Basic 1.39";
 
 
 OneWire oneWire(5);
@@ -64,6 +64,7 @@ const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name=
 const String GOTOimagebutton =  R"=====(<input type="image" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
 const String normalImage =  R"=====(<img src="/file?file=name")=====";
 const String javascript =  R"=====(<script src="/file?file=name"></script>)=====";
+const String CSSscript =  R"=====(<link rel="stylesheet" type="text/css" href="/file?file=name">)=====";
 const String DropDownList =  R"=====(<select name="variablenumber" size="theSize">options</select>
 <script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
 const String DropDownListOpptions =  R"=====(<option>item</option>)=====";

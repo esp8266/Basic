@@ -416,6 +416,16 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if (Param0 == "css")
+  {
+    String tempInfo = CSSscript;
+    tempInfo.replace("name", GetMeThatVar(Param1));
+    HTMLout += tempInfo;
+    //Serial.print(HTMLout);
+    return;
+  }
+
+
   if (Param0 == "button")
   {
     numberButtonInUse++;

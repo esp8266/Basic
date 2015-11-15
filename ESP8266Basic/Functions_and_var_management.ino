@@ -148,6 +148,7 @@ String GetMeThatVar(String VariableNameToFind)
 
 String VarialbeLookup(String VariableNameToFind)
 {
+  VariableLocated = 0;
   String MyOut = VariableNameToFind;
   for (byte i = 0; i <= 50; i++)
   {
@@ -156,7 +157,8 @@ String VarialbeLookup(String VariableNameToFind)
       delay(0);
       MyOut =  AllMyVaribles[i][2];
       LastVarNumberLookedUp = i;
-
+      VariableLocated = 1;
+      break;
     }
   }
   return MyOut;

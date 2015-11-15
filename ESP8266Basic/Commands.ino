@@ -453,6 +453,12 @@ void ExicuteTheCurrentLine()
   {
     String tempTextBox = TextBox;
     GetMeThatVar(Param1);
+    if (VariableLocated == 0)
+    {
+      SetMeThatVar(Param1, "");
+      GetMeThatVar(Param1);
+    }
+
     tempTextBox.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
     tempTextBox.replace("variablenumber",  String(LastVarNumberLookedUp));
 
@@ -465,6 +471,11 @@ void ExicuteTheCurrentLine()
   {
     String tempSlider = Slider;
     GetMeThatVar(Param1);
+    if (VariableLocated == 0)
+    {
+      SetMeThatVar(Param1, "");
+      GetMeThatVar(Param1);
+    }
     tempSlider.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
     tempSlider.replace("variablenumber",  String(LastVarNumberLookedUp));
 
@@ -501,6 +512,11 @@ void ExicuteTheCurrentLine()
     }
 
     Param2 = GetMeThatVar(Param2);
+    if (VariableLocated == 0)     
+    {
+      SetMeThatVar(Param2,"");
+      GetMeThatVar(Param2);
+    }
 
     tempDropDownList.replace("variablenumber",  String(LastVarNumberLookedUp));
     tempDropDownList.replace("options",  TempItems);

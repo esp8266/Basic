@@ -43,7 +43,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-String BasicVersion = "ESP Basic 1.37";
+String BasicVersion = "ESP Basic 1.38";
 
 
 OneWire oneWire(5);
@@ -214,7 +214,7 @@ int TotalNumberOfLines = 255;
 
 String AllMyVaribles[50][2];
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
-
+bool VariableLocated;
 
 
 bool RunningProgram = 1;                                //Will be set to 1 if the program is currently running

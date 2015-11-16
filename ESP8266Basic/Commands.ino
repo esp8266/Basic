@@ -159,6 +159,14 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+
+  if (Param0 == "reboot" | Param0 == "restart")
+  {
+    ESP.restart();
+    return;
+  }
+
+
   if (Param0 == "vars")
   {
     //for debugging purpose to print out all of the basic variables

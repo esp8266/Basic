@@ -94,6 +94,10 @@ String GetMeThatVar(String VariableNameToFind)
     MyOut = FetchWebUrl(Param0);
   }
 
+  if (FunctionName == "id")
+  {
+    MyOut = String(ESP.getChipId());
+  }
 
 
   if (FunctionName == "i2c.begin")

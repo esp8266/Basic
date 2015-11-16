@@ -338,6 +338,13 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if ( Param0 == "sleep")
+  {
+
+    ESP.deepSleep(GetMeThatVar(Param1).toInt() * 1000000, WAKE_RF_DEFAULT);
+    return;
+  }
+
 
 
   if (Param0 == "print")
@@ -377,6 +384,17 @@ void ExicuteTheCurrentLine()
     clear_display();
     return;
   }
+
+
+
+  if (Param0 == "oledsend")
+  {
+    sendcommand(GetMeThatVar(Param1).toInt());
+    return;
+  }
+
+
+
 
 
   //end i2c display code
@@ -522,9 +540,9 @@ void ExicuteTheCurrentLine()
     }
 
     Param2 = GetMeThatVar(Param2);
-    if (VariableLocated == 0)     
+    if (VariableLocated == 0)
     {
-      SetMeThatVar(Param2,"");
+      SetMeThatVar(Param2, "");
       GetMeThatVar(Param2);
     }
 

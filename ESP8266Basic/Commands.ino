@@ -766,6 +766,26 @@ void ExicuteTheCurrentLine()
   }
 
 
+
+  if (Param0 == "setupemail")
+  {
+    EmailServer = GetMeThatVar(Param1);
+    Emailport = GetMeThatVar(Param2).toInt();
+    EmailSMTPuser = GetMeThatVar(Param3);
+    EmailSMTPpassword = GetMeThatVar(Param4);
+    return;
+  }
+
+
+  if (Param0 == "email" | Param0 == "sendemail" )
+  {
+    //To, From, Subject, MsgBody
+    sendEmail(GetMeThatVar(Param1), GetMeThatVar(Param2), GetMeThatVar(Param3), GetMeThatVar(Param4) );
+    return;
+  }
+
+
+
   //Code to handle MSG Branch
 
 

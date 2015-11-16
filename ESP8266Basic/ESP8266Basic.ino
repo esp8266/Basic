@@ -42,13 +42,23 @@
 #include <Servo.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include "Base64.h"
 
-String BasicVersion = "ESP Basic 1.41";
+
+String BasicVersion = "ESP Basic 1.42";
 
 
 OneWire oneWire(5);
 DallasTemperature sensors(&oneWire);
 
+
+
+
+WiFiClient EmailClient;
+String EmailServer;
+int Emailport;
+String EmailSMTPuser;
+String EmailSMTPpassword;
 
 
 
@@ -599,6 +609,7 @@ void setup() {
   RunningProgram = 0;
   WaitForTheInterpertersResponse = 1;
   StartUpProgramTimer();
+
 }
 
 

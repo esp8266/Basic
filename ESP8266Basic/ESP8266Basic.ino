@@ -44,8 +44,10 @@
 #include <DallasTemperature.h>
 #include "Base64.h"
 
+#include <WiFiClientSecure.h>
+#include "ESP8266httpUpdate.h"
 
-String BasicVersion = "ESP Basic 1.42";
+String BasicVersion = "ESP Basic 1.43";
 
 
 OneWire oneWire(5);
@@ -67,17 +69,20 @@ ESP8266WebServer server(80);
 
 //Web Server Variables
 String HTMLout;
-const String InputFormText = R"=====( <input type="text" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
-const String TextBox = R"=====( <input type="text" name="variablenumber" value="variablevalue">)=====";
-const String Slider = R"=====( <input type="range" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
-const String GOTObutton =  R"=====(<input type="submit" value="gotonotext" name="gotonobranch">)=====";
-const String GOTOimagebutton =  R"=====(<input type="image" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
-const String normalImage =  R"=====(<img src="/file?file=name")=====";
+const String InputFormText = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
+const String TextBox = R"=====( <input type="text" id="myid" name="variablenumber" value="variablevalue">)=====";
+const String Slider = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
+const String GOTObutton =  R"=====(<input type="submit" id="myid" value="gotonotext" name="gotonobranch">)=====";
+const String GOTOimagebutton =  R"=====(<input type="image" id="myid" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
+const String normalImage =  R"=====(<img src="/file?file=name">)=====";
 const String javascript =  R"=====(<script src="/file?file=name"></script>)=====";
 const String CSSscript =  R"=====(<link rel="stylesheet" type="text/css" href="/file?file=name">)=====";
-const String DropDownList =  R"=====(<select name="variablenumber" size="theSize">options</select>
+const String DropDownList =  R"=====(<select name="variablenumber" id="myid" size="theSize">options</select>
 <script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
 const String DropDownListOpptions =  R"=====(<option>item</option>)=====";
+
+
+String LastElimentIdTag;
 
 
 
@@ -329,13 +334,10 @@ void setup() {
       if ( server.arg("update") == "Update" )
       {
         t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
-        // t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266.SMBISOFT.COM", 80, "/4M/ESP8266Basic.cpp.bin");
-
-
-
-
+        //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
+        
         switch (ret) {
-          case HTTP_UPDATE_FAILD:
+          case HTTP_UPDATE_FAILED:
             Serial.println("HTTP_UPDATE_FAILD");
             break;
 

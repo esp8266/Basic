@@ -424,7 +424,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "image")
   {
-    String tempInfo = normalImage;
+    String tempInfo = GenerateIDtag(normalImage);
     tempInfo.replace("name", GetMeThatVar(Param1));
     HTMLout += tempInfo;
     //Serial.print(HTMLout);
@@ -455,7 +455,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == "button")
   {
     numberButtonInUse++;
-    String tempButton = GOTObutton;
+    String tempButton = GenerateIDtag(GOTObutton);
     tempButton.replace("gotonotext",  GetMeThatVar(Param1));
     //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
 
@@ -472,7 +472,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == "imagebutton")
   {
     numberButtonInUse++;
-    String tempButton = GOTOimagebutton;
+    String tempButton = GenerateIDtag(GOTOimagebutton);
     tempButton.replace("gotonotext",  GetMeThatVar(Param1));
     //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
 
@@ -487,7 +487,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "textbox")
   {
-    String tempTextBox = TextBox;
+    String tempTextBox = GenerateIDtag(TextBox);
     GetMeThatVar(Param1);
     if (VariableLocated == 0)
     {
@@ -505,7 +505,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "slider")
   {
-    String tempSlider = Slider;
+    String tempSlider = GenerateIDtag(Slider);
     GetMeThatVar(Param1);
     if (VariableLocated == 0)
     {
@@ -527,7 +527,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "dropdown" | Param0 == "listbox")
   {
-    String tempDropDownList = DropDownList;
+    String tempDropDownList = GenerateIDtag(DropDownList);
     String tempDropDownListOpptions  = DropDownListOpptions;
     String TempItems;
     String TempBla;
@@ -562,6 +562,10 @@ void ExicuteTheCurrentLine()
     HTMLout = String(HTMLout + tempDropDownList);
     return;
   }
+
+
+
+
 
 
 

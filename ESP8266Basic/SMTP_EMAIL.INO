@@ -159,7 +159,7 @@ String GetMeBase64(String StringToConvert)
   int str_len = StringToConvert.length() + 1;
   char input[str_len];
   StringToConvert.toCharArray(input, str_len);
-  int inputLen = sizeof(input);
+  int inputLen = sizeof(input) - 1;
 
   int encodedLen = base64_enc_len(inputLen);
   char encoded[encodedLen];

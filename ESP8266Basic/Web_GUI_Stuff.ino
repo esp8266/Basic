@@ -190,3 +190,14 @@ void CheckFOrWebVarInput()
   }
   return;
 }
+
+
+
+
+String GenerateIDtag(String TempateString)
+{
+  LastElimentIdTag = String(millis());
+  TempateString.replace("myid",LastElimentIdTag );
+  return TempateString;
+}
+

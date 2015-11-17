@@ -100,6 +100,14 @@ String GetMeThatVar(String VariableNameToFind)
   }
 
 
+  if (FunctionName == "htmlid")
+  {
+    MyOut = LastElimentIdTag;
+  }
+
+
+
+
   if (FunctionName == "i2c.begin")
   {
     i2cPinNo = Param0.toInt();

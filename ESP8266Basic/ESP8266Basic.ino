@@ -46,8 +46,10 @@
 
 #include <WiFiClientSecure.h>
 #include "ESP8266httpUpdate.h"
+#include <time.h>
 
-String BasicVersion = "ESP Basic 1.43";
+
+String BasicVersion = "ESP Basic 1.44";
 
 
 OneWire oneWire(5);
@@ -276,6 +278,9 @@ Servo Servo16;
 String  PinListOfStatus[16];
 int  PinListOfStatusValues[16];
 
+//time Stff
+int timezone = 3;
+int dst = 0;
 
 
 
@@ -333,11 +338,13 @@ void setup() {
 
       if ( server.arg("update") == "Update" )
       {
+
+//        Serial.println(BasicOTAupgrade());
         t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
         //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
         
         switch (ret) {
-          case HTTP_UPDATE_FAILED:
+          case HTTP_UPDATE_FAILD:
             Serial.println("HTTP_UPDATE_FAILD");
             break;
 
@@ -636,7 +643,7 @@ void StartUpProgramTimer()
 {
   while  (millis() < 30000)
   {
-    //delay(1000);
+    delay(0);
     //Serial.println(millis());
     server.handleClient();
     if (WaitForTheInterpertersResponse == 0) return;

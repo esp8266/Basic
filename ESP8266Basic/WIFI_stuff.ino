@@ -48,6 +48,7 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
   }
   else
   {
+//    configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     Serial.println("");
     Serial.print("Connected to ");
     Serial.println(ssid);

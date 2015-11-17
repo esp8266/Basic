@@ -106,6 +106,20 @@ String GetMeThatVar(String VariableNameToFind)
   }
 
 
+  if (FunctionName == "time")
+  {
+    
+    time_t now = time(nullptr);
+    MyOut = String(ctime(&now));
+  }
+
+
+  if (FunctionName == "timesetup")
+  {
+    timezone = Param0.toInt();
+    int dst = Param1.toInt();
+  }
+
 
 
   if (FunctionName == "i2c.begin")

@@ -374,6 +374,18 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  
+
+  if (Param0 == "baudrate")
+  {
+    Serial.begin(GetMeThatVar(Param1).toInt());
+    return;
+  }
+
+
+
+  
+
   //i2c led display
   if (Param0 == "oledprint")
   {

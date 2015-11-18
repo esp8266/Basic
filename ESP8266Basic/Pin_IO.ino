@@ -1,6 +1,24 @@
 //begin all of the i/o code
-float UniversalPinIO(String PinCommand, byte pin, float PinValue)
+float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
 {
+  byte pin = PinDesignaor.toInt();
+  PinDesignaor.toUpperCase();
+
+
+//PIN DESIGNATIONS FOR NODE MCU
+  if (PinDesignaor == "D0")  pin = 16;
+  if (PinDesignaor == "D1")  pin = 5;
+  if (PinDesignaor == "D2")  pin = 4;
+  if (PinDesignaor == "D3")  pin = 0;
+  if (PinDesignaor == "D4")  pin = 2;
+  if (PinDesignaor == "D5")  pin = 14;
+  if (PinDesignaor == "D6")  pin = 12;
+  if (PinDesignaor == "D7")  pin = 13;
+  if (PinDesignaor == "D8")  pin = 15;
+  if (PinDesignaor == "RX")  pin = 3;
+  if (PinDesignaor == "TX")  pin = 1;
+
+
   PinListOfStatus[pin] = PinCommand;
   PinListOfStatusValues[pin] = PinValue;
   SetThePinMode(PinCommand, pin);

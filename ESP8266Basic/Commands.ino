@@ -88,14 +88,14 @@ void ExicuteTheCurrentLine()
   if (Param0 == "for")
   {
 
-    for (int i = 1; i <= ForNextReturnLocations[0]; i++)
-    {
-      delay(0);
-      if (RunningProgramCurrentLine == ForNextReturnLocations[i])
-      {
-        break;
-      }
-    }
+//    for (int i = ForNextReturnLocations[0]; i <= 1; i--)
+//    {
+//      delay(0);
+//      if (RunningProgramCurrentLine == ForNextReturnLocations[i])
+//      {
+//        break;
+//      }
+//    }
 
     ForNextReturnLocations[0]++;
     ForNextReturnLocations[ForNextReturnLocations[0]] = RunningProgramCurrentLine;
@@ -110,7 +110,7 @@ void ExicuteTheCurrentLine()
   {
     //for x = 1 to 10
 
-    for (int i = 1; i <= ForNextReturnLocations[0]; i++)
+    for (int i = ForNextReturnLocations[0]; i >= 1; i--)
     {
       delay(0);
       String gotoTestFor = BasicProgram(ForNextReturnLocations[i]);
@@ -141,6 +141,7 @@ void ExicuteTheCurrentLine()
         }
         else
         {
+          ForNextReturnLocations[0]--;
           return;
         }
       }
@@ -245,36 +246,33 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == "pi")
   {
-    valParam1 = GetMeThatVar(Param1).toInt();
 
-    SetMeThatVar(Param2, String(UniversalPinIO("pi", valParam1, 0)));
+    SetMeThatVar(Param2, String(UniversalPinIO("pi", GetMeThatVar(Param1), 0)));
     return;
   }
 
   if ( Param0 == "po")
   {
-    valParam1 = GetMeThatVar(Param1).toInt();
+
     valParam2 = GetMeThatVar(Param2).toInt();
 
-    UniversalPinIO("po", valParam1, valParam2);
+    UniversalPinIO("po", GetMeThatVar(Param1), valParam2);
     return;
   }
 
 
   if ( Param0 == "pwi")
   {
-    valParam1 = GetMeThatVar(Param1).toInt();
-
-    SetMeThatVar(Param2, String(UniversalPinIO("pwi", valParam1, 0)));
+    SetMeThatVar(Param2, String(UniversalPinIO("pwi", GetMeThatVar(Param1), 0)));
     return;
   }
 
   if ( Param0 == "pwo")
   {
-    valParam1 = GetMeThatVar(Param1).toInt();
+
     valParam2 = GetMeThatVar(Param2).toInt();
 
-    UniversalPinIO("pwo", valParam1, valParam2);
+    UniversalPinIO("pwo", GetMeThatVar(Param1), valParam2);
     return;
   }
 
@@ -299,10 +297,9 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == "servo")
   {
-    valParam1 = GetMeThatVar(Param1).toInt();
     valParam2 = GetMeThatVar(Param2).toInt();
 
-    UniversalPinIO("servo", valParam1, valParam2);
+    UniversalPinIO("servo", GetMeThatVar(Param1), valParam2);
     return;
   }
 

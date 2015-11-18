@@ -87,6 +87,20 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "for")
   {
+
+    for (int i = 1; i <= ForNextReturnLocations[0]; i++)
+    {
+      delay(0);
+      if (RunningProgramCurrentLine == ForNextReturnLocations[i])
+      {
+        break;
+      }
+    }
+
+    ForNextReturnLocations[0]++;
+    ForNextReturnLocations[ForNextReturnLocations[0]] = RunningProgramCurrentLine;
+
+
     Param0 = "let";
   }
 
@@ -96,18 +110,19 @@ void ExicuteTheCurrentLine()
   {
     //for x = 1 to 10
 
-    for (int i = RunningProgramCurrentLine; i >= 1; i--)
+    for (int i = 1; i <= ForNextReturnLocations[0]; i++)
     {
       delay(0);
-      String gotoTestFor = BasicProgram(i);
+      String gotoTestFor = BasicProgram(ForNextReturnLocations[i]);
       gotoTestFor.trim();
 
-      String ForTest = getValue(gotoTestFor, ' ', 0);
-      ForTest.toLowerCase();
       String VarTest = getValue(gotoTestFor, ' ', 1);
 
       String VarTestIfDone = getValue(gotoTestFor, ' ', 5);
-      if (ForTest == "for" &  VarTest == Param1)
+      if (ForNextReturnLocations[i] == 0) return;
+
+
+      if (VarTest == Param1)
       {
         float test1 = GetMeThatVar(VarTest).toFloat();
         float test2 = GetMeThatVar(VarTestIfDone).toFloat();
@@ -117,7 +132,7 @@ void ExicuteTheCurrentLine()
 
         if ( test1  !=  test2 )
         {
-          RunningProgramCurrentLine = i;
+          RunningProgramCurrentLine = ForNextReturnLocations[i];
           Param0 = "let";
           Param3 = Param1;
           Param4 = "+";
@@ -219,22 +234,6 @@ void ExicuteTheCurrentLine()
 
     PrintAndWebOut(String("/" + Param1));
     PrintAndWebOut(String(SPIFFS.remove(String("/" + Param1))));
-    return;
-  }
-
-
-
-
-  //Loading and saving basic program commands
-  if (Param0 == "load")
-  {
-    GraphicsEliments[0][0] = 0;
-    PrintAndWebOut(String("Loading . . . . " + Param1));
-    ProgramName = Param1;
-    numberButtonInUse = 0;
-    RunningProgramCurrentLine = 0;
-    HTMLout = "";
-    TimerWaitTime = 0;
     return;
   }
 
@@ -374,7 +373,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  
+
 
   if (Param0 == "baudrate")
   {
@@ -384,7 +383,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  
+
 
   //i2c led display
   if (Param0 == "oledprint")
@@ -751,10 +750,32 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "end")
   {
+
+    for (int i = 0; i <= 255; i++)
+    {
+      ForNextReturnLocations[i] = 0;
+    }
     RunningProgram = 0;
     WaitForTheInterpertersResponse = 1;
     TimerWaitTime = 0;
     PrintAndWebOut("Done...");
+    return;
+  }
+
+
+  if (Param0 == "load")
+  {
+    for (int i = 0; i <= 255; i++)
+    {
+      ForNextReturnLocations[i] = 0;
+    }
+    GraphicsEliments[0][0] = 0;
+    PrintAndWebOut(String("Loading . . . . " + Param1));
+    ProgramName = Param1;
+    numberButtonInUse = 0;
+    RunningProgramCurrentLine = 0;
+    HTMLout = "";
+    TimerWaitTime = 0;
     return;
   }
 

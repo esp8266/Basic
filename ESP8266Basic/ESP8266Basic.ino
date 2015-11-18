@@ -49,7 +49,7 @@
 #include <time.h>
 
 
-String BasicVersion = "ESP Basic 1.44";
+String BasicVersion = "ESP Basic 1.45";
 
 
 OneWire oneWire(5);
@@ -260,6 +260,11 @@ bool fileOpenFail;
 bool inputPromptActive = 0;
 
 int LoggedIn = 0;
+
+
+
+byte ForNextReturnLocations[255];
+
 
 
 Servo Servo0;

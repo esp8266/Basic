@@ -108,7 +108,7 @@ String GetMeThatVar(String VariableNameToFind)
 
   if (FunctionName == "time")
   {
-    
+
     time_t now = time(nullptr);
     MyOut = String(ctime(&now));
   }
@@ -119,6 +119,14 @@ String GetMeThatVar(String VariableNameToFind)
     timezone = Param0.toInt();
     int dst = Param1.toInt();
   }
+
+
+  if (FunctionName == "io")
+  {
+    MyOut = UniversalPinIO(Param0, Param1,  Param2.toFloat());
+  }
+
+
 
 
 

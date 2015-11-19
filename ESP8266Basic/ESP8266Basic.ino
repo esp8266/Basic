@@ -49,7 +49,7 @@
 #include <time.h>
 
 
-String BasicVersion = "ESP Basic 1.46";
+String BasicVersion = "ESP Basic 1.47";
 
 
 OneWire oneWire(5);

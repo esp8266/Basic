@@ -58,7 +58,7 @@
 #include <FastIO.h>
 #include <LiquidCrystal_I2C.h>
 
-String BasicVersion = "ESP Basic 1.48";
+String BasicVersion = "ESP Basic 1.49";
 
 
 OneWire oneWire(5);

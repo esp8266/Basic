@@ -2,7 +2,7 @@
 
 bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_STA);
   byte numberOfAtempts = 0;
   int str_len = NetworkName.length() + 1;
   char ssid[str_len];
@@ -42,13 +42,17 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
     WiFi.config(ip, gateway, subnet);
   }
 
+
+
   if (WiFi.localIP().toString().endsWith(".0"))
   {
+    Serial.println(WiFi.localIP());
     CreateAP("", "");
+    return 0;
   }
   else
   {
-//    configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+    //    configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     Serial.println("");
     Serial.print("Connected to ");
     Serial.println(ssid);
@@ -56,9 +60,10 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
     Serial.println(WiFi.localIP());
     SaveDataToFile("WIFIname" ,  NetworkName);
     SaveDataToFile("WIFIpass", NetworkPassword);
+    return 1;
   }
 
-  return 1;
+
 }
 
 

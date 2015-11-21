@@ -49,13 +49,22 @@
 #include <time.h>
 
 
-String BasicVersion = "ESP Basic 1.47";
+#include <LiquidCrystal_SR.h>
+#include <I2CIO.h>
+#include <LiquidCrystal.h>
+#include <LiquidCrystal_SR3W.h>
+#include <LCD.h>
+#include <LiquidCrystal_SR2W.h>
+#include <FastIO.h>
+#include <LiquidCrystal_I2C.h>
+
+String BasicVersion = "ESP Basic 1.48";
 
 
 OneWire oneWire(5);
 DallasTemperature sensors(&oneWire);
 
-
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
 
 
 WiFiClient EmailClient;
@@ -617,6 +626,7 @@ void setup() {
 
   Wire.begin(0, 2);
   StartUp_OLED();
+  lcd.begin(16,2); // initialize the lcd for 16 chars 2 lines and turn on backlight
   sensors.begin();
 
   server.begin();

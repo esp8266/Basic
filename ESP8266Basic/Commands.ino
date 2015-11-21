@@ -415,6 +415,48 @@ void ExicuteTheCurrentLine()
 
   //end i2c display code
 
+  //i2c 1602 lcd display
+  if (Param0 == "lcdprint")
+  {
+    Param1 = GetMeThatVar(Param1);
+
+    int str_len = Param1.length() + 1;
+    char LCDTString[str_len];
+    Param1.toCharArray(LCDTString, str_len);
+    lcd.setCursor(GetMeThatVar(Param2).toInt(), GetMeThatVar(Param3).toInt());
+    lcd.print(LCDTString);
+    return;
+  }
+
+  if (Param0 == "lcdcls")
+  {
+    lcd.clear();
+    return;
+  }
+  
+  if (Param0 == "lcdbl")
+  {
+    if (GetMeThatVar(Param1).toInt() == 1) 
+    {
+      lcd.backlight();
+    } 
+    else 
+    {
+      lcd.noBacklight();
+    }
+    return;
+  }
+
+
+  if (Param0 == "lcdsend")
+  {
+    //Param1 is the value to send
+    //Param2 is MODE: 0=COMMAND, 1=DATA, 2=FOUR_BITS
+    lcd.send(GetMeThatVar(Param1).toInt(), GetMeThatVar(Param2).toInt());
+    return;
+  }
+
+  //end i2c 1602 lcd display code
 
 
 

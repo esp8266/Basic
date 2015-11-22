@@ -88,14 +88,14 @@ void ExicuteTheCurrentLine()
   if (Param0 == "for")
   {
 
-//    for (int i = ForNextReturnLocations[0]; i <= 1; i--)
-//    {
-//      delay(0);
-//      if (RunningProgramCurrentLine == ForNextReturnLocations[i])
-//      {
-//        break;
-//      }
-//    }
+    //    for (int i = ForNextReturnLocations[0]; i <= 1; i--)
+    //    {
+    //      delay(0);
+    //      if (RunningProgramCurrentLine == ForNextReturnLocations[i])
+    //      {
+    //        break;
+    //      }
+    //    }
 
     ForNextReturnLocations[0]++;
     ForNextReturnLocations[ForNextReturnLocations[0]] = RunningProgramCurrentLine;
@@ -433,14 +433,14 @@ void ExicuteTheCurrentLine()
     lcd.clear();
     return;
   }
-  
+
   if (Param0 == "lcdbl")
   {
-    if (GetMeThatVar(Param1).toInt() == 1) 
+    if (GetMeThatVar(Param1).toInt() == 1)
     {
       lcd.backlight();
-    } 
-    else 
+    }
+    else
     {
       lcd.noBacklight();
     }
@@ -739,7 +739,10 @@ void ExicuteTheCurrentLine()
   }
 
 
-
+  if (Param0 == "ps2input")
+  {
+    SetMeThatVar(Param1, GetPS2input());
+  }
 
   //branching commands
 

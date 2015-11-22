@@ -4,8 +4,9 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
   byte pin = PinDesignaor.toInt();
   PinDesignaor.toUpperCase();
 
+  PinDesignaor.replace(".00", "");
 
-//PIN DESIGNATIONS FOR NODE MCU
+  //PIN DESIGNATIONS FOR NODE MCU
   if (PinDesignaor == "D0")  pin = 16;
   if (PinDesignaor == "D1")  pin = 5;
   if (PinDesignaor == "D2")  pin = 4;

@@ -1,3 +1,5 @@
+
+
 //ESP8266 Basic Interperter
 //HTTP://ESP8266BASIC.COM
 //
@@ -49,6 +51,7 @@
 #include <time.h>
 
 
+//LCD Stuff
 #include <LiquidCrystal_SR.h>
 #include <I2CIO.h>
 #include <LiquidCrystal.h>
@@ -58,7 +61,12 @@
 #include <FastIO.h>
 #include <LiquidCrystal_I2C.h>
 
-String BasicVersion = "ESP Basic 1.49";
+//PS2 Key Board
+#include <PS2Keyboard.h>
+
+
+
+String BasicVersion = "ESP Basic 1.50";
 
 
 OneWire oneWire(5);
@@ -66,6 +74,7 @@ DallasTemperature sensors(&oneWire);
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
 
+PS2Keyboard keyboard;
 
 WiFiClient EmailClient;
 String EmailServer;
@@ -353,10 +362,10 @@ void setup() {
       if ( server.arg("update") == "Update" )
       {
 
-//        Serial.println(BasicOTAupgrade());
+        //        Serial.println(BasicOTAupgrade());
         t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
         //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
-        
+
         switch (ret) {
           case HTTP_UPDATE_FAILD:
             Serial.println("HTTP_UPDATE_FAILD");
@@ -625,8 +634,11 @@ void setup() {
 
 
   Wire.begin(0, 2);
+
+  keyboard.begin(14, 12); //For PS2 keyboard input
+
   StartUp_OLED();
-  lcd.begin(16,2); // initialize the lcd for 16 chars 2 lines and turn on backlight
+  lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
   sensors.begin();
 
   server.begin();
@@ -746,7 +758,7 @@ void handleFileUpdate()
 
 String  getSerialInput()
 {
-  byte donereceivinginfo = 0;
+  bool donereceivinginfo = 0;
   Serial.println(">");
 
   String someInput;
@@ -767,6 +779,68 @@ String  getSerialInput()
     }
   }
 }
+
+
+
+
+
+
+String GetPS2input()
+{
+  String PS2inputString;
+
+
+  bool donereceivinginfo = 0;
+
+  while (donereceivinginfo == 0)
+  { 
+    delay(0);
+    while (keyboard.available())
+    {
+	  delay(0);
+      // read the next key
+      char c = keyboard.read();
+
+      // check for some of the special keys
+      if (c == PS2_ENTER) {
+        return PS2inputString;
+      } else if (c == PS2_TAB) {
+        //Serial.print("[Tab]");
+      } else if (c == PS2_ESC) {
+        return "";
+      } else if (c == PS2_PAGEDOWN) {
+        //Serial.print("[PgDn]");
+      } else if (c == PS2_PAGEUP) {
+        //Serial.print("[PgUp]");
+      } else if (c == PS2_LEFTARROW) {
+        //Serial.print("[Left]");
+      } else if (c == PS2_RIGHTARROW) {
+        //Serial.print("[Right]");
+      } else if (c == PS2_UPARROW) {
+        //Serial.print("[Up]");
+      } else if (c == PS2_DOWNARROW) {
+        //Serial.print("[Down]");
+      } else if (c == PS2_DELETE) {
+        //Serial.print("[Del]");
+      } else {
+        if (BasicDebuggingOn == 1) Serial.print(c);
+        PS2inputString += c;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

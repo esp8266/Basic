@@ -130,6 +130,29 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
+//  if (FunctionName == "flashfree")
+//  {
+//    struct FSInfo {
+//      size_t totalBytes;
+//      size_t usedBytes;
+//      size_t blockSize;
+//      size_t pageSize;
+//      size_t maxOpenFiles;
+//      size_t maxPathLength;
+//    };
+//    FSInfo fs_info;
+//    SPIFFS.info(fs_info);
+//    int FlashSize = totalBytes;
+//    FlashSize -= totalBytes;
+//    MyOut = String(FlashSize);
+//  }
+
+
+
+
+
+
+
   if (FunctionName == "i2c.begin")
   {
     i2cPinNo = Param0.toInt();

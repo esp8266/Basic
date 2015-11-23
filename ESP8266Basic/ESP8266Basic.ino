@@ -1,5 +1,3 @@
-
-
 //ESP8266 Basic Interperter
 //HTTP://ESP8266BASIC.COM
 //
@@ -66,10 +64,17 @@
 
 
 
-String BasicVersion = "ESP Basic 1.50";
+String BasicVersion = "ESP Basic 1.52";
 
 
-OneWire oneWire(5);
+
+
+
+
+
+
+
+OneWire oneWire(2);
 DallasTemperature sensors(&oneWire);
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
@@ -193,6 +198,7 @@ Station Mode (Connect to your router):</th></tr>
 <br><br>Log In Key (For Security):</th></tr>
 <tr><th><p align="right">Log In Key:</p></th><th><input type="text" name="LoginKey" value="*LoginKey*"></th></tr>
 <tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
+<tr><th><p align="right">OTA URL. Leave blank for default:</p></th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
 <tr><th>
 <input type="submit" value="Save" name="save"></th>
 <th><input type="submit" value="Format" name="format"></th>
@@ -307,6 +313,8 @@ int dst = 0;
 
 
 
+FSInfo fs_info;
+
 void setup() {
   SPIFFS.begin();
   Serial.begin(9600);
@@ -343,6 +351,7 @@ void setup() {
     String apPass;
     String LoginKey;
     String ShowMenueBar;
+    String otaUrl;
     //Serial.print("Loading Settings Files");
 
     staName      = LoadDataFromFile("WIFIname");
@@ -351,6 +360,7 @@ void setup() {
     apPass       = LoadDataFromFile("APpass");
     LoginKey     = LoadDataFromFile("LoginKey");
     ShowMenueBar = LoadDataFromFile("ShowMenueBar");
+    otaUrl       = LoadDataFromFile("otaUrl");
 
     if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
     {
@@ -363,22 +373,23 @@ void setup() {
       {
 
         //        Serial.println(BasicOTAupgrade());
-        t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
+        if (LoadDataFromFile("otaUrl") == "")
+        {
+          t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
+          if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
+        }
+        else
+        {
+          String URLtoGet = LoadDataFromFile("otaUrl");
+          String ServerToConnectTo;
+          String PageToGet;
+          ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
+          PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
+          t_httpUpdate_return  ret = ESPhttpUpdate.update(ServerToConnectTo, 80, PageToGet);
+          if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
+        }
         //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
 
-        switch (ret) {
-          case HTTP_UPDATE_FAILD:
-            Serial.println("HTTP_UPDATE_FAILD");
-            break;
-
-          case HTTP_UPDATE_NO_UPDATES:
-            Serial.println("HTTP_UPDATE_NO_UPDATES");
-            break;
-
-          case HTTP_UPDATE_OK:
-            Serial.println("HTTP_UPDATE_OK");
-            break;
-        }
       }
 
 
@@ -390,6 +401,7 @@ void setup() {
         apPass  = GetRidOfurlCharacters(server.arg("apPass"));
         LoginKey = GetRidOfurlCharacters(server.arg("LoginKey"));
         ShowMenueBar = GetRidOfurlCharacters(server.arg("showMenueBar"));
+        otaUrl       = GetRidOfurlCharacters(server.arg("otaurl"));
 
         SaveDataToFile("WIFIname" , staName);
         SaveDataToFile("WIFIpass" , staPass);
@@ -397,6 +409,7 @@ void setup() {
         SaveDataToFile("APpass" , apPass);
         SaveDataToFile("LoginKey" , LoginKey);
         SaveDataToFile("ShowMenueBar" , ShowMenueBar);
+        SaveDataToFile("otaUrl" , otaUrl);
       }
 
       if ( server.arg("format") == "Format" )
@@ -411,7 +424,8 @@ void setup() {
       WebOut.replace("*ap pass*",  apPass);
       WebOut.replace("*LoginKey*", LoginKey);
       WebOut.replace("*BasicVersion*", BasicVersion);
-
+      WebOut.replace("*otaurl*", otaUrl);
+      
       if ( ShowMenueBar == "off")
       {
         WebOut.replace("**checked**", "checked");
@@ -793,11 +807,11 @@ String GetPS2input()
   bool donereceivinginfo = 0;
 
   while (donereceivinginfo == 0)
-  { 
+  {
     delay(0);
     while (keyboard.available())
     {
-	  delay(0);
+      delay(0);
       // read the next key
       char c = keyboard.read();
 

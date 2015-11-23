@@ -502,38 +502,6 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "button")
-  {
-    numberButtonInUse++;
-    String tempButton = GenerateIDtag(GOTObutton);
-    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
-    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
-
-    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
-
-    ButtonsInUse[numberButtonInUse] = Param2;
-    //Serial.println(ButtonsInUse[numberButtonInUse]);
-    HTMLout = String(HTMLout + tempButton);
-    return;
-  }
-
-
-
-  if (Param0 == "imagebutton")
-  {
-    numberButtonInUse++;
-    String tempButton = GenerateIDtag(GOTOimagebutton);
-    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
-    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
-
-    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
-
-    ButtonsInUse[numberButtonInUse] = Param2;
-    //Serial.println(ButtonsInUse[numberButtonInUse]);
-    HTMLout = String(HTMLout + tempButton);
-    return;
-  }
-
 
   if (Param0 == "textbox")
   {
@@ -615,6 +583,39 @@ void ExicuteTheCurrentLine()
 
 
 
+
+
+  if (Param0 == "button")
+  {
+    numberButtonInUse++;
+    String tempButton = GenerateIDtag(GOTObutton);
+    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
+    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
+
+    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
+
+    ButtonsInUse[numberButtonInUse] = Param2;
+    //Serial.println(ButtonsInUse[numberButtonInUse]);
+    HTMLout = String(HTMLout + tempButton);
+    return;
+  }
+
+
+
+  if (Param0 == "imagebutton")
+  {
+    numberButtonInUse++;
+    String tempButton = GenerateIDtag(GOTOimagebutton);
+    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
+    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
+
+    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
+
+    ButtonsInUse[numberButtonInUse] = Param2;
+    //Serial.println(ButtonsInUse[numberButtonInUse]);
+    HTMLout = String(HTMLout + tempButton);
+    return;
+  }
 
 
 

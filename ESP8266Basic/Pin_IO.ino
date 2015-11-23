@@ -28,6 +28,7 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
   else if (PinCommand == "pwi") return analogRead(pin);
   else if (PinCommand == "pwo") analogWrite(pin, PinValue);
   else if (PinCommand == "servo") servoWrite(pin, PinValue);
+  else if (PinCommand == "ai") return analogRead(A0);
   return 0;
 }
 

@@ -64,7 +64,7 @@
 
 
 
-String BasicVersion = "ESP Basic 1.52";
+String BasicVersion = "ESP Basic 1.53";
 
 
 
@@ -444,7 +444,7 @@ void setup() {
   server.on("/vars", []()
   {
     String WebOut = AdminBarHTML;
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 & LoadDataFromFile("LoginKey") != "")
     {
       WebOut = LogInPage;
     }
@@ -497,7 +497,7 @@ void setup() {
   server.on("/edit", []()
   {
     String WebOut = AdminBarHTML;
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+    if (millis() > LoggedIn + 600000 || LoggedIn == 0 & LoadDataFromFile("LoginKey") != "")
     {
       WebOut = LogInPage;
     }
@@ -705,7 +705,7 @@ void DoSomeFileManagerCode()
   String WholeUploadPage = UploadPage;
   String FileListForPage ;
 
-  if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+  if (millis() > LoggedIn + 600000 || LoggedIn == 0 & LoadDataFromFile("LoginKey") != "")
   {
     WholeUploadPage = LogInPage;
   }
@@ -999,11 +999,11 @@ String getValue(String data, char separator, int index)
 
 String DoMathForMe(String cc, String f, String dd )
 {
-  float e;
+  double e;
   String ee = cc;
 
-  float c = cc.toFloat();
-  float d = dd.toFloat();
+  double c = cc.toFloat();
+  double d = dd.toFloat();
 
   f.trim();
 

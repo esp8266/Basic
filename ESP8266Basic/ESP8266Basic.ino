@@ -64,7 +64,7 @@
 
 
 
-String BasicVersion = "ESP Basic 1.55";
+String BasicVersion = "ESP Basic 1.56";
 
 
 

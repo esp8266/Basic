@@ -1,9 +1,12 @@
 String GetRidOfurlCharacters(String urlChars)
 {
+  urlChars.replace("+",   " ");
+  urlChars.replace("%2B", "+");
+  urlChars.replace("%2F", "/");
+  urlChars.replace("%21", "!");
 
   urlChars.replace("%0D%0A", String('\n'));
 
-  urlChars.replace("+",   " ");
   urlChars.replace("%20", " ");
   urlChars.replace("%21", "!");
   urlChars.replace("%22", String(char('\"')));

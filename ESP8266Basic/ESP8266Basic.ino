@@ -64,7 +64,7 @@
 
 
 
-String BasicVersion = "ESP Basic 1.56";
+String BasicVersion = "ESP Basic 1.567";
 
 
 
@@ -163,8 +163,8 @@ for (i = 0; i <= arrayOfLines.length - 1; i++)
   var x = i + 1;
   if (arrayOfLines[i] != "undefined")
   {
-    arrayOfLines[i] = arrayOfLines[i].replace("+", "%2B");
-    arrayOfLines[i] = arrayOfLines[i].replace("&", "%26");
+    arrayOfLines[i] = replaceAll(arrayOfLines[i],"+", "%2B");
+    arrayOfLines[i] = replaceAll(arrayOfLines[i],"&", "%26");
     var WhatToSend = "/codein?line=" + x + "&code=" + encodeURI(arrayOfLines[i]);
     httpGet(WhatToSend);
     document.getElementById("Status").value = i.toString();
@@ -179,6 +179,14 @@ function httpGet(theUrl)
     xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
     xmlHttp.send( null );
     return xmlHttp.responseText;
+}
+
+function replaceAll(str, find, replace) {
+  for (x = 0; x <= 10; x++) 
+{
+  str = str.replace(find, replace);
+}
+return str;
 }
 )=====";
 
@@ -563,6 +571,7 @@ void setup() {
       LineNoForWebEditorIn = server.arg("line");
       int y = LineNoForWebEditorIn.toInt();
       delay(0);
+      //Serial.println(server.arg("code"));
       BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
       delay(0);
       noOfLinesForEdit = y;

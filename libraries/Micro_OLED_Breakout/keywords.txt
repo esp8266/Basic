@@ -1,0 +1,74 @@
+#######################################
+# Syntax Coloring Map For SFE_MicroOLED
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+MicroOLED	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+invert	KEYWORD2
+clear	KEYWORD2
+invert	KEYWORD2
+contrast	KEYWORD2
+display	KEYWORD2
+setCursor	KEYWORD2
+pixel	KEYWORD2
+line	KEYWORD2
+lineH	KEYWORD2
+lineV	KEYWORD2
+rect	KEYWORD2
+rectFill	KEYWORD2
+circle	KEYWORD2
+circleFill	KEYWORD2
+drawChar	KEYWORD2
+getLCDWidth	KEYWORD2
+getLCDHeight	KEYWORD2
+setColor	KEYWORD2
+setDrawMode	KEYWORD2
+getFontWidth	KEYWORD2
+getFontHeight	KEYWORD2
+getTotalFonts	KEYWORD2
+getFontType	KEYWORD2
+setFontType	KEYWORD2
+getFontStartChar	KEYWORD2
+getFontTotalChar	KEYWORD2
+scrollRight	KEYWORD2
+scrollLeft	KEYWORD2
+scrollVertRight	KEYWORD2
+scrollVertLeft	KEYWORD2
+scrollStop	KEYWORD2
+flipVertical	KEYWORD2
+flipHorizontal	KEYWORD2
+
+getX	KEYWORD2
+getY	KEYWORD2
+setX	KEYWORD2
+setY	KEYWORD2
+getMinValue	KEYWORD2
+getMaxValue	KEYWORD2
+setMaxValue	KEYWORD2
+setMinValue	KEYWORD2
+setValue	KEYWORD2
+draw	KEYWORD2
+drawFace	KEYWORD2
+checkComm	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+BLACK	LITERAL1
+WHITE	LITERAL1
+NORM	LITERAL1
+XOR	LITERAL1
+PAGE	LITERAL1
+ALL	LITERAL1
+
+

@@ -1,0 +1,7 @@
+*.bak
+*.dck
+*~
+build-*
+*.bck
+*.dcm
+.#*

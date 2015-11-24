@@ -1,0 +1,16 @@
+{
+  "name": "PS2Keyboard",
+  "keywords": "keyboard, emulation",
+  "description": "PS2Keyboard (PS/2) allows you to use a keyboard for user input",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/PaulStoffregen/PS2Keyboard.git"
+  },
+  "frameworks": "arduino",
+  "platforms":
+  [
+    "atmelavr",
+    "teensy"
+  ]
+}

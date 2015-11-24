@@ -1,0 +1,26 @@
+#######################################
+# Syntax Coloring Map For PS2Keyboard
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+PS2Keyboard	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+PS2_KC_BREAK	LITERAL1
+PS2_KC_ENTER	LITERAL1
+PS2_KC_ESC	LITERAL1
+PS2_KC_KPLUS	LITERAL1
+PS2_KC_KMINUS	LITERAL1
+PS2_KC_KMULTI	LITERAL1
+PS2_KC_NUM	LITERAL1
+PS2_KC_BKSP	LITERAL1

@@ -64,7 +64,7 @@
 
 
 
-String BasicVersion = "ESP Basic 1.567";
+String BasicVersion = "ESP Basic 1.57";
 
 
 
@@ -433,7 +433,7 @@ void setup() {
       WebOut.replace("*LoginKey*", LoginKey);
       WebOut.replace("*BasicVersion*", BasicVersion);
       WebOut.replace("*otaurl*", otaUrl);
-      
+
       if ( ShowMenueBar == "off")
       {
         WebOut.replace("**checked**", "checked");
@@ -452,7 +452,7 @@ void setup() {
   server.on("/vars", []()
   {
     String WebOut = AdminBarHTML;
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 & LoadDataFromFile("LoginKey") != "")
+    if ( CheckIfLoggedIn() )
     {
       WebOut = LogInPage;
     }
@@ -505,7 +505,7 @@ void setup() {
   server.on("/edit", []()
   {
     String WebOut = AdminBarHTML;
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 & LoadDataFromFile("LoginKey") != "")
+    if (CheckIfLoggedIn())
     {
       WebOut = LogInPage;
     }
@@ -714,7 +714,7 @@ void DoSomeFileManagerCode()
   String WholeUploadPage = UploadPage;
   String FileListForPage ;
 
-  if (millis() > LoggedIn + 600000 || LoggedIn == 0 & LoadDataFromFile("LoginKey") != "")
+  if (CheckIfLoggedIn())
   {
     WholeUploadPage = LogInPage;
   }
@@ -858,7 +858,14 @@ String GetPS2input()
 
 
 
-
+bool CheckIfLoggedIn()
+{
+  if (LoadDataFromFile("LoginKey") != "")
+  {
+    if ( millis() > LoggedIn + 600000 || LoggedIn == 0 )     return 1;
+  }
+  return 0;
+}
 
 
 

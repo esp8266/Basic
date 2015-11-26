@@ -23,8 +23,6 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
 
-
-
 //Onewire tempture sensor code conntributed by Rotohammer.
 
 #include "spiffs/spiffs.h"
@@ -44,9 +42,10 @@
 #include <DallasTemperature.h>
 #include "Base64.h"
 
-#include <WiFiClientSecure.h>
+//#include <WiFiClientSecure.h>
 #include "ESP8266httpUpdate.h"
 #include <time.h>
+#include <HttpClient.h>
 
 
 //LCD Stuff
@@ -62,9 +61,10 @@
 //PS2 Key Board
 #include <PS2Keyboard.h>
 
+//ThingSpeak Stuff
 
 
-String BasicVersion = "ESP Basic 1.57";
+String BasicVersion = "ESP Basic 1.58";
 
 
 
@@ -504,7 +504,7 @@ void setup() {
 
   server.on("/edit", []()
   {
-    String WebOut = AdminBarHTML;
+    String WebOut;
     if (CheckIfLoggedIn())
     {
       WebOut = LogInPage;
@@ -542,7 +542,7 @@ void setup() {
 
       //TextboxProgramBeingEdited
     }
-    server.send(200, "text/html", WebOut);
+    server.send(200, "text/html", String(AdminBarHTML + WebOut ));
   });
 
 
@@ -1120,14 +1120,20 @@ String FetchWebUrl(String URLtoGet)
   if (client.connect(ServerToConnectTo.c_str() , 80))
   {
     client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " + ServerToConnectTo + "\r\n\r\n"));
-    delay(100);
+    delay(300);
     str = "";
     while (client.available())
     {
       str += String((const char)client.read());
       delay(0);
     }
-    return str;
+    //Serial.println(str);
+    float junkfortest = str.indexOf(String(String(char(13)) + String(char(10)) + String(char(13)) + String(char(10)))      );
+    //Serial.println("Charactes at");
+    //Serial.println(junkfortest);
+    str = str.substring(junkfortest);
+    junkfortest = str.indexOf(String(String(char(10))+"0" )  );
+    return str.substring(0, junkfortest);
   }
   return "";
 }

@@ -10,6 +10,8 @@ String GetMeThatVar(String VariableNameToFind)
   String Param3;
   String Param4;
   String Param5;
+  String Param6;
+  String Param7;
 
   if (VariableNameToFind.endsWith(")") == 1)
   {
@@ -23,16 +25,29 @@ String GetMeThatVar(String VariableNameToFind)
     Param1 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 1));
     Param2 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 2));
     Param3 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 3));
+    Param4 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 4));
+    Param5 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 5));
+    Param6 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 6));
+    Param7 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 7));
+
 
     Param0.replace(",", "");
     Param1.replace(",", "");
     Param2.replace(",", "");
     Param3.replace(",", "");
+    Param4.replace(",", "");
+    Param5.replace(",", "");
+    Param6.replace(",", "");
+    Param7.replace(",", "");
 
     Param0 = VarialbeLookup(Param0);
     Param1 = VarialbeLookup(Param1);
     Param2 = VarialbeLookup(Param2);
     Param3 = VarialbeLookup(Param3);
+    Param4 = VarialbeLookup(Param4);
+    Param5 = VarialbeLookup(Param5);
+    Param6 = VarialbeLookup(Param6);
+    Param7 = VarialbeLookup(Param7);
 
     FunctionName.toLowerCase();
     FunctionName.trim();
@@ -93,6 +108,22 @@ String GetMeThatVar(String VariableNameToFind)
   {
     MyOut = FetchWebUrl(Param0);
   }
+
+  if (FunctionName == "sendts")
+  {
+    //ThingsSpeekBasicSendData(String myChannelNumber, String myWriteAPIKey, String BasicTSf1,String BasicTSf2, String BasicTSf3, String BasicTSf4 )
+    MyOut =  FetchWebUrl(String("api.thingspeak.com/update?key=" + Param0 + "&field" + Param1 + "=" + Param2));
+  }
+
+  if (FunctionName == "readts")
+  {
+    MyOut =  FetchWebUrl(String("api.thingspeak.com/channels/" + Param1 + "/field/" + Param2 + "/last.xml?api_key=" + Param0));
+    MyOut = MyOut.substring(MyOut.indexOf(String("<field" + Param2 + ">") ) + 8, MyOut.indexOf(String("</field" + Param2 + ">")));
+    //MyOut = MyOut.substring(0, );
+
+  }
+
+
 
   if (FunctionName == "id")
   {

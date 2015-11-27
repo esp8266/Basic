@@ -64,7 +64,7 @@
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.59";
+const String BasicVersion = "ESP Basic 1.60";
 
 
 
@@ -383,7 +383,7 @@ void setup() {
         //        Serial.println(BasicOTAupgrade());
         if (LoadDataFromFile("otaUrl") == "")
         {
-          t_httpUpdate_return  ret = ESPhttpUpdate.update("os.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
+          t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266basic.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
           if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
         }
         else

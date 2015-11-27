@@ -18,7 +18,7 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
   EmailSMTPpassword.trim();
 
 
-  if (EmailClient.connect(EmailServer.c_str(), Emailport) == 1) {
+  if (client.connect(EmailServer.c_str(), Emailport) == 1) {
     Serial.println(F("connected"));
   } else {
     Serial.println(F("connection failed"));
@@ -29,22 +29,22 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
 
   Serial.println(F("Sending hello"));
   // replace 1.2.3.4 with your Arduino's ip
-  EmailClient.println("EHLO 1.2.3.4");
+  client.println("EHLO 1.2.3.4");
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending auth login"));
-  EmailClient.println("auth login");
+  client.println("auth login");
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending User"));
   // Change to your base64 encoded user
-  EmailClient.println(GetMeBase64(EmailSMTPuser));
+  client.println(GetMeBase64(EmailSMTPuser));
 
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending Password"));
   // change to your base64 encoded password
-  EmailClient.println(GetMeBase64(EmailSMTPpassword));
+  client.println(GetMeBase64(EmailSMTPpassword));
 
 
 
@@ -54,39 +54,39 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
 
   // change to your email address (sender)
   Serial.println(F("Sending From"));
-  EmailClient.println(String("MAIL From: <" +  EmailFrom + ">"));
+  client.println(String("MAIL From: <" +  EmailFrom + ">"));
   if (!eRcv()) return 0;
 
   // change to recipient address
   Serial.println(F("Sending To"));
-  EmailClient.println(String("RCPT To: <" + EmailTo + ">"));
+  client.println(String("RCPT To: <" + EmailTo + ">"));
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending DATA"));
-  EmailClient.println("DATA");
+  client.println("DATA");
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending email"));
 
   // change to recipient address
-  EmailClient.println(String("To: You <" + EmailTo + ">"));
+  client.println(String("To: You <" + EmailTo + ">"));
 
   // change to your address
-  EmailClient.println(String("From: Me <" +  EmailFrom + ">"));
+  client.println(String("From: Me <" +  EmailFrom + ">"));
 
-  EmailClient.println(String("Subject: " + EmailSubject + "\r\n"));
+  client.println(String("Subject: " + EmailSubject + "\r\n"));
 
-  EmailClient.println(EmailBody);
+  client.println(EmailBody);
 
-  EmailClient.println(".");
+  client.println(".");
 
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending QUIT"));
-  EmailClient.println("QUIT");
+  client.println("QUIT");
   if (!eRcv()) return 0;
 
-  EmailClient.stop();
+  client.stop();
 
   Serial.println(F("disconnected"));
 
@@ -99,23 +99,23 @@ byte eRcv()
   byte thisByte;
   int loopCount = 0;
 
-  while (!EmailClient.available()) {
+  while (!client.available()) {
     delay(1);
     loopCount++;
 
     // if nothing received for 10 seconds, timeout
     if (loopCount > 10000) {
-      EmailClient.stop();
+      client.stop();
       Serial.println(F("\r\nTimeout"));
       return 0;
     }
   }
 
-  respCode = EmailClient.peek();
+  respCode = client.peek();
 
-  while (EmailClient.available())
+  while (client.available())
   {
-    thisByte = EmailClient.read();
+    thisByte = client.read();
     Serial.write(thisByte);
   }
 
@@ -124,27 +124,27 @@ byte eRcv()
     byte thisByte = 0;
     int loopCount = 0;
 
-    EmailClient.println(F("QUIT"));
+    client.println(F("QUIT"));
 
-    while (!EmailClient.available()) {
+    while (!client.available()) {
       delay(1);
       loopCount++;
 
       // if nothing received for 10 seconds, timeout
       if (loopCount > 10000) {
-        EmailClient.stop();
+        client.stop();
         Serial.println(F("\r\nTimeout"));
         return 0;
       }
     }
 
-    while (EmailClient.available())
+    while (client.available())
     {
-      thisByte = EmailClient.read();
+      thisByte = client.read();
       Serial.write(thisByte);
     }
 
-    EmailClient.stop();
+    client.stop();
 
     Serial.println(F("disconnected"));
     return 0;

@@ -64,7 +64,7 @@
 //ThingSpeak Stuff
 
 
-String BasicVersion = "ESP Basic 1.58";
+const String BasicVersion = "ESP Basic 1.59";
 
 
 
@@ -81,7 +81,7 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2
 
 PS2Keyboard keyboard;
 
-WiFiClient EmailClient;
+//WiFiClient EmailClient;
 String EmailServer;
 int Emailport;
 String EmailSMTPuser;
@@ -89,7 +89,7 @@ String EmailSMTPpassword;
 
 
 
-
+WiFiClient client;
 ESP8266WebServer server(80);
 
 //Web Server Variables
@@ -1108,33 +1108,34 @@ String DoMathForMe(String cc, String f, String dd )
 String FetchWebUrl(String URLtoGet)
 {
   String str;
-  String ServerToConnectTo;
-  String PageToGet;
-  ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
-  PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
+  String ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
+  String PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
+  // ServerToConnectTo ;
+  //PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
 
   Serial.println(ServerToConnectTo);
   Serial.println(PageToGet);
 
-  WiFiClient client;
+
   if (client.connect(ServerToConnectTo.c_str() , 80))
   {
-    client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " + ServerToConnectTo + "\r\n\r\n"));
+    client.print(String("GET " + PageToGet+ " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
     delay(300);
-    str = "";
     while (client.available())
     {
-      str += String((const char)client.read());
+      delay(0);
+      if (str.endsWith(String("\r\n\r\n")))  str = "";
+
+      str.concat( (const char)client.read());
       delay(0);
     }
-    //Serial.println(str);
-    float junkfortest = str.indexOf(String(String(char(13)) + String(char(10)) + String(char(13)) + String(char(10)))      );
-    //Serial.println("Charactes at");
-    //Serial.println(junkfortest);
-    str = str.substring(junkfortest);
-    junkfortest = str.indexOf(String(String(char(10))+"0" )  );
-    return str.substring(0, junkfortest);
+
+
+
+    client.stop();
+    return str.substring(0, str.indexOf(String(String(char(10)) + "0" )  ));
   }
+  client.stop();
   return "";
 }
 

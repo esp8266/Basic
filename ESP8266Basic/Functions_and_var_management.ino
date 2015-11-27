@@ -26,9 +26,9 @@ String GetMeThatVar(String VariableNameToFind)
     Param2 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 2));
     Param3 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 3));
     Param4 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 4));
-    Param5 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 5));
-    Param6 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 6));
-    Param7 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 7));
+//    Param5 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 5));
+//    Param6 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 6));
+//    Param7 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 7));
 
 
     Param0.replace(",", "");
@@ -36,18 +36,18 @@ String GetMeThatVar(String VariableNameToFind)
     Param2.replace(",", "");
     Param3.replace(",", "");
     Param4.replace(",", "");
-    Param5.replace(",", "");
-    Param6.replace(",", "");
-    Param7.replace(",", "");
+//    Param5.replace(",", "");
+//    Param6.replace(",", "");
+//    Param7.replace(",", "");
 
     Param0 = VarialbeLookup(Param0);
     Param1 = VarialbeLookup(Param1);
     Param2 = VarialbeLookup(Param2);
     Param3 = VarialbeLookup(Param3);
     Param4 = VarialbeLookup(Param4);
-    Param5 = VarialbeLookup(Param5);
-    Param6 = VarialbeLookup(Param6);
-    Param7 = VarialbeLookup(Param7);
+//    Param5 = VarialbeLookup(Param5);
+//    Param6 = VarialbeLookup(Param6);
+//    Param7 = VarialbeLookup(Param7);
 
     FunctionName.toLowerCase();
     FunctionName.trim();

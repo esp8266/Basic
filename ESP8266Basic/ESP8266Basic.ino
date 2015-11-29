@@ -45,7 +45,7 @@
 //#include <WiFiClientSecure.h>
 #include "ESP8266httpUpdate.h"
 #include <time.h>
-#include <HttpClient.h>
+//#include <HttpClient.h>
 
 
 //LCD Stuff
@@ -64,7 +64,7 @@
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.60";
+const String BasicVersion = "ESP Basic 1.61";
 
 
 
@@ -1107,7 +1107,7 @@ String DoMathForMe(String cc, String f, String dd )
 
 String FetchWebUrl(String URLtoGet)
 {
-  String str;
+  String str = "             ";
   String ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
   String PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
   // ServerToConnectTo ;

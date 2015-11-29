@@ -112,7 +112,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "sendts")
   {
     //ThingsSpeekBasicSendData(String myChannelNumber, String myWriteAPIKey, String BasicTSf1,String BasicTSf2, String BasicTSf3, String BasicTSf4 )
-    MyOut =  FetchWebUrl(String("api.thingspeak.com/update?key=" + Param0 + "&field" + Param1 + "=" + Param2));
+    FetchWebUrl(String("api.thingspeak.com/update?key=" + Param0 + "&field" + Param1 + "=" + Param2));
   }
 
   if (FunctionName == "readts")

@@ -61,10 +61,18 @@
 //PS2 Key Board
 #include <PS2Keyboard.h>
 
+
+#include <Time.h>
+
+
+
+
+
+
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.61";
+const String BasicVersion = "ESP Basic 1.62";
 
 
 
@@ -208,10 +216,11 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
 <tr><th><p align="right">OTA URL. Leave blank for default:</p></th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
 <tr><th>
-<input type="submit" value="Save" name="save"></th>
-<th><input type="submit" value="Format" name="format"></th>
-<th><input type="submit" value="Update" name="update"></th>
-</tr>
+<input type="submit" value="Save" name="save">
+<input type="submit" value="Format" name="format">
+<input type="submit" value="Update" name="update">
+<input type="submit" value="Restart" name="restart">
+</th></tr>
 </table></form>
 <br>
 )=====";
@@ -376,6 +385,9 @@ void setup() {
     }
     else
     {
+
+      if ( server.arg("restart") == "Restart" ) ESP.restart();
+
 
       if ( server.arg("update") == "Update" )
       {
@@ -1119,7 +1131,7 @@ String FetchWebUrl(String URLtoGet)
 
   if (client.connect(ServerToConnectTo.c_str() , 80))
   {
-    client.print(String("GET " + PageToGet+ " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
+    client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
     delay(300);
     while (client.available())
     {

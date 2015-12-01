@@ -606,8 +606,10 @@ void ExicuteTheCurrentLine()
   {
     numberButtonInUse++;
     String tempButton = GenerateIDtag(GOTOimagebutton);
+
+    if (GetMeThatVar(Param1).startsWith("http://") | GetMeThatVar(Param1).startsWith("HTTP://") )tempButton.replace("/file?file=", "");
+
     tempButton.replace("gotonotext",  GetMeThatVar(Param1));
-    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
 
     tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
 

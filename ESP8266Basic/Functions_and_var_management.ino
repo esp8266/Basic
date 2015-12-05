@@ -142,18 +142,32 @@ String GetMeThatVar(String VariableNameToFind)
 
     time_t now = time(nullptr);
     MyOut = String(ctime(&now));
-
+    Param1 = MyOut;
     Param0.toUpperCase();
     Param0.trim();
-    
-    if (Param0 == "TIME")  MyOut = String(Mid(MyOut, 11, 8));
-    if (Param0 == "DOW")   MyOut = String(Mid(MyOut, 0, 3));
-    if (Param0 == "MONTH") MyOut = String(Mid(MyOut, 4, 3));
-    if (Param0 == "DATE")  MyOut = String(Mid(MyOut, 8, 2));
-    if (Param0 == "HOUR")  MyOut = String(Mid(MyOut, 11, 2));
-    if (Param0 == "MIN")   MyOut = String(Mid(MyOut, 14, 2));
-    if (Param0 == "SEC")   MyOut = String(Mid(MyOut, 17, 2));
-    if (Param0 == "YEAR")  MyOut = String(Mid(MyOut, 20, 4));
+
+    if (Param0 != "")
+    {
+      MyOut = Param0 ;
+      MyOut.replace("TIME",  String(Mid(Param1, 11, 8)));
+      MyOut.replace("DOW",   String(Mid(Param1, 0, 3)));
+      MyOut.replace("MONTH", String(Mid(Param1, 4, 3)));
+      MyOut.replace("DATE",  String(Mid(Param1, 8, 2)));
+      MyOut.replace("HOUR",  String(Mid(Param1, 11, 2)));
+      MyOut.replace("MIN",   String(Mid(Param1, 14, 2)));
+      MyOut.replace("SEC",   String(Mid(Param1, 17, 2)));
+      MyOut.replace("YEAR",  String(Mid(Param1, 20, 4)));
+    }
+
+
+    //    if (Param0 == "TIME")  MyOut = String(Mid(MyOut, 11, 8));
+    //    if (Param0 == "DOW")   MyOut = String(Mid(MyOut, 0, 3));
+    //    if (Param0 == "MONTH") MyOut = String(Mid(MyOut, 4, 3));
+    //    if (Param0 == "DATE")  MyOut = String(Mid(MyOut, 8, 2));
+    //    if (Param0 == "HOUR")  MyOut = String(Mid(MyOut, 11, 2));
+    //    if (Param0 == "MIN")   MyOut = String(Mid(MyOut, 14, 2));
+    //    if (Param0 == "SEC")   MyOut = String(Mid(MyOut, 17, 2));
+    //    if (Param0 == "YEAR")  MyOut = String(Mid(MyOut, 20, 4));
   }
 
 
@@ -162,7 +176,7 @@ String GetMeThatVar(String VariableNameToFind)
   {
 
     SaveDataToFile("TimeZone", Param0);
-    SaveDataToFile("DaylightSavings", Param1);    
+    SaveDataToFile("DaylightSavings", Param1);
     configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
   }
 

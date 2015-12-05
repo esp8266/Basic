@@ -72,7 +72,7 @@
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.63";
+const String BasicVersion = "ESP Basic 1.64";
 
 
 

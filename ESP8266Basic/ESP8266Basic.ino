@@ -59,7 +59,7 @@
 #include <LiquidCrystal_I2C.h>
 
 //PS2 Key Board
-#include <PS2Keyboard.h>
+//#include <PS2Keyboard.h>
 
 
 #include <Time.h>
@@ -72,7 +72,7 @@
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.62";
+const String BasicVersion = "ESP Basic 1.63";
 
 
 
@@ -87,7 +87,7 @@ DallasTemperature sensors(&oneWire);
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
 
-PS2Keyboard keyboard;
+//PS2Keyboard keyboard;
 
 //WiFiClient EmailClient;
 String EmailServer;
@@ -670,7 +670,7 @@ void setup() {
 
   Wire.begin(0, 2);
 
-  keyboard.begin(14, 12); //For PS2 keyboard input
+//  keyboard.begin(14, 12); //For PS2 keyboard input
 
   StartUp_OLED();
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
@@ -820,50 +820,50 @@ String  getSerialInput()
 
 
 
-String GetPS2input()
-{
-  String PS2inputString;
-
-
-  bool donereceivinginfo = 0;
-
-  while (donereceivinginfo == 0)
-  {
-    delay(0);
-    while (keyboard.available())
-    {
-      delay(0);
-      // read the next key
-      char c = keyboard.read();
-
-      // check for some of the special keys
-      if (c == PS2_ENTER) {
-        return PS2inputString;
-      } else if (c == PS2_TAB) {
-        //Serial.print("[Tab]");
-      } else if (c == PS2_ESC) {
-        return "";
-      } else if (c == PS2_PAGEDOWN) {
-        //Serial.print("[PgDn]");
-      } else if (c == PS2_PAGEUP) {
-        //Serial.print("[PgUp]");
-      } else if (c == PS2_LEFTARROW) {
-        //Serial.print("[Left]");
-      } else if (c == PS2_RIGHTARROW) {
-        //Serial.print("[Right]");
-      } else if (c == PS2_UPARROW) {
-        //Serial.print("[Up]");
-      } else if (c == PS2_DOWNARROW) {
-        //Serial.print("[Down]");
-      } else if (c == PS2_DELETE) {
-        //Serial.print("[Del]");
-      } else {
-        if (BasicDebuggingOn == 1) Serial.print(c);
-        PS2inputString += c;
-      }
-    }
-  }
-}
+//String GetPS2input()
+//{
+//  String PS2inputString;
+//
+//
+//  bool donereceivinginfo = 0;
+//
+//  while (donereceivinginfo == 0)
+//  {
+//    delay(0);
+//    while (keyboard.available())
+//    {
+//      delay(0);
+//      // read the next key
+//      char c = keyboard.read();
+//
+//      // check for some of the special keys
+//      if (c == PS2_ENTER) {
+//        return PS2inputString;
+//      } else if (c == PS2_TAB) {
+//        //Serial.print("[Tab]");
+//      } else if (c == PS2_ESC) {
+//        return "";
+//      } else if (c == PS2_PAGEDOWN) {
+//        //Serial.print("[PgDn]");
+//      } else if (c == PS2_PAGEUP) {
+//        //Serial.print("[PgUp]");
+//      } else if (c == PS2_LEFTARROW) {
+//        //Serial.print("[Left]");
+//      } else if (c == PS2_RIGHTARROW) {
+//        //Serial.print("[Right]");
+//      } else if (c == PS2_UPARROW) {
+//        //Serial.print("[Up]");
+//      } else if (c == PS2_DOWNARROW) {
+//        //Serial.print("[Down]");
+//      } else if (c == PS2_DELETE) {
+//        //Serial.print("[Del]");
+//      } else {
+//        if (BasicDebuggingOn == 1) Serial.print(c);
+//        PS2inputString += c;
+//      }
+//    }
+//  }
+//}
 
 
 

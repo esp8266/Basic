@@ -742,10 +742,10 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "ps2input")
-  {
-    SetMeThatVar(Param1, GetPS2input());
-  }
+//  if (Param0 == "ps2input")
+//  {
+//    SetMeThatVar(Param1, GetPS2input());
+//  }
 
   //branching commands
 

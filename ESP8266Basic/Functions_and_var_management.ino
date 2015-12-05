@@ -26,9 +26,9 @@ String GetMeThatVar(String VariableNameToFind)
     Param2 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 2));
     Param3 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 3));
     Param4 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 4));
-//    Param5 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 5));
-//    Param6 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 6));
-//    Param7 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 7));
+    //    Param5 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 5));
+    //    Param6 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 6));
+    //    Param7 = GetMeThatVar(getValue(String(VariableNameToFind + ","), ',', 7));
 
 
     Param0.replace(",", "");
@@ -36,18 +36,18 @@ String GetMeThatVar(String VariableNameToFind)
     Param2.replace(",", "");
     Param3.replace(",", "");
     Param4.replace(",", "");
-//    Param5.replace(",", "");
-//    Param6.replace(",", "");
-//    Param7.replace(",", "");
+    //    Param5.replace(",", "");
+    //    Param6.replace(",", "");
+    //    Param7.replace(",", "");
 
     Param0 = VarialbeLookup(Param0);
     Param1 = VarialbeLookup(Param1);
     Param2 = VarialbeLookup(Param2);
     Param3 = VarialbeLookup(Param3);
     Param4 = VarialbeLookup(Param4);
-//    Param5 = VarialbeLookup(Param5);
-//    Param6 = VarialbeLookup(Param6);
-//    Param7 = VarialbeLookup(Param7);
+    //    Param5 = VarialbeLookup(Param5);
+    //    Param6 = VarialbeLookup(Param6);
+    //    Param7 = VarialbeLookup(Param7);
 
     FunctionName.toLowerCase();
     FunctionName.trim();
@@ -142,14 +142,28 @@ String GetMeThatVar(String VariableNameToFind)
 
     time_t now = time(nullptr);
     MyOut = String(ctime(&now));
+
+    Param0.toUpperCase();
+    Param0.trim();
+    
+    if (Param0 == "TIME")  MyOut = String(Mid(MyOut, 11, 8));
+    if (Param0 == "DOW")   MyOut = String(Mid(MyOut, 0, 3));
+    if (Param0 == "MONTH") MyOut = String(Mid(MyOut, 4, 3));
+    if (Param0 == "DATE")  MyOut = String(Mid(MyOut, 8, 2));
+    if (Param0 == "HOUR")  MyOut = String(Mid(MyOut, 11, 2));
+    if (Param0 == "MIN")   MyOut = String(Mid(MyOut, 14, 2));
+    if (Param0 == "SEC")   MyOut = String(Mid(MyOut, 17, 2));
+    if (Param0 == "YEAR")  MyOut = String(Mid(MyOut, 20, 4));
   }
 
 
 
   if (FunctionName == "timesetup")
   {
-    timezone = Param0.toInt();
-    int dst = Param1.toInt();
+
+    SaveDataToFile("TimeZone", Param0);
+    SaveDataToFile("DaylightSavings", Param1);    
+    configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
   }
 
 

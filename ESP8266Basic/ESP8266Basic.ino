@@ -72,7 +72,7 @@
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.64";
+const String BasicVersion = "ESP Basic 1.65";
 
 
 
@@ -301,6 +301,8 @@ bool fileOpenFail;
 bool inputPromptActive = 0;
 
 int LoggedIn = 0;
+
+int SerialTimeOut;
 
 
 
@@ -670,7 +672,7 @@ void setup() {
 
   Wire.begin(0, 2);
 
-//  keyboard.begin(14, 12); //For PS2 keyboard input
+  //  keyboard.begin(14, 12); //For PS2 keyboard input
 
   StartUp_OLED();
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
@@ -793,12 +795,14 @@ void handleFileUpdate()
 
 String  getSerialInput()
 {
+  unsigned long  serialTimeOutStart = millis();
   bool donereceivinginfo = 0;
   Serial.println(">");
 
   String someInput;
   while (donereceivinginfo == 0)
   {
+    if (serialTimeOutStart + SerialTimeOut < millis() & SerialTimeOut != 0) return someInput;
     delay(0);
     while (Serial.available() > 0)
     {
@@ -1151,3 +1155,14 @@ String FetchWebUrl(String URLtoGet)
   return "";
 }
 
+
+
+void serialFlush()
+{
+
+  while (Serial.available() > 0)
+  { 
+    delay(0);
+    char t = Serial.read();
+  }
+}

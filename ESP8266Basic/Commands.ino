@@ -741,11 +741,28 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if (Param0 == "serialflush")
+  {
 
-//  if (Param0 == "ps2input")
-//  {
-//    SetMeThatVar(Param1, GetPS2input());
-//  }
+    serialFlush();
+    return;
+  }
+
+
+  if (Param0 == "serialtimeout")
+  {
+
+    SerialTimeOut = GetMeThatVar(Param1).toInt();
+    return;
+  }
+ 
+
+
+
+  //  if (Param0 == "ps2input")
+  //  {
+  //    SetMeThatVar(Param1, GetPS2input());
+  //  }
 
   //branching commands
 

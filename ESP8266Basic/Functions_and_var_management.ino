@@ -191,10 +191,32 @@ String GetMeThatVar(String VariableNameToFind)
 
   if (FunctionName == "neo")
   {
-    pixels.setPixelColor(Param0.toInt(), pixels.Color(Param1.toInt(),Param2.toInt(),Param3.toInt())); // Moderately bright green color.
+    pixels.setPixelColor(Param0.toInt(), pixels.Color(Param1.toInt(), Param2.toInt(), Param3.toInt())); 
 
     pixels.show();
   }
+
+
+  if (FunctionName == "neostripcolor")
+  {
+    for (int LedNo = Param0.toInt(); LedNo < Param1.toInt()& LedNo < 255  ; LedNo++) {
+      pixels.setPixelColor(LedNo, pixels.Color(Param2.toInt(), Param3.toInt(), Param4.toInt())); 
+      delay(0);
+    }
+    pixels.show();
+  }
+
+
+
+  if (FunctionName == "neocls")
+  {
+    for (int LedNo = 0; LedNo < 255  ; LedNo++) {
+      pixels.setPixelColor(LedNo, pixels.Color(0, 0, 0));
+      delay(0);
+    }
+    pixels.show();
+  }
+
 
 
   if (FunctionName == "flashfree")

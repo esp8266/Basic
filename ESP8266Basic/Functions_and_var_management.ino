@@ -189,6 +189,13 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
+  if (FunctionName == "neo")
+  {
+    pixels.setPixelColor(Param0.toInt(), pixels.Color(Param1.toInt(),Param2.toInt(),Param3.toInt())); // Moderately bright green color.
+
+    pixels.show();
+  }
+
 
   if (FunctionName == "flashfree")
   {

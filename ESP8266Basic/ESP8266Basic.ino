@@ -64,15 +64,15 @@
 
 #include <Time.h>
 
+#include <Adafruit_NeoPixel.h>
 
 
-
-
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
 
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.65";
+const String BasicVersion = "ESP Basic 1.66";
 
 
 
@@ -335,6 +335,7 @@ int dst = 0;
 FSInfo fs_info;
 
 void setup() {
+  pixels.begin();
   SPIFFS.begin();
   Serial.begin(9600);
   //Serial.setDebugOutput(true);

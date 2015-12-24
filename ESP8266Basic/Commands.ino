@@ -59,7 +59,7 @@ void ExicuteTheCurrentLine()
     }
     else
     {
-      for (int i = 7; i <= 17; i++)
+      for (int i = 6; i <= 17; i++)
       {
         delay(0);
         //Serial.println(i);

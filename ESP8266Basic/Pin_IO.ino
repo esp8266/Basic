@@ -20,15 +20,45 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
   if (PinDesignaor == "TX")  pin = 1;
 
 
-  PinListOfStatus[pin] = PinCommand;
+  if (PinCommand != "po" & PinCommand != "pi" & PinCommand != "pwi" & PinCommand != "pwo"& PinCommand != "servo" & PinCommand != "")
+  {
+    PinListOfStatus[pin] = PinCommand;
+    PinCommand = "pi";
+  }
+  else
+  {
+    if (PinCommand == "pi")
+    {
+      if ((PinListOfStatus[pin] == "po") | ( PinListOfStatus[pin] == "pi") | (PinListOfStatus[pin] == "pwi") | (PinListOfStatus[pin] == "pwo")  | (PinListOfStatus[pin] == "servo") | ( PinListOfStatus[pin] == ""))
+      {
+        PinListOfStatus[pin] = PinCommand;
+      }
+
+    }
+    else
+    {
+      PinListOfStatus[pin] = PinCommand;
+    }
+  }
+
+
+
+
   PinListOfStatusValues[pin] = PinValue;
   SetThePinMode(PinCommand, pin);
   if (PinCommand == "po") digitalWrite(pin, PinValue);
-  else if (PinCommand == "pi") return digitalRead(pin);
-  else if (PinCommand == "pwi") return analogRead(pin);
+  else if (PinCommand == "pi") {
+    PinListOfStatusValues[pin] = digitalRead(pin);
+    return PinListOfStatusValues[pin];
+  }
+  else if (PinCommand == "pwi") {
+    PinListOfStatusValues[pin] = analogRead(pin);
+    return PinListOfStatusValues[pin] ;
+  }
   else if (PinCommand == "pwo") analogWrite(pin, PinValue);
   else if (PinCommand == "servo") servoWrite(pin, PinValue);
   else if (PinCommand == "ai") return analogRead(A0);
+  else if (PinCommand == "interrupt") return pin;
   return 0;
 }
 
@@ -156,3 +186,11 @@ void servoWrite(byte pin, int ValueForIO)
 
 
 //  End all of the I/O code
+
+
+
+
+
+
+
+

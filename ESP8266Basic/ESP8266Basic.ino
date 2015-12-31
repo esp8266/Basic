@@ -72,7 +72,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.68";
+const String BasicVersion = "ESP Basic 1.69";
 
 
 
@@ -325,6 +325,7 @@ Servo Servo16;
 
 String  PinListOfStatus[16];
 int  PinListOfStatusValues[16];
+
 
 //time Stff
 int timezone = 3;
@@ -706,7 +707,7 @@ String getContentType(String filename) {
 
 void StartUpProgramTimer()
 {
-  while  (millis() < 30000)
+  while  (millis() < 60000)
   {
     delay(0);
     //Serial.println(millis());
@@ -921,6 +922,24 @@ void RunBasicTillWait()
     ExicuteTheCurrentLine();
     runTillWaitPart2();
   }
+  delay(0);
+  for (int pinnn = 0; pinnn <= 15 ; pinnn++)
+  {
+    delay(0);
+    //Serial.println(pinnn);
+    if ((PinListOfStatus[pinnn] != "po") & ( PinListOfStatus[pinnn] != "pi") & (PinListOfStatus[pinnn] != "pwi") & (PinListOfStatus[pinnn] != "pwo") & (PinListOfStatus[pinnn] != "servo") & ( PinListOfStatus[pinnn] != ""))
+    {
+      //Serial.println("Foud interupt pin");
+      if ( PinListOfStatusValues[pinnn] != UniversalPinIO("pi", String(pinnn), 0))
+      {
+        inData = String(" goto " + PinListOfStatus[pinnn] + " ");
+        WaitForTheInterpertersResponse = 0;
+        //Serial.println(PinListOfStatus[pinnn]);
+        ExicuteTheCurrentLine();
+        runTillWaitPart2();
+      }
+    }
+  }
 }
 
 
@@ -933,6 +952,7 @@ void runTillWaitPart2()
     inData = BasicProgram(RunningProgramCurrentLine);
     if (fileOpenFail == 1) inData  = "end";
     ExicuteTheCurrentLine();
+    delay(0);
   }
 }
 
@@ -1162,7 +1182,7 @@ void serialFlush()
 {
 
   while (Serial.available() > 0)
-  { 
+  {
     delay(0);
     char t = Serial.read();
   }

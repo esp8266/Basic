@@ -251,6 +251,14 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+
+  if ( Param0 == "interrupt")
+  {
+    UniversalPinIO(GetMeThatVar(Param2), GetMeThatVar(Param1), 0);
+    return;
+  }
+
+
   if ( Param0 == "po")
   {
 

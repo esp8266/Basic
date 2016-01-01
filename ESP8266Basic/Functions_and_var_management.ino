@@ -344,11 +344,7 @@ void SetMeThatVar(String VariableNameToFind, String NewContents)
 
 String Mid(String str, int pos1, int pos2)
 {
-  //  Serial.println("Doing mid");
-  //  Serial.println(pos1);
-  //  Serial.println(pos2);
-  //  Serial.println(str);
-
+  if (str.length() < pos1 + pos2) pos2 = str.length() - pos1;
   int i;
   String temp = "";
   for (i = pos1; i < pos1 + pos2; i++)

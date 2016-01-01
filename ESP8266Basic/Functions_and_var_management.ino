@@ -378,7 +378,7 @@ String Right(String str, int pos)
 {
   int i;
   String temp = "";
-  for (i = strlen(str.c_str()) - pos; i <= strlen(str.c_str()); i++)
+  for (i = strlen(str.c_str()) - pos; i < strlen(str.c_str()); i++)
   {
     temp += str.charAt(i);
   }

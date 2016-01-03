@@ -68,6 +68,13 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
+  if (FunctionName == "wifi.scan") MyOut =  String(WiFi.scanNetworks() + 1);
+
+  if (FunctionName == "wifi.ssid") MyOut =  String(WiFi.SSID(MyOut.toInt() - 1));
+  if (FunctionName == "wifi.rssi") MyOut =  String(WiFi.RSSI(MyOut.toInt() - 1));
+
+
+
   if (FunctionName == "instr")
   {
     int junk = Param0.indexOf(Param1);
@@ -191,7 +198,7 @@ String GetMeThatVar(String VariableNameToFind)
 
   if (FunctionName == "neo")
   {
-    pixels.setPixelColor(Param0.toInt(), pixels.Color(Param1.toInt(), Param2.toInt(), Param3.toInt())); 
+    pixels.setPixelColor(Param0.toInt(), pixels.Color(Param1.toInt(), Param2.toInt(), Param3.toInt()));
 
     pixels.show();
   }
@@ -200,7 +207,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == "neostripcolor")
   {
     for (int LedNo = Param0.toInt(); LedNo < Param1.toInt()& LedNo < 255  ; LedNo++) {
-      pixels.setPixelColor(LedNo, pixels.Color(Param2.toInt(), Param3.toInt(), Param4.toInt())); 
+      pixels.setPixelColor(LedNo, pixels.Color(Param2.toInt(), Param3.toInt(), Param4.toInt()));
       delay(0);
     }
     pixels.show();
@@ -263,6 +270,8 @@ String GetMeThatVar(String VariableNameToFind)
   }
   if (FunctionName == "i2c.available")   MyOut =  String(Wire.available());
   if (FunctionName == "i2c.read")        MyOut =  String(Wire.read());
+
+  if (FunctionName == "hextoint")        MyOut =  String(StrToHex(MyOut ));
 
 
 
@@ -383,6 +392,18 @@ String Right(String str, int pos)
 
 
 
+
+int StrToHex( String StringToConvert )
+
+{
+  int str_len = StringToConvert.length() + 1;
+  char input[str_len];
+  StringToConvert.toCharArray(input, str_len);
+  return (int) strtol( input, 0, 16);
+}
+
+
+
 void PrintAllMyVars()
 {
   PrintAndWebOut("Variable Dump");
@@ -392,5 +413,8 @@ void PrintAllMyVars()
   }
   return;
 }
+
+
+
 
 

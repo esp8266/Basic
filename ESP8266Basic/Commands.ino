@@ -346,6 +346,7 @@ void ExicuteTheCurrentLine()
   {
     TimerWaitTime = GetMeThatVar(Param1).toInt();
     TimerBranch = Param2;
+    timerLastActiveTime = millis();
     return;
   }
 

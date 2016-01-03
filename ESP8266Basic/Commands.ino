@@ -941,7 +941,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-
+  Param0 = getValue(inData, ' ', 0);
   GetMeThatVar(Param0); //will exicure any functions if no other commands were found.
   return;
 }

@@ -530,6 +530,24 @@ void ExicuteTheCurrentLine()
   }
 
 
+  if (Param0 == "passwordbox")
+  {
+    String tempTextBox = GenerateIDtag(passwordbox);
+    GetMeThatVar(Param1);
+    if (VariableLocated == 0)
+    {
+      SetMeThatVar(Param1, "");
+      GetMeThatVar(Param1);
+    }
+
+    tempTextBox.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
+    tempTextBox.replace("variablenumber",  String(LastVarNumberLookedUp));
+
+    HTMLout = String(HTMLout + tempTextBox);
+    return;
+  }
+
+
   if (Param0 == "slider")
   {
     String tempSlider = GenerateIDtag(Slider);

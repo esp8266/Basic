@@ -206,7 +206,7 @@ String GetMeThatVar(String VariableNameToFind)
 
   if (FunctionName == "neostripcolor")
   {
-    for (int LedNo = Param0.toInt(); LedNo < Param1.toInt()& LedNo < 255  ; LedNo++) {
+    for (int LedNo = Param0.toInt(); LedNo <= Param1.toInt()& LedNo < 255  ; LedNo++) {
       pixels.setPixelColor(LedNo, pixels.Color(Param2.toInt(), Param3.toInt(), Param4.toInt()));
       delay(0);
     }

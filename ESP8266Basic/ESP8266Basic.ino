@@ -72,7 +72,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.74";
+const String BasicVersion = "ESP Basic 1.75";
 
 
 
@@ -104,6 +104,7 @@ ESP8266WebServer server(80);
 String HTMLout;
 const String InputFormText = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
 const String TextBox = R"=====( <input type="text" id="myid" name="variablenumber" value="variablevalue">)=====";
+const String passwordbox = R"=====( <input type="password" id="myid" name="variablenumber" value="variablevalue">)=====";
 const String Slider = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
 const String GOTObutton =  R"=====(<input type="submit" id="myid" value="gotonotext" name="gotonobranch">)=====";
 const String GOTOimagebutton =  R"=====(<input type="image" id="myid" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
@@ -205,14 +206,14 @@ const String SettingsPageHTML =  R"=====(
 <tr><th>
 Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="staName" value="*sta name*"></th></tr>
-<tr><th><p align="right">Pass:</p></th><th><input type="text" name="staPass" value="*sta pass*"></th></tr>
+<tr><th><p align="right">Pass:</p></th><th><input type="password" name="staPass" value="*sta pass*"></th></tr>
 <tr><th>
 <br><br>Ap mode (ESP brocast out its own ap):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="apName" value="*ap name*"></th></tr>
-<tr><th><p align="right">Pass:<br>Must be at least 8 characters</p></th><th><input type="text" name="apPass" value="*ap pass*"></th></tr>
+<tr><th><p align="right">Pass:<br>Must be at least 8 characters</p></th><th><input type="password" name="apPass" value="*ap pass*"></th></tr>
 <tr><th>
 <br><br>Log In Key (For Security):</th></tr>
-<tr><th><p align="right">Log In Key:</p></th><th><input type="text" name="LoginKey" value="*LoginKey*"></th></tr>
+<tr><th><p align="right">Log In Key:</p></th><th><input type="password" name="LoginKey" value="*LoginKey*"></th></tr>
 <tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
 <tr><th><p align="right">OTA URL. Leave blank for default:</p></th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
 <tr><th>
@@ -234,7 +235,7 @@ Station Mode (Connect to your router):</th></tr>
 const String LogInPage =  R"=====(
 <form action='settings' id="usrform">
 Log In Key
-<input type="text" name="key" value="">
+<input type="password" name="key" value="">
 <input type="submit" value="login" name="login">
 </form>
 )=====";

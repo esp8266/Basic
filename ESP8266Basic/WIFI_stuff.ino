@@ -3,6 +3,7 @@
 bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
   WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
   byte numberOfAtempts = 0;
   int str_len = NetworkName.length() + 1;
   char ssid[str_len];
@@ -29,6 +30,7 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
     }
   }
 
+delay(1000);
 
   if (NetworkStaticIP != "" & NetworkGateway != "" & NetworkSubnet != "" )
   {
@@ -42,7 +44,7 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
     WiFi.config(ip, gateway, subnet);
   }
 
-
+delay(1000);
 
   if (WiFi.localIP().toString().endsWith(".0"))
   {

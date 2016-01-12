@@ -25,6 +25,8 @@
 
 //Onewire tempture sensor code conntributed by Rotohammer.
 
+
+#include <ArduinoJson.h>
 #include "spiffs/spiffs.h"
 #include <FS.h>
 #include <ESP8266mDNS.h>
@@ -72,7 +74,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.75";
+const String BasicVersion = "ESP Basic 1.76";
 
 
 

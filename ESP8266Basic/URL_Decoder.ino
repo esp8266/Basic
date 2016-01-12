@@ -67,7 +67,7 @@ String GetRidOfurlCharacters(String urlChars)
   urlChars.replace("%59", "Y");
   urlChars.replace("%5A", "Z");
   urlChars.replace("%5B", "[");
-  urlChars.replace("%5C", String(char(65)));
+  urlChars.replace("%5C", String(char(92)));
   urlChars.replace("%5D", "]");
   urlChars.replace("%5E", "^");
   urlChars.replace("%5F", "_");

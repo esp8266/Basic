@@ -132,6 +132,40 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
+  if (FunctionName == "json")
+  {
+    MyOut = String(ESP.getChipId());
+
+
+    StaticJsonBuffer<300> jsonBuffer;
+    JsonObject& root = jsonBuffer.parseObject(Param0);
+
+    if (!root.success()) {
+      Serial.println("parseObject() failed");
+
+    }
+    else
+    {
+
+      char test1[MyOut.length()+1 ];
+      MyOut.toCharArray(test1, MyOut.length()+1);
+
+      if (Param2 == "") {
+        MyOut = root[test1].asString();
+      }
+      else
+      {
+        MyOut = root[test1][Param2.toInt()].asString();
+      }
+    }
+
+
+  }
+
+
+
+
+
   if (FunctionName == "id")
   {
     MyOut = String(ESP.getChipId());

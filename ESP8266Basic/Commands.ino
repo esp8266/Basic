@@ -317,7 +317,7 @@ void ExicuteTheCurrentLine()
   //Feading and writing variables to flash memory
   if ( Param0 == "read")
   {
-    SetMeThatVar(GetMeThatVar(Param2), LoadDataFromFile(GetMeThatVar(Param1)));
+    SetMeThatVar(Param2, LoadDataFromFile(GetMeThatVar(Param1)));
     return;
   }
 

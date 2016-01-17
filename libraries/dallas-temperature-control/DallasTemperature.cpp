@@ -455,6 +455,15 @@ float DallasTemperature::calculateTemperature(uint8_t* deviceAddress, uint8_t* s
   }
 }
 
+
+// reads scratchpad and returns the temperature in degrees C
+uint16_t DallasTemperature::calculateTemperatureInt16RAW(uint8_t* deviceAddress, uint8_t* scratchPad)
+{
+    uint16_t rawTemperature = (((int16_t)scratchPad[TEMP_MSB]) << 8) | scratchPad[TEMP_LSB];
+    
+    return rawTemperature;
+}
+
 // returns temperature in degrees C or DEVICE_DISCONNECTED if the
 // device's scratch pad cannot be read successfully.
 // the numeric value of DEVICE_DISCONNECTED is defined in
@@ -469,6 +478,18 @@ float DallasTemperature::getTempC(uint8_t* deviceAddress)
   ScratchPad scratchPad;
   if (isConnected(deviceAddress, scratchPad)) return calculateTemperature(deviceAddress, scratchPad);
   return DEVICE_DISCONNECTED;
+}
+
+
+uint16_t DallasTemperature::getTempRAW(uint8_t* deviceAddress)
+{
+    // TODO: Multiple devices (up to 64) on the same bus may take
+    //       some time to negotiate a response
+    // What happens in case of collision?
+    
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad)) return calculateTemperatureInt16RAW(deviceAddress, scratchPad);
+    return DEVICE_DISCONNECTED;
 }
 
 // returns temperature in degrees F

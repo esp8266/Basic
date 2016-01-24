@@ -782,7 +782,7 @@ void ExicuteTheCurrentLine()
     SerialTimeOut = GetMeThatVar(Param1).toInt();
     return;
   }
- 
+
 
 
 
@@ -802,9 +802,10 @@ void ExicuteTheCurrentLine()
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
       {
         RunningProgramCurrentLine = i - 1;
-        break;
+        return;
       }
     }
+    PrintAndWebOut(String("ERROR Branch not found:" + Param1));
     return;
   }
 
@@ -821,10 +822,10 @@ void ExicuteTheCurrentLine()
         ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine;
         RunningProgramCurrentLine = i - 1;
         i = TotalNumberOfLines + 1;
-        break;
+        return;
       }
     }
-
+    PrintAndWebOut(String("ERROR Branch not found:" + Param1));
     return;
   }
 
@@ -893,7 +894,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  
+
 
   if (Param0 == "wget")
   {

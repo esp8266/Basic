@@ -2,8 +2,7 @@
 
 bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
+  WiFi.mode(WIFI_AP_STA);
   byte numberOfAtempts = 0;
   int str_len = NetworkName.length() + 1;
   char ssid[str_len];
@@ -101,7 +100,7 @@ void CreateAP(String NetworkName, String NetworkPassword)
   char password[str_len];
   NetworkPassword.toCharArray(password, str_len);
 
-  WiFi.disconnect();
+  
   delay(2000);
   if (NetworkPassword.length() < 8)
   {

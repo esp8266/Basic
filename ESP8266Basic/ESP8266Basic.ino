@@ -74,7 +74,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.77";
+const String BasicVersion = "ESP Basic 1.78";
 
 
 

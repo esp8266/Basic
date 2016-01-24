@@ -885,6 +885,16 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if (Param0 == "wifioff")
+  {
+    //WiFi.disconnect();
+    WiFi.mode(WIFI_OFF);
+    return;
+  }
+
+
+  
+
   if (Param0 == "wget")
   {
     SetMeThatVar(Param1, FetchWebUrl(GetMeThatVar(Param2)));

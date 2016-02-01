@@ -798,8 +798,9 @@ void ExicuteTheCurrentLine()
     for (int i = 0; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
+      if (fileOpenFail == 1) break;
 
-      if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
+      if (gotoTest == Param1 | String(gotoTest + ":") == Param1 )
       {
         RunningProgramCurrentLine = i - 1;
         return;
@@ -815,7 +816,7 @@ void ExicuteTheCurrentLine()
     for (int i = 0; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
-
+      if (fileOpenFail == 1) break;
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1)
       {
         NumberOfReturns = NumberOfReturns + 1;

@@ -66,3 +66,33 @@ void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramL
   SaveDataToFile(String(ProgramName  + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
   delay(0);
 }
+
+
+
+
+
+
+
+
+void LoadBasicProgramFromFlash(String fileNameForSave)
+{
+  String lineToBeWrittenToFile;
+  SPIFFS.begin();
+  File f = SPIFFS.open(String("uploads/" + fileNameForSave), "r");
+  if (!f)
+  {
+    PrintAndWebOut("file open failed");
+  }
+  else
+  {
+    for (int i = 0; i <= TotalNumberOfLines; i++)
+    {
+
+      lineToBeWrittenToFile = f.readStringUntil('\r');
+      lineToBeWrittenToFile.replace("\n", "");
+      BasicProgramWriteLine(i,lineToBeWrittenToFile );
+    }
+    f.close();
+  }
+  return;
+}

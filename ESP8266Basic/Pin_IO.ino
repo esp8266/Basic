@@ -20,6 +20,12 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
   if (PinDesignaor == "TX")  pin = 1;
 
 
+
+  if (PinCommand == "laststat")
+  {
+    return PinListOfStatusValues[pin];
+  }
+
   if (PinCommand != "po" & PinCommand != "pi" & PinCommand != "pwi" & PinCommand != "pwo"& PinCommand != "servo" & PinCommand != "")
   {
     PinListOfStatus[pin] = PinCommand;

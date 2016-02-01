@@ -74,7 +74,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.79";
+const String BasicVersion = "ESP Basic 1.80";
 
 
 
@@ -142,6 +142,7 @@ const String UploadPage = R"=====(
 <form id="filelist">
 <input type="submit" value="Delete" name="Delete">
 <input type="submit" value="View" name="View">
+<input type="submit" value="" name="View">
 </form>
 
 <select name="fileName" size="25" form="filelist">*table*</select>

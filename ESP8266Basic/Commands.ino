@@ -165,6 +165,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "run")
   {
+    ProgramName = GetMeThatVar(Param1);
     GraphicsEliments[0][0] = 0;
     RunningProgram = 1;
     numberButtonInUse = 0;
@@ -795,8 +796,9 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "goto")
   {
-    for (int i = 0; i <= TotalNumberOfLines; i++) {
+    for (int i = 1; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
+      Serial.println(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;
 
@@ -813,7 +815,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == "gosub")
   {
-    for (int i = 0; i <= TotalNumberOfLines; i++) {
+    for (int i = 1; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;

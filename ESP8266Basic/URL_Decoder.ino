@@ -1,5 +1,6 @@
 String GetRidOfurlCharacters(String urlChars)
 {
+  //Serial.println(urlChars);
   urlChars.replace("+",   " ");
   urlChars.replace("%2B", "+");
   urlChars.replace("%2F", "/");
@@ -10,7 +11,8 @@ String GetRidOfurlCharacters(String urlChars)
   urlChars.replace("%20", " ");
   urlChars.replace("%21", "!");
   urlChars.replace("%22", String(char('\"')));
-  urlChars.replace("%23", "#");
+  urlChars.replace("%23", String(char(35)));
+  urlChars.replace("%2523", String(char(35)));
   urlChars.replace("%24", "$");
   urlChars.replace("%25", "%");
   urlChars.replace("%26", "&");

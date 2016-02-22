@@ -1,7 +1,6 @@
 String RunningProgramGui()
 {
-  WebArgumentsReceived = server.arg("send");
-  WebArgumentsReceivedInput = server.arg("input");
+
   //PrintAndWebOut(WebArgumentsReceivedInput );
 
   //Serial.println("Program is running. CHecking for goto statemets");

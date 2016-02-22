@@ -798,7 +798,6 @@ void ExicuteTheCurrentLine()
   {
     for (int i = 1; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
-      Serial.println(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;
 

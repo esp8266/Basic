@@ -57,7 +57,7 @@
 #include <LiquidCrystal_SR3W.h>
 #include <LCD.h>
 #include <LiquidCrystal_SR2W.h>
-#include <FastIO.h>
+//#include <FastIO.h>
 #include <LiquidCrystal_I2C.h>
 
 //PS2 Key Board
@@ -69,12 +69,12 @@
 #include <Adafruit_NeoPixel.h>
 
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(255, 15, NEO_GRB + NEO_KHZ800);;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.81";
+const String BasicVersion = "ESP Basic 1.82";
 
 
 
@@ -177,6 +177,7 @@ for (i = 0; i <= arrayOfLines.length - 1; i++)
   {
     arrayOfLines[i] = replaceAll(arrayOfLines[i],"+", "%2B");
     arrayOfLines[i] = replaceAll(arrayOfLines[i],"&", "%26");
+    arrayOfLines[i] = replaceAll(arrayOfLines[i],"#", "%23");
     var WhatToSend = "/codein?line=" + x + "&code=" + encodeURI(arrayOfLines[i]);
     httpGet(WhatToSend);
     document.getElementById("Status").value = i.toString();
@@ -258,8 +259,7 @@ const String GraphicsRectangleCode =  R"=====(<rect x="*x1*" y="*y1*" width="*x2
 
 
 
-String WebArgumentsReceived;
-String WebArgumentsReceivedInput;
+
 byte numberButtonInUse = 0;
 String ButtonsInUse[11];
 
@@ -360,111 +360,7 @@ void setup() {
 
   server.on("/settings", []()
   {
-
-    if ( server.arg("key") == LoadDataFromFile("LoginKey"))
-    {
-      LoggedIn = millis();
-    }
-
-
-    WaitForTheInterpertersResponse = 1;
-    String WebOut = AdminBarHTML;
-    WebOut += SettingsPageHTML;
-    String staName;
-    String staPass;
-    String apName;
-    String apPass;
-    String LoginKey;
-    String ShowMenueBar;
-    String otaUrl;
-    //Serial.print("Loading Settings Files");
-
-    staName      = LoadDataFromFile("WIFIname");
-    staPass      = LoadDataFromFile("WIFIpass");
-    apName       = LoadDataFromFile("APname");
-    apPass       = LoadDataFromFile("APpass");
-    LoginKey     = LoadDataFromFile("LoginKey");
-    ShowMenueBar = LoadDataFromFile("ShowMenueBar");
-    otaUrl       = LoadDataFromFile("otaUrl");
-
-    if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
-    {
-      WebOut = LogInPage;
-    }
-    else
-    {
-
-      if ( server.arg("restart") == "Restart" ) ESP.restart();
-
-
-      if ( server.arg("update") == "Update" )
-      {
-
-        //        Serial.println(BasicOTAupgrade());
-        if (LoadDataFromFile("otaUrl") == "")
-        {
-          t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266basic.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
-          if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
-        }
-        else
-        {
-          String URLtoGet = LoadDataFromFile("otaUrl");
-          String ServerToConnectTo;
-          String PageToGet;
-          ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
-          PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
-          t_httpUpdate_return  ret = ESPhttpUpdate.update(ServerToConnectTo, 80, PageToGet);
-          if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
-        }
-        //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
-
-      }
-
-
-      if ( server.arg("save") == "Save" )
-      {
-        staName = GetRidOfurlCharacters(server.arg("staName"));
-        staPass = GetRidOfurlCharacters(server.arg("staPass"));
-        apName  = GetRidOfurlCharacters(server.arg("apName"));
-        apPass  = GetRidOfurlCharacters(server.arg("apPass"));
-        LoginKey = GetRidOfurlCharacters(server.arg("LoginKey"));
-        ShowMenueBar = GetRidOfurlCharacters(server.arg("showMenueBar"));
-        otaUrl       = GetRidOfurlCharacters(server.arg("otaurl"));
-
-        SaveDataToFile("WIFIname" , staName);
-        SaveDataToFile("WIFIpass" , staPass);
-        SaveDataToFile("APname" , apName);
-        SaveDataToFile("APpass" , apPass);
-        SaveDataToFile("LoginKey" , LoginKey);
-        SaveDataToFile("ShowMenueBar" , ShowMenueBar);
-        SaveDataToFile("otaUrl" , otaUrl);
-      }
-
-      if ( server.arg("format") == "Format" )
-      {
-        Serial.println("Formating ");
-        Serial.print(SPIFFS.format());
-      }
-
-      WebOut.replace("*sta name*", staName);
-      WebOut.replace("*sta pass*", staPass);
-      WebOut.replace("*ap name*",  apName);
-      WebOut.replace("*ap pass*",  apPass);
-      WebOut.replace("*LoginKey*", LoginKey);
-      WebOut.replace("*BasicVersion*", BasicVersion);
-      WebOut.replace("*otaurl*", otaUrl);
-
-      if ( ShowMenueBar == "off")
-      {
-        WebOut.replace("**checked**", "checked");
-      }
-      else
-      {
-        WebOut.replace("**checked**", "");
-      }
-    }
-
-    server.send(200, "text/html", WebOut);
+    server.send(200, "text/html", SettingsPageHandeler());
   });
 
 
@@ -690,6 +586,106 @@ void setup() {
   StartUpProgramTimer();
 
 }
+
+
+String SettingsPageHandeler()
+{
+  if ( server.arg("key") == LoadDataFromFile("LoginKey"))
+  {
+    LoggedIn = millis();
+  }
+
+
+  WaitForTheInterpertersResponse = 1;
+  String WebOut = String( AdminBarHTML + SettingsPageHTML);
+  String staName = LoadDataFromFile("WIFIname");
+  String staPass = LoadDataFromFile("WIFIpass");
+  String apName = LoadDataFromFile("APname");
+  String apPass = LoadDataFromFile("APpass");
+  String LoginKey = LoadDataFromFile("LoginKey");
+  String ShowMenueBar = LoadDataFromFile("ShowMenueBar");
+  String otaUrl = LoadDataFromFile("otaUrl");
+  //Serial.print("Loading Settings Files");
+
+  if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
+  {
+    WebOut = LogInPage;
+  }
+  else
+  {
+
+    if ( server.arg("restart") == "Restart" ) ESP.restart();
+
+
+    if ( server.arg("update") == "Update" )
+    {
+
+      //        Serial.println(BasicOTAupgrade());
+      if (LoadDataFromFile("otaUrl") == "")
+      {
+        t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266basic.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
+        if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
+      }
+      else
+      {
+        String URLtoGet = LoadDataFromFile("otaUrl");
+        String ServerToConnectTo;
+        String PageToGet;
+        ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
+        PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
+        t_httpUpdate_return  ret = ESPhttpUpdate.update(ServerToConnectTo, 80, PageToGet);
+        if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
+      }
+      //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
+
+    }
+
+
+    if ( server.arg("save") == "Save" )
+    {
+      staName = GetRidOfurlCharacters(server.arg("staName"));
+      staPass = GetRidOfurlCharacters(server.arg("staPass"));
+      apName  = GetRidOfurlCharacters(server.arg("apName"));
+      apPass  = GetRidOfurlCharacters(server.arg("apPass"));
+      LoginKey = GetRidOfurlCharacters(server.arg("LoginKey"));
+      ShowMenueBar = GetRidOfurlCharacters(server.arg("showMenueBar"));
+      otaUrl       = GetRidOfurlCharacters(server.arg("otaurl"));
+
+      SaveDataToFile("WIFIname" , staName);
+      SaveDataToFile("WIFIpass" , staPass);
+      SaveDataToFile("APname" , apName);
+      SaveDataToFile("APpass" , apPass);
+      SaveDataToFile("LoginKey" , LoginKey);
+      SaveDataToFile("ShowMenueBar" , ShowMenueBar);
+      SaveDataToFile("otaUrl" , otaUrl);
+    }
+
+    if ( server.arg("format") == "Format" )
+    {
+      Serial.println("Formating ");
+      Serial.print(SPIFFS.format());
+    }
+
+    WebOut.replace("*sta name*", staName);
+    WebOut.replace("*sta pass*", staPass);
+    WebOut.replace("*ap name*",  apName);
+    WebOut.replace("*ap pass*",  apPass);
+    WebOut.replace("*LoginKey*", LoginKey);
+    WebOut.replace("*BasicVersion*", BasicVersion);
+    WebOut.replace("*otaurl*", otaUrl);
+
+    if ( ShowMenueBar == "off")
+    {
+      WebOut.replace("**checked**", "checked");
+    }
+    else
+    {
+      WebOut.replace("**checked**", "");
+    }
+  }
+return WebOut;
+}
+
 
 
 String getContentType(String filename) {

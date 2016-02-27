@@ -24,7 +24,7 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
     if (numberOfAtempts >= 12)
     {
       Serial.println("");
-      Serial.println("Failed Wifi Connect ");
+      Serial.println(F("Failed Wifi Connect "));
       return 0;
     }
   }
@@ -56,9 +56,9 @@ delay(1000);
     //configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
     Serial.println("");
-    Serial.print("Connected to ");
+    Serial.print(F("Connected to "));
     Serial.println(ssid);
-    Serial.print("IP address : ");
+    Serial.print(F("IP address : "));
     Serial.println(WiFi.localIP());
     SaveDataToFile("WIFIname" ,  NetworkName);
     SaveDataToFile("WIFIpass", NetworkPassword);
@@ -74,7 +74,7 @@ delay(1000);
 void CreateAP(String NetworkName, String NetworkPassword)
 {
   WiFi.mode(WIFI_AP_STA);
-  Serial.println("Creating WIFI access point");
+  Serial.println(F("Creating WIFI access point"));
 
 
   if (NetworkName == "")

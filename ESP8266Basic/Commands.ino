@@ -27,7 +27,7 @@ void ExicuteTheCurrentLine()
 
   if (BasicDebuggingOn == 1)
   {
-    Serial.println("Exicuting line Debug Statement");
+    Serial.println(F("Exicuting line Debug Statement"));
     Serial.println(String(String(RunningProgramCurrentLine) + " " + inData));
     Serial.println(Param0);
     Serial.println(Param1);
@@ -40,7 +40,7 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == "") return;
 
-  if ( Param0 == "if")
+  if ( Param0 == F("if"))
   {
     //Serial.print("Dofing if Statement");
     //Serial.println(DoMathForMe(GetMeThatVar(Param1), Param2, GetMeThatVar(Param3)));
@@ -66,7 +66,7 @@ void ExicuteTheCurrentLine()
         //Serial.println(Param0);
         Param0 = getValue(inData, ' ', i);
         Param0.toLowerCase();
-        if ( Param0 == "else")
+        if ( Param0 == F("else"))
         {
           //Serial.println("Found else");
           Param0 = getValue(inData, ' ', i + 1);
@@ -85,7 +85,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "for")
+  if (Param0 == F("for"))
   {
 
     //    for (int i = ForNextReturnLocations[0]; i <= 1; i--)
@@ -101,12 +101,12 @@ void ExicuteTheCurrentLine()
     ForNextReturnLocations[ForNextReturnLocations[0]] = RunningProgramCurrentLine;
 
 
-    Param0 = "let";
+    Param0 = F("let");
   }
 
 
 
-  if (Param0 == "next")
+  if (Param0 == F("next"))
   {
     //for x = 1 to 10
 
@@ -133,7 +133,7 @@ void ExicuteTheCurrentLine()
         if ( test1  !=  test2 )
         {
           RunningProgramCurrentLine = ForNextReturnLocations[i];
-          Param0 = "let";
+          Param0 = F("let");
           Param3 = Param1;
           Param4 = "+";
           Param5 = "1";
@@ -150,20 +150,20 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "debugon")
+  if (Param0 == F("debugon"))
   {
     BasicDebuggingOn = 1;
     return;
   }
 
-  if (Param0 == "debugoff")
+  if (Param0 == F("debugoff"))
   {
     BasicDebuggingOn = 0;
     return;
   }
 
 
-  if (Param0 == "run")
+  if (Param0 == F("run"))
   {
     ProgramName = GetMeThatVar(Param1);
     GraphicsEliments[0][0] = 0;
@@ -177,14 +177,14 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "reboot" | Param0 == "restart")
+  if (Param0 == F("reboot") | Param0 == F("restart"))
   {
     ESP.restart();
     return;
   }
 
 
-  if (Param0 == "vars")
+  if (Param0 == F("vars"))
   {
     //for debugging purpose to print out all of the basic variables
     PrintAllMyVars();
@@ -192,19 +192,19 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "memclear")
+  if (Param0 == F("memclear"))
   {
-    for (byte i = 0; i <= 50; i++)
+    for (byte i = 0; i < 50; i++)
     {
+      AllMyVaribles[i][0] = "";
       AllMyVaribles[i][1] = "";
-      AllMyVaribles[i][2] = "";
     }
     return;
   }
 
 
 
-  if (Param0 == "list")
+  if (Param0 == F("list"))
   {
     for (int i = 0; i <= TotalNumberOfLines; i++)
     {
@@ -219,7 +219,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "dir")
+  if (Param0 == F("dir"))
   {
     //SPIFFS.begin();
     Dir dir = SPIFFS.openDir(String("/" ));
@@ -230,7 +230,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (Param0 == "del")
+  if (Param0 == F("del"))
   {
     //SPIFFS.begin();
 
@@ -245,7 +245,7 @@ void ExicuteTheCurrentLine()
 
   //Commnads to controll pins
 
-  if ( Param0 == "pi")
+  if ( Param0 == F("pi"))
   {
 
     SetMeThatVar(Param2, String(UniversalPinIO("pi", GetMeThatVar(Param1), 0)));
@@ -253,14 +253,14 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if ( Param0 == "interrupt")
+  if ( Param0 == F("interrupt"))
   {
     UniversalPinIO(GetMeThatVar(Param2), GetMeThatVar(Param1), 0);
     return;
   }
 
 
-  if ( Param0 == "po")
+  if ( Param0 == F("po"))
   {
 
     valParam2 = GetMeThatVar(Param2).toInt();
@@ -270,13 +270,13 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if ( Param0 == "pwi")
+  if ( Param0 == F("pwi"))
   {
     SetMeThatVar(Param2, String(UniversalPinIO("pwi", GetMeThatVar(Param1), 0)));
     return;
   }
 
-  if ( Param0 == "pwo")
+  if ( Param0 == F("pwo"))
   {
 
     valParam2 = GetMeThatVar(Param2).toInt();
@@ -298,17 +298,17 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if ( Param0 == "ai")
+  if ( Param0 == F("ai"))
   {
     SetMeThatVar(Param1, String(analogRead(A0)));
     return;
   }
 
-  if ( Param0 == "servo")
+  if ( Param0 == F("servo"))
   {
     valParam2 = GetMeThatVar(Param2).toInt();
 
-    UniversalPinIO("servo", GetMeThatVar(Param1), valParam2);
+    UniversalPinIO(F("servo"), GetMeThatVar(Param1), valParam2);
     return;
   }
 
@@ -316,14 +316,14 @@ void ExicuteTheCurrentLine()
 
 
   //Feading and writing variables to flash memory
-  if ( Param0 == "read")
+  if ( Param0 == F("read"))
   {
     SetMeThatVar(Param2, LoadDataFromFile(GetMeThatVar(Param1)));
     return;
   }
 
 
-  if ( Param0 == "write")
+  if ( Param0 == F("write"))
   {
     SaveDataToFile(GetMeThatVar(Param1), GetMeThatVar(Param2));
     return;
@@ -335,7 +335,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if ( Param0 == "delay")
+  if ( Param0 == F("delay"))
   {
     valParam1 = GetMeThatVar(Param1).toInt();
     delay(valParam1);
@@ -343,7 +343,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if ( Param0 == "timer")
+  if ( Param0 == F("timer"))
   {
     TimerWaitTime = GetMeThatVar(Param1).toInt();
     TimerBranch = Param2;
@@ -352,7 +352,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if ( Param0 == "sleep")
+  if ( Param0 == F("sleep"))
   {
 
     ESP.deepSleep(GetMeThatVar(Param1).toInt() * 1000000, WAKE_RF_DEFAULT);
@@ -361,28 +361,49 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "print")
+  if (Param0 == F("print"))
   {
     PrintAndWebOut(GetMeThatVar(Param1));
     return;
   }
 
 
-  if (Param0 == "serialprint")
+  if (Param0 == F("serialprint"))
   {
     Serial.print(GetMeThatVar(Param1));
     return;
   }
 
-  if (Param0 == "serialprintln")
+  if (Param0 == F("serialprintln"))
   {
     Serial.println(GetMeThatVar(Param1));
     return;
   }
 
+  if (Param0 == F("serial2begin"))
+  {
+    Serial1.begin(GetMeThatVar(Param1).toInt());
+    return;
+  }
+  if (Param0 == F("serial2end"))
+  {
+    Serial1.end();
+    return;
+  }
+  
+  if (Param0 == F("serial2print"))
+  {
+    Serial1.print(GetMeThatVar(Param1));
+    return;
+  }
 
+  if (Param0 == F("serial2println"))
+  {
+    Serial1.println(GetMeThatVar(Param1));
+    return;
+  }
 
-  if (Param0 == "baudrate")
+  if (Param0 == F("baudrate"))
   {
     Serial.begin(GetMeThatVar(Param1).toInt());
     return;
@@ -473,7 +494,7 @@ void ExicuteTheCurrentLine()
 
   //Web Browser output commands
 
-  if (Param0 == "wprint" | Param0 == "html")
+  if (Param0 == F("wprint") | Param0 == F("html"))
   {
     HTMLout += GetMeThatVar(Param1);
     //Serial.print(HTMLout);
@@ -482,30 +503,30 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "image")
+  if (Param0 == F("image"))
   {
     String tempInfo = GenerateIDtag(normalImage);
-    tempInfo.replace("name", GetMeThatVar(Param1));
+    tempInfo.replace(F("name"), GetMeThatVar(Param1));
     HTMLout += tempInfo;
     //Serial.print(HTMLout);
     return;
   }
 
 
-  if (Param0 == "javascript")
+  if (Param0 == F("javascript"))
   {
     String tempInfo = javascript;
-    tempInfo.replace("name", GetMeThatVar(Param1));
+    tempInfo.replace(F("name"), GetMeThatVar(Param1));
     HTMLout += tempInfo;
     //Serial.print(HTMLout);
     return;
   }
 
 
-  if (Param0 == "css")
+  if (Param0 == F("css"))
   {
     String tempInfo = CSSscript;
-    tempInfo.replace("name", GetMeThatVar(Param1));
+    tempInfo.replace(F("name"), GetMeThatVar(Param1));
     HTMLout += tempInfo;
     //Serial.print(HTMLout);
     return;
@@ -513,7 +534,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "textbox")
+  if (Param0 == F("textbox"))
   {
     String tempTextBox = GenerateIDtag(TextBox);
     GetMeThatVar(Param1);
@@ -523,15 +544,15 @@ void ExicuteTheCurrentLine()
       GetMeThatVar(Param1);
     }
 
-    tempTextBox.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
-    tempTextBox.replace("variablenumber",  String(LastVarNumberLookedUp));
+    tempTextBox.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
+    tempTextBox.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
     HTMLout = String(HTMLout + tempTextBox);
     return;
   }
 
 
-  if (Param0 == "passwordbox")
+  if (Param0 == F("passwordbox"))
   {
     String tempTextBox = GenerateIDtag(passwordbox);
     GetMeThatVar(Param1);
@@ -541,15 +562,15 @@ void ExicuteTheCurrentLine()
       GetMeThatVar(Param1);
     }
 
-    tempTextBox.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
-    tempTextBox.replace("variablenumber",  String(LastVarNumberLookedUp));
+    tempTextBox.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
+    tempTextBox.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
     HTMLout = String(HTMLout + tempTextBox);
     return;
   }
 
 
-  if (Param0 == "slider")
+  if (Param0 == F("slider"))
   {
     String tempSlider = GenerateIDtag(Slider);
     GetMeThatVar(Param1);
@@ -558,11 +579,11 @@ void ExicuteTheCurrentLine()
       SetMeThatVar(Param1, "");
       GetMeThatVar(Param1);
     }
-    tempSlider.replace("variablevalue",  String("VARS|" + String(LastVarNumberLookedUp)));
-    tempSlider.replace("variablenumber",  String(LastVarNumberLookedUp));
+    tempSlider.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
+    tempSlider.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
-    tempSlider.replace("minval",  GetMeThatVar(Param2));
-    tempSlider.replace("maxval",  GetMeThatVar(Param3));
+    tempSlider.replace(F("minval"),  GetMeThatVar(Param2));
+    tempSlider.replace(F("maxval"),  GetMeThatVar(Param3));
 
     HTMLout = String(HTMLout + tempSlider);
     return;
@@ -571,7 +592,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "dropdown" | Param0 == "listbox")
+  if (Param0 == F("dropdown") | Param0 == F("listbox"))
   {
     String tempDropDownList = GenerateIDtag(DropDownList);
     String tempDropDownListOpptions  = DropDownListOpptions;
@@ -587,7 +608,7 @@ void ExicuteTheCurrentLine()
       TempBla.replace(",", "");
       if (TempBla != "") {
 
-        tempDropDownListOpptions.replace("item",  TempBla);
+        tempDropDownListOpptions.replace(F("item"),  TempBla);
         TempItems = String( TempItems + tempDropDownListOpptions);
       }
       delay(0);
@@ -600,10 +621,10 @@ void ExicuteTheCurrentLine()
       GetMeThatVar(Param2);
     }
 
-    tempDropDownList.replace("variablenumber",  String(LastVarNumberLookedUp));
-    tempDropDownList.replace("options",  TempItems);
-    if (Param3.toInt() > 1 | Param0 == "dropdown") Param3 = "1";
-    tempDropDownList.replace("theSize", String(Param3.toInt()));
+    tempDropDownList.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
+    tempDropDownList.replace(F("options"),  TempItems);
+    if (Param3.toInt() > 1 | Param0 == F("dropdown")) Param3 = "1";
+    tempDropDownList.replace(F("theSize"), String(Param3.toInt()));
 
     HTMLout = String(HTMLout + tempDropDownList);
     return;
@@ -613,14 +634,14 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "button")
+  if (Param0 == F("button"))
   {
     numberButtonInUse++;
     String tempButton = GenerateIDtag(GOTObutton);
-    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
+    tempButton.replace(F("gotonotext"),  GetMeThatVar(Param1));
     //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
 
-    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
+    tempButton.replace(F("gotonobranch"),  String(F("goto")) + String(numberButtonInUse));
 
     ButtonsInUse[numberButtonInUse] = Param2;
     //Serial.println(ButtonsInUse[numberButtonInUse]);
@@ -630,16 +651,16 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "imagebutton")
+  if (Param0 == F("imagebutton"))
   {
     numberButtonInUse++;
     String tempButton = GenerateIDtag(GOTOimagebutton);
 
-    if (GetMeThatVar(Param1).startsWith("http://") | GetMeThatVar(Param1).startsWith("HTTP://") )tempButton.replace("/file?file=", "");
+    if (GetMeThatVar(Param1).startsWith(F("http://")) | GetMeThatVar(Param1).startsWith(F("HTTP://")) )tempButton.replace(F("/file?file="), "");
 
-    tempButton.replace("gotonotext",  GetMeThatVar(Param1));
+    tempButton.replace(F("gotonotext"),  GetMeThatVar(Param1));
 
-    tempButton.replace("gotonobranch",  String("goto" + String(numberButtonInUse)));
+    tempButton.replace(F("gotonobranch"),  String(F("goto")) + String(numberButtonInUse));
 
     ButtonsInUse[numberButtonInUse] = Param2;
     //Serial.println(ButtonsInUse[numberButtonInUse]);
@@ -650,7 +671,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "onload")
+  if (Param0 == F("onload"))
   {
     refreshBranch = Param1;
     return;
@@ -660,7 +681,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "wait")
+  if (Param0 == F("wait"))
   {
     //HTMLout = String(HTMLout + "<hr>" + GetMeThatVar(Param1));
     WaitForTheInterpertersResponse = 1;
@@ -668,7 +689,7 @@ void ExicuteTheCurrentLine()
   }
   //PrintAndWebOut("Just Passed the Wait Command");
 
-  if (Param0 == "cls")
+  if (Param0 == F("cls"))
   {
     numberButtonInUse = 0;
 
@@ -683,21 +704,21 @@ void ExicuteTheCurrentLine()
 
   //All of my graphis engeine commands
 
-  if (Param0 == "graphics")
+  if (Param0 == F("graphics"))
   {
     GraphicsEliments[0][1] = GetMeThatVar(Param1).toInt();
     GraphicsEliments[0][2] = GetMeThatVar(Param2).toInt();
-    HTMLout += "**graphics**";
+    HTMLout += F("**graphics**");
     return;
   }
 
-  if (Param0 == "gcls")
+  if (Param0 == F("gcls"))
   {
     GraphicsEliments[0][0] = 0;
     return;
   }
 
-  if (Param0 == "line")
+  if (Param0 == F("line"))
   {
     int i;
     GraphicsEliments[0][0] += 1;
@@ -711,7 +732,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (Param0 == "circle")
+  if (Param0 == F("circle"))
   {
     int i;
     GraphicsEliments[0][0] += 1;
@@ -724,7 +745,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (Param0 == "ellipse")
+  if (Param0 == F("ellipse"))
   {
     int i;
     GraphicsEliments[0][0] += 1;
@@ -738,7 +759,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (Param0 == "rect")
+  if (Param0 == F("rect"))
   {
     int i;
     GraphicsEliments[0][0] += 1;
@@ -754,7 +775,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "input")
+  if (Param0 == F("input"))
   {
     if (Param2 == "")
     {
@@ -769,7 +790,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (Param0 == "serialflush")
+  if (Param0 == F("serialflush"))
   {
 
     serialFlush();
@@ -777,7 +798,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "serialtimeout")
+  if (Param0 == F("serialtimeout"))
   {
 
     SerialTimeOut = GetMeThatVar(Param1).toInt();
@@ -794,10 +815,11 @@ void ExicuteTheCurrentLine()
 
   //branching commands
 
-  if (Param0 == "goto")
+  if (Param0 == F("goto"))
   {
     for (int i = 1; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
+//      Serial.println(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;
 
@@ -807,12 +829,12 @@ void ExicuteTheCurrentLine()
         return;
       }
     }
-    PrintAndWebOut(String("ERROR Branch not found:" + Param1));
+    PrintAndWebOut(String(F("ERROR Branch not found:")) + Param1);
     return;
   }
 
 
-  if (Param0 == "gosub")
+  if (Param0 == F("gosub"))
   {
     for (int i = 1; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
@@ -827,20 +849,20 @@ void ExicuteTheCurrentLine()
         return;
       }
     }
-    PrintAndWebOut(String("ERROR Branch not found:" + Param1));
+    PrintAndWebOut(String(F("ERROR Branch not found:")) + Param1);
     return;
   }
 
 
 
-  if (Param0 == "return")
+  if (Param0 == F("return"))
   {
     RunningProgramCurrentLine = ReturnLocations[NumberOfReturns];
     NumberOfReturns = NumberOfReturns - 1;
     return;
   }
 
-  if (Param0 == "end")
+  if (Param0 == F("end"))
   {
 
     for (int i = 0; i <= 255; i++)
@@ -850,19 +872,19 @@ void ExicuteTheCurrentLine()
     RunningProgram = 0;
     WaitForTheInterpertersResponse = 1;
     TimerWaitTime = 0;
-    PrintAndWebOut("Done...");
+    PrintAndWebOut(F("Done..."));
     return;
   }
 
 
-  if (Param0 == "load")
+  if (Param0 == F("load"))
   {
     for (int i = 0; i <= 255; i++)
     {
       ForNextReturnLocations[i] = 0;
     }
     GraphicsEliments[0][0] = 0;
-    PrintAndWebOut(String("Loading . . . . " + Param1));
+    PrintAndWebOut(String(F("Loading . . . . ")) + Param1);
     ProgramName = Param1;
     numberButtonInUse = 0;
     RunningProgramCurrentLine = 0;
@@ -876,19 +898,19 @@ void ExicuteTheCurrentLine()
 
   //Wifi Commands
 
-  if (Param0 == "connect")
+  if (Param0 == F("connect"))
   {
     ConnectToTheWIFI(GetMeThatVar(Param1), GetMeThatVar(Param2), GetMeThatVar(Param3), GetMeThatVar(Param4), GetMeThatVar(Param5));
     return;
   }
 
-  if (Param0 == "ap")
+  if (Param0 == F("ap"))
   {
     CreateAP(GetMeThatVar(Param1), GetMeThatVar(Param2));
     return;
   }
 
-  if (Param0 == "wifioff")
+  if (Param0 == F("wifioff"))
   {
     //WiFi.disconnect();
     WiFi.mode(WIFI_OFF);
@@ -898,7 +920,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "wget")
+  if (Param0 == F("wget"))
   {
     SetMeThatVar(Param1, FetchWebUrl(GetMeThatVar(Param2)));
     return;
@@ -906,7 +928,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  if (Param0 == "setupemail")
+  if (Param0 == F("setupemail"))
   {
     EmailServer = GetMeThatVar(Param1);
     Emailport = GetMeThatVar(Param2).toInt();
@@ -916,7 +938,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == "email" | Param0 == "sendemail" )
+  if (Param0 == F("email") | Param0 == F("sendemail" ))
   {
     //To, From, Subject, MsgBody
     sendEmail(GetMeThatVar(Param1), GetMeThatVar(Param2), GetMeThatVar(Param3), GetMeThatVar(Param4) );
@@ -928,20 +950,20 @@ void ExicuteTheCurrentLine()
   //Code to handle MSG Branch
 
 
-  if (Param0 == "msgbranch")
+  if (Param0 == F("msgbranch"))
   {
     msgbranch = Param1;
     return;
   }
 
-  if (Param0 == "msgreturn")
+  if (Param0 == F("msgreturn"))
   {
     MsgBranchRetrnData = GetMeThatVar(Param1);
     return;
   }
 
 
-  if (Param0 == "msgget")
+  if (Param0 == F("msgget"))
   {
 
     Param1 = GetMeThatVar(Param1);
@@ -967,7 +989,7 @@ void ExicuteTheCurrentLine()
     Param0 = "let";
   }
 
-  if ( Param0 == "let")
+  if ( Param0 == F("let"))
   {
     SetMeThatVar(Param1, DoMathForMe(GetMeThatVar(Param3), Param4, GetMeThatVar(Param5)));
     return;

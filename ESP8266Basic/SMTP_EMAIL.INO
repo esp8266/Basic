@@ -29,11 +29,11 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
 
   Serial.println(F("Sending hello"));
   // replace 1.2.3.4 with your Arduino's ip
-  client.println("EHLO 1.2.3.4");
+  client.println(F("EHLO 1.2.3.4"));
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending auth login"));
-  client.println("auth login");
+  client.println(F("auth login"));
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending User"));
@@ -54,27 +54,27 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
 
   // change to your email address (sender)
   Serial.println(F("Sending From"));
-  client.println(String("MAIL From: <" +  EmailFrom + ">"));
+  client.println(String(F("MAIL From: <")) +  EmailFrom + ">");
   if (!eRcv()) return 0;
 
   // change to recipient address
   Serial.println(F("Sending To"));
-  client.println(String("RCPT To: <" + EmailTo + ">"));
+  client.println(String(F("RCPT To: <")) + EmailTo + ">");
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending DATA"));
-  client.println("DATA");
+  client.println(F("DATA"));
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending email"));
 
   // change to recipient address
-  client.println(String("To: You <" + EmailTo + ">"));
+  client.println(String(F("To: You <")) + EmailTo + ">");
 
   // change to your address
-  client.println(String("From: Me <" +  EmailFrom + ">"));
+  client.println(String(F("From: Me <")) +  EmailFrom + ">");
 
-  client.println(String("Subject: " + EmailSubject + "\r\n"));
+  client.println(String(F("Subject: ")) + EmailSubject + "\r\n");
 
   client.println(EmailBody);
 
@@ -83,7 +83,7 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
   if (!eRcv()) return 0;
 
   Serial.println(F("Sending QUIT"));
-  client.println("QUIT");
+  client.println(F("QUIT"));
   if (!eRcv()) return 0;
 
   client.stop();

@@ -7,7 +7,7 @@ void SaveDataToFile(String fileNameForSave, String DataToSave)
   File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "w");
   if (!f)
   {
-    PrintAndWebOut("file open failed");
+    PrintAndWebOut(F("file open failed"));
   }
   else
   {
@@ -42,12 +42,12 @@ String LoadDataFromFile(String fileNameForSave)
 
 
 
-
-String BasicProgram(int LineNumberToLookUp)
+/*
+String BasicProgram___(int LineNumberToLookUp)
 {
   if (ProgramName == "")
   {
-    ProgramName = "default";
+    ProgramName = F("default");
   }
   delay(0);
 
@@ -60,7 +60,7 @@ void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramL
 {
   if (ProgramName == "")
   {
-    ProgramName = "default";
+    ProgramName = F("default");
   }
   delay(0);
   SaveDataToFile(String(ProgramName  + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
@@ -68,20 +68,14 @@ void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramL
 }
 
 
-
-
-
-
-
-
-void LoadBasicProgramFromFlash(String fileNameForSave)
+void LoadBasicProgramFromFlash__(String fileNameForSave)
 {
   String lineToBeWrittenToFile;
   SPIFFS.begin();
   File f = SPIFFS.open(String("uploads/" + fileNameForSave), "r");
   if (!f)
   {
-    PrintAndWebOut("file open failed");
+    PrintAndWebOut(F("file open failed"));
   }
   else
   {
@@ -96,3 +90,99 @@ void LoadBasicProgramFromFlash(String fileNameForSave)
   }
   return;
 }
+*/
+//////////// New file stuff by CiccioCB /////////////
+
+static File BasicFileToSave;
+static int  program_nb_lines = 0;
+static uint16_t  line_seeks[256];
+static File BasicFileOpened;
+
+String BasicProgram(int linenum)
+{
+  if (linenum >= program_nb_lines)
+  {
+	fileOpenFail = 1; 
+	return "";
+  }
+  else
+	fileOpenFail = 0; 
+  
+  if (linenum == 0)
+		return "";
+
+  char buff[200];
+  String ret;
+  BasicFileOpened.seek(line_seeks[linenum-1], SeekSet);
+  BasicFileOpened.readBytes(buff, line_seeks[linenum] - line_seeks[linenum-1]);
+  buff[line_seeks[linenum] - line_seeks[linenum-1]] = '\0';
+  ret = String(buff);
+  ret.replace("\n","");
+  ret.replace("\r","");
+  
+  return ret;
+}
+
+bool OpenToWriteOnFlash(String fileNameForWrite)
+{
+  BasicFileToSave = SPIFFS.open(String(fileNameForWrite), "w");
+  if (!BasicFileToSave)
+  {
+    Serial.println(F("file write open failed"));
+	return false;
+  }
+  return true;
+}
+
+bool WriteBasicLineOnFlash(String codeLine)
+{
+	int ret;
+//	codeLine.replace("\r","");
+//	codeLine.replace("\n","");
+//Serial.println(codeLine);
+	ret = BasicFileToSave.println(codeLine);
+	if (ret == 0)
+	{
+		Serial.println(F("file write println failed"));
+		return false;	
+	}
+	else
+	{
+	   return true;
+	}	   
+
+}
+
+void CloseWriteOnFlash(void)
+{
+	BasicFileToSave.close();
+}
+
+
+void LoadBasicProgramFromFlash(String fileNameForRead)
+{
+  int i = 0;
+  program_nb_lines = 0;
+  //SPIFFS.begin();
+  BasicFileOpened.close();
+  File f = SPIFFS.open(String(fileNameForRead), "r");
+  BasicFileOpened = f;
+  if (!f)
+  {
+    Serial.println(F("file open failed"));
+  }
+  else
+  {
+    for (i = 0; i <= TotalNumberOfLines; i++)
+    {
+      if (f.available() == 0) break;
+      line_seeks[program_nb_lines] = f.position();
+      f.readStringUntil('\n');
+
+      program_nb_lines++;
+    }
+//    f.close();
+  }
+  return;
+}
+

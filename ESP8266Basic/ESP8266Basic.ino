@@ -25,8 +25,12 @@
 
 //Onewire tempture sensor code conntributed by Rotohammer.
 
+//Signnifigant speed improvements submited by cicciocb
+//Uploading of bas files improvement added by cicciocb
+//JSON parsing routine added by cicciocb
 
-#include <ArduinoJson.h>
+
+//#include <ArduinoJson.h>
 #include "spiffs/spiffs.h"
 #include <FS.h>
 #include <ESP8266mDNS.h>
@@ -38,7 +42,7 @@
 //#include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
-#include <ESP8266httpUpdate.h>
+#include <ESP8266httpUpdate.h>               // that file need to be copied into the folder for 2.0.0-rc1
 #include <Servo.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -47,8 +51,8 @@
 //#include <WiFiClientSecure.h>
 #include "ESP8266httpUpdate.h"
 #include <time.h>
-//#include <HttpClient.h>
-
+//#include <HttpClient.h>                   // that line needs to be commented for esp8266-2.0.0-rc1
+#include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
 //LCD Stuff
 #include <LiquidCrystal_SR.h>
@@ -74,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const String BasicVersion = "ESP Basic 1.82";
+const char BasicVersion[] = "ESP Basic 1.83";
 
 
 
@@ -104,18 +108,18 @@ ESP8266WebServer server(80);
 
 //Web Server Variables
 String HTMLout;
-const String InputFormText = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
-const String TextBox = R"=====( <input type="text" id="myid" name="variablenumber" value="variablevalue">)=====";
-const String passwordbox = R"=====( <input type="password" id="myid" name="variablenumber" value="variablevalue">)=====";
-const String Slider = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
-const String GOTObutton =  R"=====(<input type="submit" id="myid" value="gotonotext" name="gotonobranch">)=====";
-const String GOTOimagebutton =  R"=====(<input type="image" id="myid" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
-const String normalImage =  R"=====(<img src="/file?file=name">)=====";
-const String javascript =  R"=====(<script src="/file?file=name"></script>)=====";
-const String CSSscript =  R"=====(<link rel="stylesheet" type="text/css" href="/file?file=name">)=====";
-const String DropDownList =  R"=====(<select name="variablenumber" id="myid" size="theSize">options</select>
+PROGMEM const char InputFormText[] = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
+PROGMEM const char TextBox[] = R"=====( <input type="text" id="myid" name="variablenumber" value="variablevalue">)=====";
+PROGMEM const char passwordbox[] = R"=====( <input type="password" id="myid" name="variablenumber" value="variablevalue">)=====";
+PROGMEM const char Slider[] = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
+PROGMEM const char GOTObutton[] =  R"=====(<input type="submit" id="myid" value="gotonotext" name="gotonobranch">)=====";
+PROGMEM const char GOTOimagebutton[] =  R"=====(<input type="image" id="myid" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
+PROGMEM const char normalImage[] =  R"=====(<img src="/file?file=name">)=====";
+PROGMEM const char javascript[] =  R"=====(<script src="/file?file=name"></script>)=====";
+PROGMEM const char CSSscript[] =  R"=====(<link rel="stylesheet" type="text/css" href="/file?file=name">)=====";
+PROGMEM const char DropDownList[] =  R"=====(<select name="variablenumber" id="myid" size="theSize">options</select>
 <script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
-const String DropDownListOpptions =  R"=====(<option>item</option>)=====";
+PROGMEM const char DropDownListOpptions[] =  R"=====(<option>item</option>)=====";
 
 
 String LastElimentIdTag;
@@ -124,7 +128,7 @@ String LastElimentIdTag;
 
 byte WaitForTheInterpertersResponse = 1;
 
-const String AdminBarHTML = R"=====(
+PROGMEM const char AdminBarHTML[] = R"=====(
 <a href="./vars">[ VARS ]</a> 
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>
@@ -134,7 +138,7 @@ const String AdminBarHTML = R"=====(
 
 
 
-const String UploadPage = R"=====(
+PROGMEM const char UploadPage[] = R"=====(
 <form method='POST' action='/filemng' enctype='multipart/form-data'>
 <input type='file' name='Upload'>
 <input type='submit' value='Upload'>
@@ -152,39 +156,66 @@ const String UploadPage = R"=====(
 
 //<a href="http://www.esp8266basic.com/help"  target="_blank">[ HELP ]</a>
 
-const String EditorPageHTML =  R"=====(
+PROGMEM const char EditorPageHTML[] =  R"=====(
 <script src="editor.js"></script>
 <form action='edit' id="usrform">
 <input type="text" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
-</form><button onclick="SaveTheCode()">Save</button>
+</form>
+<button onclick="ShowTheFileList()">Files List</button>
+<button onclick="SaveTheCode()">Save</button>
 <br>
 <textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
 )=====";
 
 
-const String editCodeJavaScript =  R"=====(
+PROGMEM const char editCodeJavaScript[] =  R"=====(
 function SaveTheCode() {
   var textArea = document.getElementById("code");
   var arrayOfLines = textArea.value.split("\n");
   httpGet("/codein?SaveTheCode=start");
   httpGet("/codein?SaveTheCode=yes");
-for (i = 0; i <= arrayOfLines.length - 1; i++) 
+  block = 0;
+for (i = 0; i < arrayOfLines.length; i++) 
 { 
-  var x = i + 1;
+  x = i + 1;
   if (arrayOfLines[i] != "undefined")
   {
     arrayOfLines[i] = replaceAll(arrayOfLines[i],"+", "%2B");
     arrayOfLines[i] = replaceAll(arrayOfLines[i],"&", "%26");
-    arrayOfLines[i] = replaceAll(arrayOfLines[i],"#", "%23");
-    var WhatToSend = "/codein?line=" + x + "&code=" + encodeURI(arrayOfLines[i]);
-    httpGet(WhatToSend);
+  stocca(encodeURI(arrayOfLines[i]));
     document.getElementById("Status").value = i.toString();
   }
 }
+stocca(">>-save_<<");
 document.getElementById("Status").value = "Saved";
+  httpGet("/codein?SaveTheCode=end");
 alert("Saved");
+}
+var Sendy="";
+var block = 0;
+function stocca(s)
+{
+ Sendy += s;
+ block++;
+ if ((Sendy.length > 512) || (s == ">>-save_<<"))
+ {
+  if (s == ">>-save_<<")
+   Sendy = Sendy.substr(0,Sendy.length-10); 
+   var WhatToSend = "/codein?line=" + block + "&code="+Sendy;
+   httpGet(WhatToSend);
+   Sendy = "";
+ }
+ else
+ {
+   Sendy += "%0D%0A";
+ }
+}
+function ShowTheFileList(){
+  var filelist;
+  filelist = httpGet("/filelist?all=true");
+  alert("List of the Files saved :\n\r" + filelist);
 }
 function httpGet(theUrl)
 {
@@ -193,18 +224,17 @@ function httpGet(theUrl)
     xmlHttp.send( null );
     return xmlHttp.responseText;
 }
-
 function replaceAll(str, find, replace) {
   for (x = 0; x <= 10; x++) 
-{
-  str = str.replace(find, replace);
-}
-return str;
+  {
+    str = str.replace(find, replace);
+  }
+  return str;
 }
 )=====";
 
 
-const String SettingsPageHTML =  R"=====(
+PROGMEM const char SettingsPageHTML[] =  R"=====(
 <form action='settings' id="usrform"><table>
 *BasicVersion*
 <tr><th>
@@ -236,7 +266,7 @@ Station Mode (Connect to your router):</th></tr>
 
 
 
-const String LogInPage =  R"=====(
+PROGMEM const char LogInPage[] =  R"=====(
 <form action='settings' id="usrform">
 Log In Key
 <input type="password" name="key" value="">
@@ -247,16 +277,15 @@ Log In Key
 
 //Graphics HTML CODE
 
-const String GraphicsStartCode =  R"=====(<svg width="*wid*" height="*hei*">)=====";
+PROGMEM const char GraphicsStartCode[] =  R"=====(<svg width="*wid*" height="*hei*">)=====";
 
-const String GraphicsLineCode =  R"=====(<line x1="*x1*" y1="*y1*" x2="*x2*" y2="*y2*" stroke="*collor*"/>)=====";
+PROGMEM const char GraphicsLineCode[] =  R"=====(<line x1="*x1*" y1="*y1*" x2="*x2*" y2="*y2*" stroke="*collor*"/>)=====";
 
-const String GraphicsCircleCode =  R"=====(<circle cx="*x1*" cy="*y1*" r="*x2*" fill="*collor*"/>)=====";
+PROGMEM const char GraphicsCircleCode[] =  R"=====(<circle cx="*x1*" cy="*y1*" r="*x2*" fill="*collor*"/>)=====";
 
-const String GraphicsEllipseCode =  R"=====(<ellipse cx="*x1*" cy="*y1*" rx="*x2*" ry="*y2*" fill="*collor*"/>)=====";
+PROGMEM const char GraphicsEllipseCode[] =  R"=====(<ellipse cx="*x1*" cy="*y1*" rx="*x2*" ry="*y2*" fill="*collor*"/>)=====";
 
-const String GraphicsRectangleCode =  R"=====(<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>)=====";
-
+PROGMEM const char GraphicsRectangleCode[] =  R"=====(<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>)=====";
 
 
 
@@ -273,7 +302,6 @@ String inData;
 
 int TotalNumberOfLines = 255;
 //String BasicProgram[255];                                //Array of strings to hold basic program
-
 
 String AllMyVaribles[50][2];
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
@@ -297,7 +325,7 @@ int GraphicsEliments[100][7];
 File fsUploadFile;
 
 int noOfLinesForEdit;
-String ProgramName;
+String ProgramName = "default";
 
 bool fileOpenFail;
 
@@ -360,6 +388,7 @@ void setup() {
 
   server.on("/settings", []()
   {
+
     server.send(200, "text/html", SettingsPageHandeler());
   });
 
@@ -374,14 +403,14 @@ void setup() {
     }
     else
     {
-      WebOut += "<div style='float: left;'>Variable Dump:";
-      for (byte i = 0; i <= 50; i++)
+      WebOut += F("<div style='float: left;'>Variable Dump:");
+      for (byte i = 0; i < 50; i++)
       {
-        if (AllMyVaribles[i][1] != "" ) WebOut += String("<hr>" + AllMyVaribles[i][1] + " = " + AllMyVaribles[i][2]);
+        if (AllMyVaribles[i][0] != "" ) WebOut += String("<hr>" + AllMyVaribles[i][0] + " = " + AllMyVaribles[i][1]);
       }
 
 
-      WebOut += "<hr></div><div style='float: right;'>Pin Stats";
+      WebOut += F("<hr></div><div style='float: right;'>Pin Stats");
       for (byte i = 0; i <= 15; i++)
       {
         if ( i < 6 | i > 11) WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
@@ -403,7 +432,7 @@ void setup() {
     HTMLout = "";
     TimerWaitTime = 0;
     GraphicsEliments[0][0] = 0;
-    WebOut = R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====";
+    WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
 
     server.send(200, "text/html", WebOut);
   });
@@ -423,42 +452,89 @@ void setup() {
     String WebOut;
     if (CheckIfLoggedIn())
     {
-      WebOut = LogInPage;
+      WebOut = String(LogInPage);
+      server.send(200, "text/html", String(AdminBarHTML + WebOut ));
+      return;
     }
     else
     {
-
+      String CRLF = F("\r\n");
       WaitForTheInterpertersResponse = 1;
 
       String TextboxProgramBeingEdited;
       //String ProgramName;
       //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-      ProgramName = server.arg("name");
+      WebOut = String(EditorPageHTML);
 
+      if ( server.arg("open") == F("Open") )
+      {
+        // really takes just the name for the new file otherwise it uses the previous one
+        ProgramName = server.arg("name");
+        ProgramName.trim();
+        if (ProgramName == "")
+        {
+          ProgramName = F("default");
+        }
+        LoadBasicProgramFromFlash(String(F("uploads/")) + ProgramName + String(F(".bas")));
+      }
+      // the goal here is to replace the server send function by an equivalent that
+      // permit to handle big buffers; this is acheived using the "chunked transfer"
+      WebOut = String(EditorPageHTML);
+      WebOut = WebOut.substring(0, WebOut.indexOf(F("*program txt*")) );
+      WebOut.replace(F("*program name*"), ProgramName);
 
-      if ( server.arg("open") == "Open" )
+      server.sendContent(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\nTransfer-Encoding: chunked\r\nAccess-Control-Allow-Origin: *\r\n\r\n"));
+      delay(0);
+      // each "chunk" is composed of :
+      // the size of the block (in hex) terminated by \r\n
+      server.sendContent(String(String(AdminBarHTML).length(), 16) + CRLF);
+      // the block terminated by \r\n
+      server.sendContent(String(AdminBarHTML) + CRLF);
+      /////// end of first chunk ///////////
+      delay(0);
+      server.sendContent(String(WebOut.length(), 16) + CRLF);
+      server.sendContent(WebOut + CRLF);
+      delay(0);
+      int iii;
+      int i;
+      fileOpenFail = 0;
+      for (iii = 1; iii <= TotalNumberOfLines; iii += 50) // important START FROM 1!!!!
       {
         TextboxProgramBeingEdited = "";
-        for (int i = 0; i <= TotalNumberOfLines; i++)
+        for (i = iii; i < (iii + 50); i++)
         {
           delay(0);
-          String yada;
-          yada = BasicProgram(i);
-          yada.trim();
-          if (yada != "")  TextboxProgramBeingEdited = String( TextboxProgramBeingEdited + String('\n') + BasicProgram(i) );
-          if (fileOpenFail == 1 & i > 1) break;
+
+          if ( (i > TotalNumberOfLines) || (fileOpenFail == 1) )
+          {
+            fileOpenFail = 0;
+            iii = 9999;
+            break;
+          }
+
+          TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
+
+        }
+        if (TextboxProgramBeingEdited.length() > 0)
+        {
+          server.sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
+          server.sendContent(TextboxProgramBeingEdited + CRLF);
+          delay(0);
         }
       }
+      Serial.println("avant par ici");
+      WebOut = String(EditorPageHTML);
+      WebOut = WebOut.substring(WebOut.indexOf(F("</textarea>")));
+      server.sendContent(String(WebOut.length(), 16) + CRLF);
+      server.sendContent(WebOut + CRLF);
+      // end of transmission
+      server.sendContent(F("0\r\n\r\n"));
+      server.sendContent(F("0\r\n\r\n"));
+      delay(0);
+      Serial.println(F("End of Open"));
 
-
-      WebOut += EditorPageHTML;
-
-      WebOut.replace("*program txt*", TextboxProgramBeingEdited);
-      WebOut.replace("*program name*", ProgramName);
-
-      //TextboxProgramBeingEdited
     }
-    server.send(200, "text/html", String(AdminBarHTML + WebOut ));
+
   });
 
 
@@ -468,47 +544,76 @@ void setup() {
   });
 
 
-  server.on("/codein", []() {
-
-    if (ProgramName == "")
+  server.on("/filelist", []()
+  {
+    String ret = "";
+    String fn;
+    Dir dir = SPIFFS.openDir(String(F("uploads/") ));
+    while (dir.next())
     {
-      ProgramName = "default";
+      fn = dir.fileName();
+      if (fn.indexOf(F(".bas")) != -1)
+        ret +=  fn + "\n";
+      delay(0);
     }
 
-    if (server.arg("SaveTheCode") == "start")
+
+    server.send(200, "text/html", ret);
+  });
+
+  server.on("/codein", []() {
+    ProgramName.trim();
+    if (ProgramName == "")
+    {
+      ProgramName = F("default");
+    }
+
+    if (server.arg("SaveTheCode") == F("start"))
     {
       inData = "end";
       ExicuteTheCurrentLine();
+      Serial.println(F("start save"));
+      OpenToWriteOnFlash(String(F("uploads/")) + ProgramName + String(F(".bas")));
     }
 
-    if (server.arg("SaveTheCode") != "yes" & server.arg("SaveTheCode") != "start")
+    if (server.arg("SaveTheCode") != F("yes") & server.arg("SaveTheCode") != F("start") & server.arg("SaveTheCode") != F("end"))
     {
       String LineNoForWebEditorIn;
       LineNoForWebEditorIn = server.arg("line");
       int y = LineNoForWebEditorIn.toInt();
       delay(0);
       //Serial.println(server.arg("code"));
-      BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
+      Serial.println(ProgramName + F(".bas/") + String(y));
+      //BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
+      WriteBasicLineOnFlash(GetRidOfurlCharacters(server.arg("code")));
       delay(0);
       noOfLinesForEdit = y;
 
     }
 
-    if (server.arg("SaveTheCode") == "yes")
+    if (server.arg("SaveTheCode") == F("end"))
+    {
+      // terminate the save
+      Serial.println(F("end of save!!"));
+      CloseWriteOnFlash();
+      LoadBasicProgramFromFlash(String(F("uploads/")) + ProgramName + String(F(".bas")));
+    }
+
+    if (server.arg("SaveTheCode") == F("yes"))
     {
 
-      String directoryToDeleteFilesFrom;
-      directoryToDeleteFilesFrom = String(" /data/" + ProgramName );
-      Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
-
-      while (dir1.next())
-      {
-        delay(0);
-        File f = dir1.openFile("r");
-        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
-      }
+      //      String directoryToDeleteFilesFrom;
+      //      directoryToDeleteFilesFrom = String(F(" /data/") + ProgramName;
+      //      Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
+      //
+      //      while (dir1.next())
+      //      {
+      //        delay(0);
+      //        File f = dir1.openFile("r");
+      //        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
+      //      }
     }
-    server.send(200, "text/html", "good");
+    server.send(200, "text/html", F("good"));
   });
 
 
@@ -517,7 +622,7 @@ void setup() {
 
   server.on("/msg", []() {
 
-    MsgBranchRetrnData = "No MSG Branch Defined";
+    MsgBranchRetrnData = F("No MSG Branch Defined");
 
     if (msgbranch != "")
     {
@@ -542,7 +647,7 @@ void setup() {
   server.onNotFound ( []() {
     String fileNameToServeUp;
     fileNameToServeUp = GetRidOfurlCharacters(server.arg("file"));
-    File mySuperFile = SPIFFS.open(String("uploads/" + fileNameToServeUp), "r");
+    File mySuperFile = SPIFFS.open(String(F("uploads/")) + fileNameToServeUp, "r");
     if (mySuperFile)
     {
       server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
@@ -580,6 +685,8 @@ void setup() {
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
   sensors.begin();
 
+  LoadBasicProgramFromFlash("uploads/" + ProgramName + ".bas");
+
   server.begin();
   RunningProgram = 0;
   WaitForTheInterpertersResponse = 1;
@@ -597,7 +704,7 @@ String SettingsPageHandeler()
 
 
   WaitForTheInterpertersResponse = 1;
-  String WebOut = String( AdminBarHTML + SettingsPageHTML);
+  String WebOut = String(AdminBarHTML) + String(SettingsPageHTML);
   String staName = LoadDataFromFile("WIFIname");
   String staPass = LoadDataFromFile("WIFIpass");
   String apName = LoadDataFromFile("APname");
@@ -614,17 +721,17 @@ String SettingsPageHandeler()
   else
   {
 
-    if ( server.arg("restart") == "Restart" ) ESP.restart();
+    if ( server.arg("restart") == F("Restart") ) ESP.restart();
 
 
-    if ( server.arg("update") == "Update" )
+    if ( server.arg("update") == F("Update") )
     {
 
       //        Serial.println(BasicOTAupgrade());
       if (LoadDataFromFile("otaUrl") == "")
       {
-        t_httpUpdate_return  ret = ESPhttpUpdate.update("esp8266basic.smbisoft.com", 80, "/4M/ESP8266Basic.cpp.bin");
-        if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
+        t_httpUpdate_return  ret = ESPhttpUpdate.update(F("esp8266basic.smbisoft.com"), 80, F("/4M/ESP8266Basic.cpp.bin"));
+        if (ret == HTTP_UPDATE_FAILED ) Serial.println(F("Update failed"));
       }
       else
       {
@@ -634,14 +741,14 @@ String SettingsPageHandeler()
         ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
         PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
         t_httpUpdate_return  ret = ESPhttpUpdate.update(ServerToConnectTo, 80, PageToGet);
-        if (ret == HTTP_UPDATE_FAILED ) Serial.println("Update failed");
+        if (ret == HTTP_UPDATE_FAILED ) Serial.println(F("Update failed"));
       }
       //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
 
     }
 
 
-    if ( server.arg("save") == "Save" )
+    if ( server.arg("save") == F("Save") )
     {
       staName = GetRidOfurlCharacters(server.arg("staName"));
       staPass = GetRidOfurlCharacters(server.arg("staPass"));
@@ -660,48 +767,48 @@ String SettingsPageHandeler()
       SaveDataToFile("otaUrl" , otaUrl);
     }
 
-    if ( server.arg("format") == "Format" )
+    if ( server.arg("format") == F("Format") )
     {
-      Serial.println("Formating ");
+      Serial.println(F("Formating "));
       Serial.print(SPIFFS.format());
     }
 
-    WebOut.replace("*sta name*", staName);
-    WebOut.replace("*sta pass*", staPass);
-    WebOut.replace("*ap name*",  apName);
-    WebOut.replace("*ap pass*",  apPass);
-    WebOut.replace("*LoginKey*", LoginKey);
-    WebOut.replace("*BasicVersion*", BasicVersion);
-    WebOut.replace("*otaurl*", otaUrl);
+    WebOut.replace(F("*sta name*"), staName);
+    WebOut.replace(F("*sta pass*"), staPass);
+    WebOut.replace(F("*ap name*"),  apName);
+    WebOut.replace(F("*ap pass*"),  apPass);
+    WebOut.replace(F("*LoginKey*"), LoginKey);
+    WebOut.replace(F("*BasicVersion*"), BasicVersion);
+    WebOut.replace(F("*otaurl*"), otaUrl);
 
-    if ( ShowMenueBar == "off")
+    if ( ShowMenueBar == F("off"))
     {
-      WebOut.replace("**checked**", "checked");
+      WebOut.replace(F("**checked**"), F("checked"));
     }
     else
     {
-      WebOut.replace("**checked**", "");
+      WebOut.replace(F("**checked**"), "");
     }
   }
-return WebOut;
+  return WebOut;
 }
 
 
 
 String getContentType(String filename) {
-  if (filename.endsWith(".htm")) return "text/html";
-  else if (filename.endsWith(".html")) return "text/html";
-  else if (filename.endsWith(".htm")) return "text/html";
-  else if (filename.endsWith(".css")) return "text/css";
-  else if (filename.endsWith(".js")) return "application/javascript";
-  else if (filename.endsWith(".png")) return "image/png";
-  else if (filename.endsWith(".gif")) return "image/gif";
-  else if (filename.endsWith(".jpg")) return "image/jpeg";
-  else if (filename.endsWith(".ico")) return "image/x-icon";
-  else if (filename.endsWith(".xml")) return "text/xml";
-  else if (filename.endsWith(".pdf")) return "application/x-pdf";
-  else if (filename.endsWith(".zip")) return "application/x-zip";
-  else if (filename.endsWith(".gz")) return "application/x-gzip";
+  if (filename.endsWith(".htm")) return F("text/html");
+  else if (filename.endsWith(".html")) return F("text/html");
+  else if (filename.endsWith(".htm")) return F("text/html");
+  else if (filename.endsWith(".css")) return F("text/css");
+  else if (filename.endsWith(".js")) return F("application/javascript");
+  else if (filename.endsWith(".png")) return F("image/png");
+  else if (filename.endsWith(".gif")) return F("image/gif");
+  else if (filename.endsWith(".jpg")) return F("image/jpeg");
+  else if (filename.endsWith(".ico")) return F("image/x-icon");
+  else if (filename.endsWith(".xml")) return F("text/xml");
+  else if (filename.endsWith(".pdf")) return F("application/x-pdf");
+  else if (filename.endsWith(".zip")) return F("application/x-zip");
+  else if (filename.endsWith(".gz")) return F("application/x-gzip");
   return "text/plain";
 }
 
@@ -714,7 +821,7 @@ void StartUpProgramTimer()
     server.handleClient();
     if (WaitForTheInterpertersResponse == 0) return;
   }
-  Serial.println("Starting Default Program");
+  Serial.println(F("Starting Default Program"));
   RunningProgram = 1;
   RunningProgramCurrentLine = 0;
   WaitForTheInterpertersResponse = 0 ;
@@ -745,9 +852,9 @@ void DoSomeFileManagerCode()
       //Serial.println(SPIFFS.remove("uploads/settings.png"));
     }
 
-    Dir dir = SPIFFS.openDir(String("uploads" ));
+    Dir dir = SPIFFS.openDir(String(F("uploads") ));
     while (dir.next()) {
-      FileListForPage += String("<option>" + dir.fileName() + "</option>");
+      FileListForPage += String(F("<option>")) + dir.fileName() + String(F("</option>"));
       delay(0);
     }
 
@@ -758,7 +865,7 @@ void DoSomeFileManagerCode()
       String FileNameToView = server.arg("fileName");
       FileNameToView = GetRidOfurlCharacters(FileNameToView);
       FileNameToView.replace("uploads/", "");
-      WholeUploadPage = R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====";
+      WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====");
       WholeUploadPage.replace("item", FileNameToView);
     }
 
@@ -1133,7 +1240,140 @@ String DoMathForMe(String cc, String f, String dd )
 
 
 
+String FetchOpenWeatherMapApi(String URLtoGet, String index)
+{
+  String ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
+  String PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
 
+  String s = "";
+  char c;
+  int cnt = 0;
+  int phase = 0;
+  int graffe = 0;
+
+  const char lookforLIST[] = "\"list\":[";
+  const char lookforBEGIN[] = "{\"";
+  char ptr = 0;
+
+  int list = index.toInt();
+
+  if (list == 0)  // if the index is 0, it takes the first part, the root
+    phase = 3;
+
+  if (client.connect(ServerToConnectTo.c_str() , 80))
+  {
+    client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
+    delay(300);
+
+    while (client.available())
+    {
+      delay(0);
+      //delay(1);
+      c = client.read();
+      delay(0);
+      //Serial.print(c);
+      switch (phase)
+      {
+        case 0:
+          if (c == lookforLIST[ptr])
+            ptr++;
+          else
+            ptr = 0;
+
+          if (ptr == strlen(lookforLIST))
+          {
+            phase = 1;
+            list = list - 1;
+            if (list == 0)
+            {
+              phase = 2;
+            }
+            //Serial.println("phase 0 OK");
+          }
+          break;
+
+        case 1:
+          if (c == '{')
+            graffe++;
+          else if (c == '}')
+            graffe--;
+
+          if (graffe == 0)
+          {
+            if ( (c == ',') || (c == ']') )
+              list--;
+          }
+          if (list == 0)
+          {
+            phase = 2;
+            //Serial.println("phase 1 OK");
+          }
+          break;
+
+        case 2:
+          s.concat(c);
+          cnt++;
+          if (c == '{')
+            graffe++;
+          else if (c == '}')
+            graffe--;
+
+          if ((graffe == 0) || (cnt > 600)) // max 600 chars
+          {
+            //Serial.println("phase 2 OK");
+            client.stop();
+            return s;
+          }
+
+          break;
+
+        case 3:    // search the beginning of the message starting with  {"
+          if (c == lookforBEGIN[ptr])
+            ptr++;
+          else
+            ptr = 0;
+
+          if (ptr == strlen(lookforBEGIN))
+          {
+            cnt = 2;
+            phase = 4;
+            //Serial.println("phase 3 OK");
+            s = F("{\"");
+          }
+          break;
+
+        case 4:
+          s.concat(c);
+          cnt++;
+          if (c == lookforLIST[ptr])
+            ptr++;
+          else
+            ptr = 0;
+
+          if ( (ptr == strlen(lookforLIST)) || (cnt > 1000)) // max 1000 chars
+          {
+            //Serial.println("phase 4 OK");
+            client.stop();
+            s.concat("]}");
+            return s;
+          }
+          break;
+      }
+
+      if (client.available() == false)
+      {
+        // if no data, wait for 300ms hoping that new data arrive
+        delay(300);
+      }
+
+    }//while
+    client.stop();
+    return F("END OF DATA REACHED");
+
+  }
+  client.stop();
+  return "";
+}
 
 
 
@@ -1150,8 +1390,8 @@ String FetchWebUrl(String URLtoGet)
   // ServerToConnectTo ;
   //PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
 
-  Serial.println(ServerToConnectTo);
-  Serial.println(PageToGet);
+  //  Serial.println(ServerToConnectTo);
+  //  Serial.println(PageToGet);
 
 
   if (client.connect(ServerToConnectTo.c_str() , 80))
@@ -1187,3 +1427,6 @@ void serialFlush()
     char t = Serial.read();
   }
 }
+
+
+

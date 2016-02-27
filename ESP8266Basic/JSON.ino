@@ -1,47 +1,52 @@
-String ParseJSONValue(String data, String JSONfield, String JSONindex)
+String Parsifal(String data, String param)
 {
-  //JSONfield = "time";
- // data = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
-  data.replace(String(char(92)), "");
-  data.replace(String(char(34)), "");
-
-
-
-  data = String(data + "           ");
-  int maxIndex = data.length() - 1;
-  int j = 0;
-  byte WaitingForQuote;
-  String chunkVal = "";
-  String ChunkReturnVal;
-  for (int i = 0; i <= maxIndex ; i++)
+  int i, last;
+  String tmp;
+  int st, en;
+  int en1, en2, en3;
+  int pos;
+  String ReturnVal;
+  // extract the pieces of the param separated by '.'
+  st = 0;
+  pos = 0;
+  last = 0;
+  for (i=0; i<5; i++)
   {
-    if (data[i] == char(123) )
-    {
-      i++;
-      while (i <= maxIndex && data[i] != char(125) ) {
-        chunkVal.concat(data[i]);
-        i++;
-        delay(0);
+      en = param.indexOf('.', st);
+      if (en == -1)
+      {
+         en = param.length();
+         last = 1;
       }
-    }
+      tmp = "\"" + param.substring(st, en) +"\":";
+//      Serial.println(tmp);
+      st = en+1;
+      pos = data.indexOf(tmp, pos+1);
+//      Serial.println(pos);
+      if ((pos == -1) || (last == 1)) break;
+
   }
-
-  data = chunkVal;
-  chunkVal = "";
-Serial.println(data);
-
-  for (int i = 0; i <= maxIndex / 3; i++)
+  if (pos != -1)
   {
-    delay(0);
-    chunkVal = getValue(data, ',', i);
-    chunkVal.trim();
-    if (chunkVal.startsWith(String(JSONfield + ":")))
-    {
-      chunkVal.remove(0, JSONfield.length() + 1);
-      Serial.println(chunkVal);
-
-    }
+      pos = pos + tmp.length();
+      en = 10000;
+      en1 = data.indexOf('"', pos+1);
+      en2 = data.indexOf('}', pos+1);
+      en3 = data.indexOf(']', pos+1);
+      if ((en1 > 0) && (en1 < en)) en = en1;
+      if ((en2 > 0) && (en2 < en)) en = en2;
+      if ((en3 > 0) && (en3 < en)) en = en3;
+//      Serial.print("start");
+//      Serial.println(pos);
+//      Serial.print("end");
+//      Serial.println(en);
+      if (data[pos] == '"')
+        pos++;
+      ReturnVal = data.substring(pos, en);
+      return ReturnVal;
+//      return ("forse");
   }
 
-
+  return F("not found");
 }
+

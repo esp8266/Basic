@@ -24,25 +24,25 @@ String RunningProgramGui()
     RunBasicTillWait();
   }
 
-  String WebOut = String("<form action='input'>" + HTMLout + "</form>");
+  String WebOut = String(F("<form action='input'>")) + HTMLout + String(F("</form>"));
 
 
   if (BasicDebuggingOn == 1)
   {
-    Serial.println("Web out first");
+    Serial.println(F("Web out first"));
     Serial.println( WebOut);
-    Serial.println("HTML out");
+    Serial.println(F("HTML out"));
     Serial.println( HTMLout);
   }
 
   for (int i = 50; i >= 0; i--)
   {
     delay(0);
-    WebOut.replace(String("VARS|" + String(i)), AllMyVaribles[i][2]);
+    WebOut.replace(String(F("VARS|")) + String(i), AllMyVaribles[i][1]);
   }
 
 
-  WebOut.replace("**graphics**", BasicGraphics());
+  WebOut.replace(F("**graphics**"), BasicGraphics());
 
   if (BasicDebuggingOn == 1)
   {
@@ -66,8 +66,8 @@ String BasicGraphics()
 {
   String BasicGraphicsOut;
   BasicGraphicsOut = GraphicsStartCode;
-  BasicGraphicsOut.replace("*wid*",  String(GraphicsEliments[0][1]));
-  BasicGraphicsOut.replace("*hei*",  String(GraphicsEliments[0][2]));
+  BasicGraphicsOut.replace(F("*wid*"),  String(GraphicsEliments[0][1]));
+  BasicGraphicsOut.replace(F("*hei*"),  String(GraphicsEliments[0][2]));
 
   String GraphicsEliment;
   for (int i = 1; i <= GraphicsEliments[0][0]; i++)
@@ -94,27 +94,27 @@ String BasicGraphics()
     }
 
 
-    GraphicsEliment.replace("*x1*",  String(GraphicsEliments[i][1]));
-    GraphicsEliment.replace("*y1*",  String(GraphicsEliments[i][2]));
-    GraphicsEliment.replace("*x2*",  String(GraphicsEliments[i][3]));
-    GraphicsEliment.replace("*y2*",  String(GraphicsEliments[i][4]));
+    GraphicsEliment.replace(F("*x1*"),  String(GraphicsEliments[i][1]));
+    GraphicsEliment.replace(F("*y1*"),  String(GraphicsEliments[i][2]));
+    GraphicsEliment.replace(F("*x2*"),  String(GraphicsEliments[i][3]));
+    GraphicsEliment.replace(F("*y2*"),  String(GraphicsEliments[i][4]));
 
-    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*collor*", "black");
-    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*collor*", "Navy");
-    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*collor*", "Green");
-    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*collor*", "Teal");
-    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*collor*", "Maroon");
-    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*collor*", "Purple");
-    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*collor*", "Olive");
-    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*collor*", "Silver");
-    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*collor*", "Gray");
-    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*collor*", "Blue");
-    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*collor*", "Lime");
-    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*collor*", "Aqua");
-    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*collor*", "Red");
-    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*collor*", "Fuchsia");
-    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*collor*", "Yellow");
-    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*collor*", "White");
+    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*collor*", F("black"));
+    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*collor*", F("Navy"));
+    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*collor*", F("Green"));
+    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*collor*", F("Teal"));
+    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*collor*", F("Maroon"));
+    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*collor*", F("Purple"));
+    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*collor*", F("Olive"));
+    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*collor*", F("Silver"));
+    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*collor*", F("Gray"));
+    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*collor*", F("Blue"));
+    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*collor*", F("Lime"));
+    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*collor*", F("Aqua"));
+    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*collor*", F("Red"));
+    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*collor*", F("Fuchsia"));
+    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*collor*", F("Yellow"));
+    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*collor*", F("White"));
     BasicGraphicsOut += GraphicsEliment;
   }
   BasicGraphicsOut += "</svg>";
@@ -175,7 +175,7 @@ void CheckFOrWebVarInput()
   String bla;
 
 
-  for (int i = 0; i <= 50; i++)
+  for (int i = 0; i < 50; i++)
   {
     int str_len = String(i).length() + 1;
     char ArgumentToTest[str_len];
@@ -184,7 +184,7 @@ void CheckFOrWebVarInput()
     bla = server.arg(ArgumentToTest);
     if (bla.length() > 0)
     {
-      AllMyVaribles[i][2] = GetRidOfurlCharacters(bla);
+      AllMyVaribles[i][1] = GetRidOfurlCharacters(bla);
     }
   }
   return;
@@ -196,7 +196,7 @@ void CheckFOrWebVarInput()
 String GenerateIDtag(String TempateString)
 {
   LastElimentIdTag = String(millis());
-  TempateString.replace("myid",LastElimentIdTag );
+  TempateString.replace(F("myid"),LastElimentIdTag );
   return TempateString;
 }
 

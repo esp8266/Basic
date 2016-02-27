@@ -4,38 +4,38 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
   byte pin = PinDesignaor.toInt();
   PinDesignaor.toUpperCase();
 
-  PinDesignaor.replace(".00", "");
+  PinDesignaor.replace(F(".00"), "");
 
   //PIN DESIGNATIONS FOR NODE MCU
-  if (PinDesignaor == "D0")  pin = 16;
-  if (PinDesignaor == "D1")  pin = 5;
-  if (PinDesignaor == "D2")  pin = 4;
-  if (PinDesignaor == "D3")  pin = 0;
-  if (PinDesignaor == "D4")  pin = 2;
-  if (PinDesignaor == "D5")  pin = 14;
-  if (PinDesignaor == "D6")  pin = 12;
-  if (PinDesignaor == "D7")  pin = 13;
-  if (PinDesignaor == "D8")  pin = 15;
-  if (PinDesignaor == "RX")  pin = 3;
-  if (PinDesignaor == "TX")  pin = 1;
+  if (PinDesignaor == F("D0"))  pin = 16;
+  if (PinDesignaor == F("D1"))  pin = 5;
+  if (PinDesignaor == F("D2"))  pin = 4;
+  if (PinDesignaor == F("D3"))  pin = 0;
+  if (PinDesignaor == F("D4"))  pin = 2;
+  if (PinDesignaor == F("D5"))  pin = 14;
+  if (PinDesignaor == F("D6"))  pin = 12;
+  if (PinDesignaor == F("D7"))  pin = 13;
+  if (PinDesignaor == F("D8"))  pin = 15;
+  if (PinDesignaor == F("RX"))  pin = 3;
+  if (PinDesignaor == F("TX"))  pin = 1;
 
 
 
-  if (PinCommand == "laststat")
+  if (PinCommand == F("laststat"))
   {
     return PinListOfStatusValues[pin];
   }
 
-  if (PinCommand != "po" & PinCommand != "pi" & PinCommand != "pwi" & PinCommand != "pwo"& PinCommand != "servo" & PinCommand != "")
+  if (PinCommand != F("po") & PinCommand != F("pi") & PinCommand != F("pwi") & PinCommand != F("pwo") & PinCommand != F("servo") & PinCommand != "")
   {
     PinListOfStatus[pin] = PinCommand;
-    PinCommand = "pi";
+    PinCommand = F("pi");
   }
   else
   {
-    if (PinCommand == "pi")
+    if (PinCommand == F("pi"))
     {
-      if ((PinListOfStatus[pin] == "po") | ( PinListOfStatus[pin] == "pi") | (PinListOfStatus[pin] == "pwi") | (PinListOfStatus[pin] == "pwo")  | (PinListOfStatus[pin] == "servo") | ( PinListOfStatus[pin] == ""))
+      if ((PinListOfStatus[pin] == F("po")) | ( PinListOfStatus[pin] == F("pi")) | (PinListOfStatus[pin] == F("pwi")) | (PinListOfStatus[pin] == F("pwo"))  | (PinListOfStatus[pin] == F("servo")) | ( PinListOfStatus[pin] == ""))
       {
         PinListOfStatus[pin] = PinCommand;
       }
@@ -52,19 +52,19 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
 
   PinListOfStatusValues[pin] = PinValue;
   SetThePinMode(PinCommand, pin);
-  if (PinCommand == "po") digitalWrite(pin, PinValue);
-  else if (PinCommand == "pi") {
+  if (PinCommand == F("po")) digitalWrite(pin, PinValue);
+  else if (PinCommand == F("pi")) {
     PinListOfStatusValues[pin] = digitalRead(pin);
     return PinListOfStatusValues[pin];
   }
-  else if (PinCommand == "pwi") {
+  else if (PinCommand == F("pwi")) {
     PinListOfStatusValues[pin] = analogRead(pin);
     return PinListOfStatusValues[pin] ;
   }
-  else if (PinCommand == "pwo") analogWrite(pin, PinValue);
-  else if (PinCommand == "servo") servoWrite(pin, PinValue);
-  else if (PinCommand == "ai") return analogRead(A0);
-  else if (PinCommand == "interrupt") return pin;
+  else if (PinCommand == F("pwo")) analogWrite(pin, PinValue);
+  else if (PinCommand == F("servo")) servoWrite(pin, PinValue);
+  else if (PinCommand == F("ai")) return analogRead(A0);
+  else if (PinCommand == F("interrupt")) return pin;
   return 0;
 }
 
@@ -76,7 +76,7 @@ void SetThePinMode(String PinCommand, byte pin)
   analogWrite(pin, 0);
 
 
-  if (PinCommand != "servo")
+  if (PinCommand != F("servo"))
   {
     if (pin == 0)   Servo0.detach();
     if (pin == 1)   Servo1.detach();
@@ -97,8 +97,8 @@ void SetThePinMode(String PinCommand, byte pin)
     if (pin == 16)   Servo16.detach();
   }
 
-  if (PinCommand == "po" | PinCommand == "pwo" ) pinMode(pin, OUTPUT);
-  if (PinCommand == "pi" | PinCommand == "pwi" ) pinMode(pin, INPUT);
+  if (PinCommand == F("po") | PinCommand == F("pwo") ) pinMode(pin, OUTPUT);
+  if (PinCommand == F("pi") | PinCommand == F("pwi") ) pinMode(pin, INPUT);
 }
 
 void servoWrite(byte pin, int ValueForIO)

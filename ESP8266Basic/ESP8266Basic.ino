@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.83";
+const char BasicVersion[] = "ESP Basic 1.84";
 
 
 
@@ -184,6 +184,7 @@ for (i = 0; i < arrayOfLines.length; i++)
   {
     arrayOfLines[i] = replaceAll(arrayOfLines[i],"+", "%2B");
     arrayOfLines[i] = replaceAll(arrayOfLines[i],"&", "%26");
+    arrayOfLines[i] = replaceAll(arrayOfLines[i],"#", "%23");
   stocca(encodeURI(arrayOfLines[i]));
     document.getElementById("Status").value = i.toString();
   }

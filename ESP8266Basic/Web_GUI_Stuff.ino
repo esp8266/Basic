@@ -24,7 +24,8 @@ String RunningProgramGui()
     RunBasicTillWait();
   }
 
-  String WebOut = String(F("<form action='input'>")) + HTMLout + String(F("</form>"));
+
+  String WebOut = String(MobileFreindlyWidth) + String(F("<form action='input'>"))  + HTMLout + String(F("</form>"));
 
 
   if (BasicDebuggingOn == 1)

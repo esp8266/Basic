@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.84";
+const char BasicVersion[] = "ESP Basic 1.85";
 
 
 
@@ -124,11 +124,13 @@ PROGMEM const char DropDownListOpptions[] =  R"=====(<option>item</option>)=====
 
 String LastElimentIdTag;
 
-
+PROGMEM const char MobileFreindlyWidth[] = R"=====(<meta name="viewport" content="width=device-width, initial-scale=1.0">)=====";
 
 byte WaitForTheInterpertersResponse = 1;
 
 PROGMEM const char AdminBarHTML[] = R"=====(
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="/file?file=skin.css">
 <a href="./vars">[ VARS ]</a> 
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>

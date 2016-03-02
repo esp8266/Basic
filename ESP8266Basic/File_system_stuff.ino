@@ -4,7 +4,7 @@ void SaveDataToFile(String fileNameForSave, String DataToSave)
 {
   Serial.println(fileNameForSave);
   //SPIFFS.begin();
-  File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "w");
+  File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "w");
   if (!f)
   {
     PrintAndWebOut(F("file open failed"));
@@ -23,7 +23,7 @@ String LoadDataFromFile(String fileNameForSave)
 {
   String WhatIwillReturn;
   //SPIFFS.begin();
-  File f = SPIFFS.open(String(" /data/" + fileNameForSave + ".dat"), "r");
+  File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "r");
   if (!f)
   {
     fileOpenFail = 1;
@@ -125,7 +125,7 @@ String BasicProgram(int linenum)
 
 bool OpenToWriteOnFlash(String fileNameForWrite)
 {
-  BasicFileToSave = SPIFFS.open(String(fileNameForWrite), "w");
+  BasicFileToSave = SPIFFS.open(fileNameForWrite, "w");
   if (!BasicFileToSave)
   {
     Serial.println(F("file write open failed"));
@@ -165,7 +165,7 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
   program_nb_lines = 0;
   //SPIFFS.begin();
   BasicFileOpened.close();
-  File f = SPIFFS.open(String(fileNameForRead), "r");
+  File f = SPIFFS.open(fileNameForRead, "r");
   BasicFileOpened = f;
   if (!f)
   {
@@ -184,5 +184,18 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
 //    f.close();
   }
   return;
+}
+
+
+String MakeSureFileNameStartsWithSlash(String FileNameToCheckForSlash)
+{
+  if (FileNameToCheckForSlash.startsWith("/"))
+  {
+    return FileNameToCheckForSlash;
+  }
+  else
+  {
+    return String("/" + FileNameToCheckForSlash);
+  }
 }
 

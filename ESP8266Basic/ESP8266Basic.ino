@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.85";
+const char BasicVersion[] = "ESP Basic 1.86";
 
 
 
@@ -148,7 +148,8 @@ PROGMEM const char UploadPage[] = R"=====(
 <form id="filelist">
 <input type="submit" value="Delete" name="Delete">
 <input type="submit" value="View" name="View">
-<input type="submit" value="" name="View">
+<input type="submit" value="Edit" name="Edit">
+<input type="submit" value="Rename" name="Rename">
 </form>
 
 <select name="fileName" size="25" form="filelist">*table*</select>
@@ -164,7 +165,6 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 <input type="text" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
 </form>
-<button onclick="ShowTheFileList()">Files List</button>
 <button onclick="SaveTheCode()">Save</button>
 <br>
 <textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
@@ -328,7 +328,7 @@ int GraphicsEliments[100][7];
 File fsUploadFile;
 
 int noOfLinesForEdit;
-String ProgramName = "default";
+String ProgramName = "/default.bas";
 
 bool fileOpenFail;
 
@@ -476,9 +476,10 @@ void setup() {
         ProgramName.trim();
         if (ProgramName == "")
         {
-          ProgramName = F("default");
+          ProgramName = F("/default.bas");
         }
-        LoadBasicProgramFromFlash(String(F("uploads/")) + ProgramName + String(F(".bas")));
+        ProgramName  = MakeSureFileNameStartsWithSlash(ProgramName );
+        LoadBasicProgramFromFlash( ProgramName);
       }
       // the goal here is to replace the server send function by an equivalent that
       // permit to handle big buffers; this is acheived using the "chunked transfer"
@@ -547,28 +548,14 @@ void setup() {
   });
 
 
-  server.on("/filelist", []()
-  {
-    String ret = "";
-    String fn;
-    Dir dir = SPIFFS.openDir(String(F("uploads/") ));
-    while (dir.next())
-    {
-      fn = dir.fileName();
-      if (fn.indexOf(F(".bas")) != -1)
-        ret +=  fn + "\n";
-      delay(0);
-    }
 
 
-    server.send(200, "text/html", ret);
-  });
 
   server.on("/codein", []() {
     ProgramName.trim();
     if (ProgramName == "")
     {
-      ProgramName = F("default");
+      ProgramName = F("/default.bas");
     }
 
     if (server.arg("SaveTheCode") == F("start"))
@@ -576,7 +563,7 @@ void setup() {
       inData = "end";
       ExicuteTheCurrentLine();
       Serial.println(F("start save"));
-      OpenToWriteOnFlash(String(F("uploads/")) + ProgramName + String(F(".bas")));
+      OpenToWriteOnFlash( ProgramName );
     }
 
     if (server.arg("SaveTheCode") != F("yes") & server.arg("SaveTheCode") != F("start") & server.arg("SaveTheCode") != F("end"))
@@ -599,7 +586,7 @@ void setup() {
       // terminate the save
       Serial.println(F("end of save!!"));
       CloseWriteOnFlash();
-      LoadBasicProgramFromFlash(String(F("uploads/")) + ProgramName + String(F(".bas")));
+      LoadBasicProgramFromFlash( ProgramName );
     }
 
     if (server.arg("SaveTheCode") == F("yes"))
@@ -650,7 +637,7 @@ void setup() {
   server.onNotFound ( []() {
     String fileNameToServeUp;
     fileNameToServeUp = GetRidOfurlCharacters(server.arg("file"));
-    File mySuperFile = SPIFFS.open(String(F("uploads/")) + fileNameToServeUp, "r");
+    File mySuperFile = SPIFFS.open(String(F("/uploads/")) + fileNameToServeUp, "r");
     if (mySuperFile)
     {
       server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
@@ -688,7 +675,7 @@ void setup() {
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
   sensors.begin();
 
-  LoadBasicProgramFromFlash("uploads/" + ProgramName + ".bas");
+  LoadBasicProgramFromFlash( ProgramName);
 
   server.begin();
   RunningProgram = 0;
@@ -855,7 +842,7 @@ void DoSomeFileManagerCode()
       //Serial.println(SPIFFS.remove("uploads/settings.png"));
     }
 
-    Dir dir = SPIFFS.openDir(String(F("uploads") ));
+    Dir dir = SPIFFS.openDir(String(F("/") ));
     while (dir.next()) {
       FileListForPage += String(F("<option>")) + dir.fileName() + String(F("</option>"));
       delay(0);
@@ -867,10 +854,37 @@ void DoSomeFileManagerCode()
     {
       String FileNameToView = server.arg("fileName");
       FileNameToView = GetRidOfurlCharacters(FileNameToView);
-      FileNameToView.replace("uploads/", "");
+      FileNameToView.replace("/uploads/", "");
       WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====");
       WholeUploadPage.replace("item", FileNameToView);
     }
+
+
+    if (server.arg("Edit") != "")
+    {
+      String FileNameToView = server.arg("fileName");
+      FileNameToView = GetRidOfurlCharacters(FileNameToView);
+      //FileNameToView.replace("/uploads/", "");
+      WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./edit?name=item&open=Open" />)=====");
+      WholeUploadPage.replace("item", FileNameToView);
+    }
+
+    if (server.arg("Rename") != "")
+    {
+      String FileNameToView = server.arg("fileName");
+      FileNameToView = GetRidOfurlCharacters(FileNameToView);
+      String newfileName = server.arg("newfileName");
+      newfileName  = GetRidOfurlCharacters(newfileName );
+      WholeUploadPage = F(R"=====(<form id="filelist">Old Name<br><input type="text" name="fileName" value="*item name*"><br>New Name<br><input type="text" name="newfileName" value="*item name*"><input type="submit" value="NewName" name="Rename"></form>)=====");
+      WholeUploadPage.replace("*item name*", FileNameToView);
+      if (newfileName != "" )
+      {
+        newfileName = MakeSureFileNameStartsWithSlash(newfileName);
+        WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./filemng" />)=====");
+        SPIFFS.rename(FileNameToView , newfileName);
+      }
+    }
+
 
   }
   server.send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
@@ -885,7 +899,7 @@ void handleFileUpdate()
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
     //DBG_OUTPUT_PORT.print("Upload Name: "); DBG_OUTPUT_PORT.println(filename);
-    fsUploadFile = SPIFFS.open(String("uploads/" + filename), "w");
+    fsUploadFile = SPIFFS.open(String("/uploads/" + filename), "w");
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
     //DBG_OUTPUT_PORT.print("Upload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);

@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.86";
+const char BasicVersion[] = "ESP Basic 1.87";
 
 
 
@@ -759,6 +759,7 @@ String SettingsPageHandeler()
 
     if ( server.arg("format") == F("Format") )
     {
+     // BasicFileOpened.close();
       Serial.println(F("Formating "));
       Serial.print(SPIFFS.format());
     }

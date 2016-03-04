@@ -573,7 +573,8 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("slider"))
   {
     String tempSlider = GenerateIDtag(Slider);
-    GetMeThatVar(Param1);
+    VarialbeLookup(Param1);
+    Serial.print(VariableLocated);
     if (VariableLocated == 0)
     {
       SetMeThatVar(Param1, "");

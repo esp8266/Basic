@@ -113,6 +113,7 @@ String BasicProgram(int linenum)
 
   char buff[200];
   String ret;
+  delay(0);
   BasicFileOpened.seek(line_seeks[linenum-1], SeekSet);
   BasicFileOpened.readBytes(buff, line_seeks[linenum] - line_seeks[linenum-1]);
   buff[line_seeks[linenum] - line_seeks[linenum-1]] = '\0';

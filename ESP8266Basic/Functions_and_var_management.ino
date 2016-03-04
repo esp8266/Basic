@@ -329,6 +329,7 @@ String VarialbeLookup(String VariableNameToFind)
   String MyOut = VariableNameToFind;
   for (byte i = 0; i < 50; i++)
   {
+    delay(0);
     if (AllMyVaribles[i][0] == VariableNameToFind)
     {
       delay(0);
@@ -343,14 +344,17 @@ String VarialbeLookup(String VariableNameToFind)
 
 void SetMeThatVar(String VariableNameToFind, String NewContents)
 {
+
   NewContents = GetRidOfurlCharacters(NewContents);
   byte varnotset = 1;
   for (byte i = 0; i < 50; i++)
   {
+    delay(0);
     if (AllMyVaribles[i][0] == VariableNameToFind)
     {
+      delay(0);
       AllMyVaribles[i][1] = NewContents;
-      varnotset = 0;
+      return;
     }
   }
 
@@ -358,11 +362,13 @@ void SetMeThatVar(String VariableNameToFind, String NewContents)
   {
     for (byte i = 0; i < 50; i++)
     {
-      if (AllMyVaribles[i][1] == "")
+      delay(0);
+      if (AllMyVaribles[i][0] == "")
       {
+        
         AllMyVaribles[i][0] = VariableNameToFind;
         AllMyVaribles[i][1] = NewContents;
-        i = 51;
+        break;
       }
     }
   }

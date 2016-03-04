@@ -135,7 +135,46 @@ String GetMeThatVar(String VariableNameToFind)
 
   }
 
-
+  // make an "evaluation" of the argument; it's calculated in double precision but shown in single!; 
+  // it can include functions and variables but, it shall not contains spaces between (this is not a a limitation of the parser) but the way the lines are handled
+  // the function is included in the file Eval.ino
+  if (FunctionName == F("eval"))
+  {
+    // here we try to isolate properly the argument for eval as Param0 don't give a good result
+    // several steps :
+    // step 1: remove "eval"
+    Line_For_Eval = GetRidOfurlCharacters(Line_For_Eval.substring(Line_For_Eval.indexOf("eval")+4));
+//    Serial.print("line_eval:");
+//    Serial.println(Line_For_Eval);
+    // step 2: count the parenthesis until the difference between opened and closed is 0 ( or when we reach the end of the line -> in that case error!)
+    int i;
+    int cnt = 0;
+    for (i = 0; i < Line_For_Eval.length(); i++)
+    {
+      if (Line_For_Eval[i] == '(')
+        cnt++;
+      else
+        if (Line_For_Eval[i] == ')')
+          cnt--;
+      if (cnt == 0) 
+        break;      
+    }
+    if (cnt == 0)
+    {
+      String argument = Line_For_Eval.substring(0, i+1);
+      double r = evaluate(argument);
+      if (_parser_failed == true)
+      {
+        PrintAndWebOut(String(_parser_error_msg)); 
+       return F("error");
+      }
+      else
+        return String(r);      
+    }
+    else
+      return F("Incorrect parenthesys");  
+  }
+  
   if (FunctionName == F("json"))
   {
       MyOut = Parsifal(Param0,Param1);
@@ -329,7 +368,6 @@ String VarialbeLookup(String VariableNameToFind)
   String MyOut = VariableNameToFind;
   for (byte i = 0; i < 50; i++)
   {
-    delay(0);
     if (AllMyVaribles[i][0] == VariableNameToFind)
     {
       delay(0);
@@ -344,17 +382,14 @@ String VarialbeLookup(String VariableNameToFind)
 
 void SetMeThatVar(String VariableNameToFind, String NewContents)
 {
-
   NewContents = GetRidOfurlCharacters(NewContents);
   byte varnotset = 1;
   for (byte i = 0; i < 50; i++)
   {
-    delay(0);
     if (AllMyVaribles[i][0] == VariableNameToFind)
     {
-      delay(0);
       AllMyVaribles[i][1] = NewContents;
-      return;
+      varnotset = 0;
     }
   }
 
@@ -362,13 +397,11 @@ void SetMeThatVar(String VariableNameToFind, String NewContents)
   {
     for (byte i = 0; i < 50; i++)
     {
-      delay(0);
       if (AllMyVaribles[i][0] == "")
       {
-        
         AllMyVaribles[i][0] = VariableNameToFind;
         AllMyVaribles[i][1] = NewContents;
-        break;
+        i = 51;
       }
     }
   }

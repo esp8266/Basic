@@ -84,7 +84,10 @@ const char BasicVersion[] = "ESP Basic 1.87";
 
 
 
-
+#include "expression_parser.h"
+bool  _parser_failed;
+char* _parser_error_msg;
+String Line_For_Eval;
 
 
 

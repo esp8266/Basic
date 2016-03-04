@@ -16,6 +16,7 @@ void ExicuteTheCurrentLine()
 
   Param0.toLowerCase();
 
+  Line_For_Eval = inData;
 
   int valParam0 = Param0.toInt();
   int valParam1 = Param1.toInt();
@@ -390,7 +391,7 @@ void ExicuteTheCurrentLine()
     Serial1.end();
     return;
   }
-  
+
   if (Param0 == F("serial2print"))
   {
     Serial1.print(GetMeThatVar(Param1));
@@ -820,7 +821,7 @@ void ExicuteTheCurrentLine()
   {
     for (int i = 1; i <= TotalNumberOfLines; i++) {
       String gotoTest = BasicProgram(i);
-//      Serial.println(i);
+      //      Serial.println(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;
 

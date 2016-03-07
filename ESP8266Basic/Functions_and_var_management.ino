@@ -81,7 +81,7 @@ String GetMeThatVar(String VariableNameToFind)
     junk++;
     MyOut = String(junk );
   }
-  if (FunctionName == F("len"))     MyOut = String(MyOut.length());
+  if (FunctionName == F("len"))     MyOut = FloatToString(MyOut.length());
 
   if (FunctionName == F("upper")  | FunctionName == F("upper$"))     MyOut.toUpperCase();
   if (FunctionName == F("lower")  | FunctionName == F("lower$"))     MyOut.toLowerCase();
@@ -108,7 +108,7 @@ String GetMeThatVar(String VariableNameToFind)
   }
   if (FunctionName == F("int"))
   {
-    MyOut = String(Param0.toInt());
+    MyOut = FloatToString(Param0.toInt());
   }
 
   if (FunctionName == F("wget"))
@@ -169,7 +169,7 @@ String GetMeThatVar(String VariableNameToFind)
        return F("error");
       }
       else
-        return String(r);      
+        return FloatToString(r);      
     }
     else
       return F("Incorrect parenthesys");  
@@ -332,11 +332,11 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
-  if (FunctionName == F("sqr"))   MyOut = String(sqrt(MyOut.toFloat()));
-  if (FunctionName == F("sin"))   MyOut = String(sin(MyOut.toFloat()));
-  if (FunctionName == F("cos"))   MyOut = String(cos(MyOut.toFloat()));
-  if (FunctionName == F("tan"))   MyOut = String(tan(MyOut.toFloat()));
-  if (FunctionName == F("log"))   MyOut = String(log(MyOut.toFloat()));
+  if (FunctionName == F("sqr"))   MyOut = FloatToString(sqrt(MyOut.toFloat()));
+  if (FunctionName == F("sin"))   MyOut = FloatToString(sin(MyOut.toFloat()));
+  if (FunctionName == F("cos"))   MyOut = FloatToString(cos(MyOut.toFloat()));
+  if (FunctionName == F("tan"))   MyOut = FloatToString(tan(MyOut.toFloat()));
+  if (FunctionName == F("log"))   MyOut = FloatToString(log(MyOut.toFloat()));
 
   if (FunctionName == F("hex") | FunctionName == F("hex$"))   MyOut = String(MyOut.toInt(), HEX);
   if (FunctionName == F("oct") | FunctionName == F("oct$"))   MyOut = String(MyOut.toInt(), OCT);
@@ -349,7 +349,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == F("rnd"))
   {
     randomSeed(millis());
-    MyOut = String(random(MyOut.toFloat()));
+    MyOut = FloatToString(random(MyOut.toFloat()));
   }
 
 
@@ -473,5 +473,18 @@ void PrintAllMyVars()
 
 
 
-
+String FloatToString(float d)
+{
+  //Convert a double to string with 5 decimals and then removes the trailing zeros (and eventually the '.')
+  String z = String(d, 5); 
+  char *p;
+  p = (char*) z.c_str()+ z.length() -1; 
+  while (*p == '0') 
+  {
+    *p-- = '\0';
+  }
+  if (*p == '.')
+    *p = '\0';
+  return z;
+}
 

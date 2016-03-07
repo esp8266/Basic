@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.87";
+const char BasicVersion[] = "ESP Basic 1.88";
 
 
 
@@ -1190,23 +1190,23 @@ String DoMathForMe(String cc, String f, String dd )
 
   if (f == "-") {
     e = c - d;
-    ee = String(e);
+    ee = FloatToString(e);
   }
   if (f == "+") {
     e = c + d;
-    ee = String(e);
+    ee = FloatToString(e);
   }
   if (f == "*") {
     e = c * d;
-    ee = String(e);
+    ee = FloatToString(e);
   }
   if (f == "/") {
     e = c / d;
-    ee = String(e);
+    ee = FloatToString(e);
   }
   if (f == "^") {
     e = pow(c , d);
-    ee = String(e);
+    ee = FloatToString(e);
   }
 
 

@@ -9,9 +9,9 @@ String GetMeThatVar(String VariableNameToFind)
   String Param2;
   String Param3;
   String Param4;
-//  String Param5;
-//  String Param6;
-//  String Param7;
+  //  String Param5;
+  //  String Param6;
+  //  String Param7;
 
   if (VariableNameToFind.endsWith(")") == 1)
   {
@@ -81,7 +81,7 @@ String GetMeThatVar(String VariableNameToFind)
     junk++;
     MyOut = String(junk );
   }
-  if (FunctionName == F("len"))     MyOut = FloatToString(MyOut.length());
+  if (FunctionName == F("len"))     MyOut = String(MyOut.length());
 
   if (FunctionName == F("upper")  | FunctionName == F("upper$"))     MyOut.toUpperCase();
   if (FunctionName == F("lower")  | FunctionName == F("lower$"))     MyOut.toLowerCase();
@@ -108,76 +108,79 @@ String GetMeThatVar(String VariableNameToFind)
   }
   if (FunctionName == F("int"))
   {
-    MyOut = FloatToString(Param0.toInt());
+    MyOut = String(Param0.toInt());
   }
 
   if (FunctionName == F("wget"))
   {
-    MyOut = FetchWebUrl(Param0);
+    
+    MyOut = FetchWebUrl(Param0, Param0.toInt());
   }
 
   if (FunctionName == F("readopenweather"))
   {
-    MyOut = FetchOpenWeatherMapApi(Param0,Param1);
+    MyOut = FetchOpenWeatherMapApi(Param0, Param1);
   }
-  
+
   if (FunctionName == F("sendts"))
   {
     //ThingsSpeekBasicSendData(String myChannelNumber, String myWriteAPIKey, String BasicTSf1,String BasicTSf2, String BasicTSf3, String BasicTSf4 )
-    FetchWebUrl(String(F("api.thingspeak.com/update?key=")) + Param0 + "&field" + Param1 + "=" + Param2);
+    FetchWebUrl(String(F("api.thingspeak.com/update?key=")) + Param0 + "&field" + Param1 + "=" + Param2, 80);
   }
 
   if (FunctionName == F("readts"))
   {
-    MyOut =  FetchWebUrl(String(F("api.thingspeak.com/channels/")) + Param1 + "/field/" + Param2 + "/last.xml?api_key=" + Param0);
+    MyOut =  FetchWebUrl(String(F("api.thingspeak.com/channels/")) + Param1 + "/field/" + Param2 + "/last.xml?api_key=" + Param0,80);
     MyOut = MyOut.substring(MyOut.indexOf(String("<field" + Param2 + ">") ) + 8, MyOut.indexOf(String("</field" + Param2 + ">")));
     //MyOut = MyOut.substring(0, );
 
   }
 
-  // make an "evaluation" of the argument; it's calculated in double precision but shown in single!; 
+  // make an "evaluation" of the argument; it's calculated in double precision but shown in single!;
   // it can include functions and variables but, it shall not contains spaces between (this is not a a limitation of the parser) but the way the lines are handled
   // the function is included in the file Eval.ino
   if (FunctionName == F("eval"))
   {
     // here we try to isolate properly the argument for eval as Param0 don't give a good result
     // several steps :
-    // step 1: remove "eval"
-    Line_For_Eval = GetRidOfurlCharacters(Line_For_Eval.substring(Line_For_Eval.indexOf("eval")+4));
-//    Serial.print("line_eval:");
-//    Serial.println(Line_For_Eval);
+    // step 1: remove "eval("
+    Line_For_Eval = GetRidOfurlCharacters(Line_For_Eval.substring(Line_For_Eval.indexOf("eval") + 5));
+    //    Serial.print("line_eval:");
+    //    Serial.println(Line_For_Eval);
     // step 2: count the parenthesis until the difference between opened and closed is 0 ( or when we reach the end of the line -> in that case error!)
     int i;
-    int cnt = 0;
+    int cnt = 1;  // attention! we consider that the string starts just after the 'eval(' so we consider that the first parenthesys is included
     for (i = 0; i < Line_For_Eval.length(); i++)
     {
       if (Line_For_Eval[i] == '(')
         cnt++;
-      else
-        if (Line_For_Eval[i] == ')')
-          cnt--;
-      if (cnt == 0) 
-        break;      
+      else if (Line_For_Eval[i] == ')')
+        cnt--;
+      if (cnt == 0)
+        break;
     }
     if (cnt == 0)
     {
-      String argument = Line_For_Eval.substring(0, i+1);
-      double r = evaluate(argument);
+      // one important point: removing all the leading parenthesys reduce the number of recursions! ex: (sin(a)) counts 2 iterations compared to sin(a)
+      Line_For_Eval = Line_For_Eval.substring(0, i);
+      //Serial.println(Line_For_Eval);
+      String r = evaluate(Line_For_Eval);
+
       if (_parser_failed == true)
       {
-        PrintAndWebOut(String(_parser_error_msg)); 
-       return F("error");
+        PrintAndWebOut(String(_parser_error_msg));
+        return F("error");
       }
       else
-        return FloatToString(r);      
+        return r;
     }
     else
-      return F("Incorrect parenthesys");  
+      return F("Incorrect parenthesys");
   }
-  
+
   if (FunctionName == F("json"))
   {
-      MyOut = Parsifal(Param0,Param1);
+    MyOut = Parsifal(Param0, Param1);
   }
 
 
@@ -204,7 +207,7 @@ String GetMeThatVar(String VariableNameToFind)
       now = Param0.toInt();
       Param0 = Param1;
     }
-    
+
     MyOut = String(ctime(&now));
     Param1 = MyOut;
     Param0.toUpperCase();
@@ -332,11 +335,11 @@ String GetMeThatVar(String VariableNameToFind)
 
 
 
-  if (FunctionName == F("sqr"))   MyOut = FloatToString(sqrt(MyOut.toFloat()));
-  if (FunctionName == F("sin"))   MyOut = FloatToString(sin(MyOut.toFloat()));
-  if (FunctionName == F("cos"))   MyOut = FloatToString(cos(MyOut.toFloat()));
-  if (FunctionName == F("tan"))   MyOut = FloatToString(tan(MyOut.toFloat()));
-  if (FunctionName == F("log"))   MyOut = FloatToString(log(MyOut.toFloat()));
+  if (FunctionName == F("sqr"))   MyOut = String(sqrt(MyOut.toFloat()));
+  if (FunctionName == F("sin"))   MyOut = String(sin(MyOut.toFloat()));
+  if (FunctionName == F("cos"))   MyOut = String(cos(MyOut.toFloat()));
+  if (FunctionName == F("tan"))   MyOut = String(tan(MyOut.toFloat()));
+  if (FunctionName == F("log"))   MyOut = String(log(MyOut.toFloat()));
 
   if (FunctionName == F("hex") | FunctionName == F("hex$"))   MyOut = String(MyOut.toInt(), HEX);
   if (FunctionName == F("oct") | FunctionName == F("oct$"))   MyOut = String(MyOut.toInt(), OCT);
@@ -349,7 +352,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == F("rnd"))
   {
     randomSeed(millis());
-    MyOut = FloatToString(random(MyOut.toFloat()));
+    MyOut = String(random(MyOut.toFloat()));
   }
 
 
@@ -473,18 +476,5 @@ void PrintAllMyVars()
 
 
 
-String FloatToString(float d)
-{
-  //Convert a double to string with 5 decimals and then removes the trailing zeros (and eventually the '.')
-  String z = String(d, 5); 
-  char *p;
-  p = (char*) z.c_str()+ z.length() -1; 
-  while (*p == '0') 
-  {
-    *p-- = '\0';
-  }
-  if (*p == '.')
-    *p = '\0';
-  return z;
-}
+
 

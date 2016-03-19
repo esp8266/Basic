@@ -27,22 +27,22 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
 
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending hello"));
+  //Serial.println(F("Sending hello"));
   // replace 1.2.3.4 with your Arduino's ip
   client.println(F("EHLO 1.2.3.4"));
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending auth login"));
+  //Serial.println(F("Sending auth login"));
   client.println(F("auth login"));
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending User"));
+  //Serial.println(F("Sending User"));
   // Change to your base64 encoded user
   client.println(GetMeBase64(EmailSMTPuser));
 
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending Password"));
+  //Serial.println(F("Sending Password"));
   // change to your base64 encoded password
   client.println(GetMeBase64(EmailSMTPpassword));
 
@@ -53,20 +53,20 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
   if (!eRcv()) return 0;
 
   // change to your email address (sender)
-  Serial.println(F("Sending From"));
+  //Serial.println(F("Sending From"));
   client.println(String(F("MAIL From: <")) +  EmailFrom + ">");
   if (!eRcv()) return 0;
 
   // change to recipient address
-  Serial.println(F("Sending To"));
+  //Serial.println(F("Sending To"));
   client.println(String(F("RCPT To: <")) + EmailTo + ">");
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending DATA"));
+  //Serial.println(F("Sending DATA"));
   client.println(F("DATA"));
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending email"));
+  //Serial.println(F("Sending email"));
 
   // change to recipient address
   client.println(String(F("To: You <")) + EmailTo + ">");
@@ -82,13 +82,13 @@ byte sendEmail(String EmailTo, String EmailFrom, String EmailSubject, String Ema
 
   if (!eRcv()) return 0;
 
-  Serial.println(F("Sending QUIT"));
+  //Serial.println(F("Sending QUIT"));
   client.println(F("QUIT"));
   if (!eRcv()) return 0;
 
   client.stop();
 
-  Serial.println(F("disconnected"));
+  //Serial.println(F("disconnected"));
 
   return 1;
 }

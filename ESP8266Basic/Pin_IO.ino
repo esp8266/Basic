@@ -20,7 +20,7 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
   if (PinDesignaor == F("TX"))  pin = 1;
 
 
-
+  if (PinCommand == F("ai")) return analogRead(A0);
   if (PinCommand == F("laststat"))
   {
     return PinListOfStatusValues[pin];

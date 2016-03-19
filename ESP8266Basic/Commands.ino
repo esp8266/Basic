@@ -406,7 +406,33 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("baudrate"))
   {
-    Serial.begin(GetMeThatVar(Param1).toInt());
+    Param1.toUpperCase();
+    if (Param1 == "")     Serial.begin(GetMeThatVar(Param1).toInt());
+    else if (Param1 == "5N1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_5N1);
+    else if (Param1 == "6N1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6N1);
+    else if (Param1 == "7N1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_7N1);
+    else if (Param1 == "8N1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_8N1);
+    else if (Param1 == "5N2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_5N2);
+    else if (Param1 == "6N2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6N2);
+    else if (Param1 == "6N2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6N2);
+    else if (Param1 == "7N2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_7N2);
+    else if (Param1 == "8N2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_8N2);
+    else if (Param1 == "5E1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_5E1);
+    else if (Param1 == "6E1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6E1);
+    else if (Param1 == "7E1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_7E1);
+    else if (Param1 == "8E1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_8E1);
+    else if (Param1 == "5E2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_5E2);
+    else if (Param1 == "6E2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6E2);
+    else if (Param1 == "7E2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_7E2);
+    else if (Param1 == "8E2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_8E2);
+    else if (Param1 == "5O1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_5O1);
+    else if (Param1 == "6O1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6O1);
+    else if (Param1 == "7O1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_7O1);
+    else if (Param1 == "8O1")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_8O1);
+    else if (Param1 == "5O2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_5O2);
+    else if (Param1 == "6O2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_6O2);
+    else if (Param1 == "7O2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_7O2);
+    else if (Param1 == "8O2")     Serial.begin(GetMeThatVar(Param1).toInt(), SERIAL_8O2);
     return;
   }
 
@@ -924,7 +950,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("wget"))
   {
-    SetMeThatVar(Param1, FetchWebUrl(GetMeThatVar(Param2)));
+    SetMeThatVar(Param1, FetchWebUrl(GetMeThatVar(Param2),80));
     return;
   }
 

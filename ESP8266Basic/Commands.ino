@@ -918,6 +918,7 @@ void ExicuteTheCurrentLine()
     RunningProgramCurrentLine = 0;
     HTMLout = "";
     TimerWaitTime = 0;
+    LoadBasicProgramFromFlash( ProgramName);
     return;
   }
 

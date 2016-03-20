@@ -114,7 +114,7 @@ String GetMeThatVar(String VariableNameToFind)
   if (FunctionName == F("wget"))
   {
     
-    MyOut = FetchWebUrl(Param0, Param0.toInt());
+    MyOut = FetchWebUrl(Param0, Param1.toInt());
   }
 
   if (FunctionName == F("readopenweather"))

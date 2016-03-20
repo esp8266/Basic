@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.89";
+const char BasicVersion[] = "ESP Basic 1.90";
 
 
 
@@ -1406,6 +1406,7 @@ String FetchOpenWeatherMapApi(String URLtoGet, String index)
 
 String FetchWebUrl(String URLtoGet, int PortNoForPage)
 {
+  if (PortNoForPage == 0) PortNoForPage = 80;
   String str = "             ";
   String ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
   String PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
@@ -1418,7 +1419,7 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
 
   if (client.connect(ServerToConnectTo.c_str() , PortNoForPage))
   {
-  if (PortNoForPage == 0) PortNoForPage = 80;
+  
     
     client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
     delay(300);

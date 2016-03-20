@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 1.90";
+const char BasicVersion[] = "ESP Basic 1.91";
 
 
 
@@ -762,7 +762,7 @@ String SettingsPageHandeler()
 
     if ( server.arg("format") == F("Format") )
     {
-     // BasicFileOpened.close();
+      // BasicFileOpened.close();
       Serial.println(F("Formating "));
       Serial.print(SPIFFS.format());
     }
@@ -1410,6 +1410,7 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
   String str = "             ";
   String ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
   String PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
+  byte numberOwebTries;
   // ServerToConnectTo ;
   //PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
 
@@ -1419,10 +1420,16 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
 
   if (client.connect(ServerToConnectTo.c_str() , PortNoForPage))
   {
-  
-    
     client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
-    delay(300);
+    delay(3500);
+//    while ( ! client.available() && numberOwebTries < 10 ) {
+//      numberOwebTries++;
+//      delay(1000);   // 1 second
+//    }
+
+
+
+
     while (client.available())
     {
       delay(0);

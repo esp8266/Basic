@@ -164,6 +164,7 @@ void ExicuteTheCurrentLine()
       // looks for the 'to'
       r = gotoTestFor.lastIndexOf("to");
       String VarTestIfDone = gotoTestFor.substring(r + 2); //getValue(gotoTestFor, ' ', 5);
+      VarTestIfDone.trim();
       //Serial.print("VarTestIfDone " + VarTestIfDone);
 
       if (ForNextReturnLocations[i] == 0) return;
@@ -171,7 +172,7 @@ void ExicuteTheCurrentLine()
 
       if (VarTest == Param1)
       {
-        float test1 = GetMeThatVar(VarTest).toFloat();
+        float test1 = evaluate(VarTest).toFloat();
         float test2 = evaluate(VarTestIfDone).toFloat(); //GetMeThatVar(VarTestIfDone).toFloat();
 
         //Serial.println(test1);
@@ -608,7 +609,9 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("wprint") | Param0 == F("html"))
   {
-    HTMLout += GetMeThatVar(Param1);
+    Param1 = inData.substring(inData.indexOf(' ') + 1);
+    Param1 = evaluate(Param1);
+    HTMLout += Param1;
     //Serial.print(HTMLout);
     return;
   }
@@ -1063,7 +1066,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("msgreturn"))
   {
-    MsgBranchRetrnData = GetMeThatVar(Param1);
+    MsgBranchRetrnData = VarialbeLookup(Param1);
     return;
   }
 

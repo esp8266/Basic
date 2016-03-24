@@ -3,7 +3,7 @@ String Parsifal(String data, String param)
   int i, last,idx;
   String tmp;
   int st, en;
-  int en1, en2, en3;
+  int en1;
   int pos;
   String ReturnVal;
 
@@ -88,13 +88,12 @@ String Parsifal(String data, String param)
   if (pos != -1)
   {
       pos = pos + tmp.length();
-      en = 10000;
-      en1 = data.indexOf('"', pos+1);
-      en2 = data.indexOf('}', pos+1);
-      en3 = data.indexOf(']', pos+1);
-      if ((en1 > 0) && (en1 < en)) en = en1;
-      if ((en2 > 0) && (en2 < en)) en = en2;
-      if ((en3 > 0) && (en3 < en)) en = en3;
+      for (en = pos + 1; en < data.length(); en++)
+      {
+        if (data[en] == '"' || data[en] == '}' || data[en] == ']' ||data[en] == ',' )   // the value terminate with " or } or ] or ,
+          break;
+      }
+
 //      Serial.print("start");
 //      Serial.println(pos);
 //      Serial.print("end");

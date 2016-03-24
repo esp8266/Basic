@@ -139,7 +139,7 @@ byte CheckFOrWebGOTO()
     int str_len = String(i).length() + 1 + 4;
     char ArgumentToTest[str_len];
     String(String("goto" + String(i))).toCharArray(ArgumentToTest, str_len);
-
+    delay(0);
     bla = server.arg(ArgumentToTest);
     if (bla.length() > 0)
     {
@@ -151,7 +151,7 @@ byte CheckFOrWebGOTO()
   if (x != 0)
   {
     for (int i = 0; i <= TotalNumberOfLines - 1; i++) {
-      delay(1);
+      delay(0);
 
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
@@ -181,7 +181,7 @@ void CheckFOrWebVarInput()
     int str_len = String(i).length() + 1;
     char ArgumentToTest[str_len];
     String(i).toCharArray(ArgumentToTest, str_len);
-
+    delay(0);
     bla = server.arg(ArgumentToTest);
     if (bla.length() > 0)
     {

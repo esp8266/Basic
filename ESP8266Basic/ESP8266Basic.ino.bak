@@ -78,17 +78,16 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 1";
+const char BasicVersion[] = "ESP Basic 1.91";
 
 
 
 
-// The Math precision is defined, by default, inside expression_parser_string.h
-// there is a definition PARSER_PREC that can be double or float
 #include "expression_parser_string.h"
+bool  _parser_failed;
 char* _parser_error_msg;
 String Line_For_Eval;
-PARSER_PREC numeric_value;
+double double_value;
 String string_value ;
 
 
@@ -685,7 +684,7 @@ void setup() {
   RunningProgram = 0;
   WaitForTheInterpertersResponse = 1;
   StartUpProgramTimer();
-  InitCommandParser(); // init the commands parser
+
 }
 
 
@@ -1027,7 +1026,7 @@ void loop()
 {
 
   RunBasicTillWait();
-  delay(0);
+
   server.handleClient();
 }
 
@@ -1423,10 +1422,10 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
   {
     client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
     delay(3500);
-    //    while ( ! client.available() && numberOwebTries < 10 ) {
-    //      numberOwebTries++;
-    //      delay(1000);   // 1 second
-    //    }
+//    while ( ! client.available() && numberOwebTries < 10 ) {
+//      numberOwebTries++;
+//      delay(1000);   // 1 second
+//    }
 
 
 

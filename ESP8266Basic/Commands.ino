@@ -76,7 +76,7 @@ void ExicuteTheCurrentLine()
     Serial.println(Param5);
   }
 
-
+  Param0.trim();
   if ( Param0 == "") return;
   if (Param0.startsWith("["))  return;
 
@@ -1136,8 +1136,8 @@ void ExicuteTheCurrentLine()
     SetMeThatVar(Param1, Param3);
     return;
   }
-
+  //Serial.println(RunningProgramCurrentLine);
   //Param0 = getValue(inData, ' ', 0);
-  if (!Param0.startsWith("["))  evaluate(Param1); //will exicure any functions if no other commands were found.
+  if ( inData != "")  evaluate(inData); //will exicure any functions if no other commands were found.
   return;
 }

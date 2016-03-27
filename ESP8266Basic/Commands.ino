@@ -54,14 +54,11 @@ void ExicuteTheCurrentLine()
 
   Param0.toLowerCase();
 
-  Line_For_Eval = inData; /////////////////////////////////////////////////////////////////////////////////////////////////
+// Line_For_Eval = inData; /////////////////////////////////////////////////////////////////////////////////////////////////
 
-  int valParam0 = Param0.toInt();
+//  int valParam0 = Param0.toInt();
   int valParam1 = Param1.toInt();
   int valParam2 = Param2.toInt();
-  int valParam3 = Param3.toInt();
-  int valParam4 = Param4.toInt();
-  int valParam5 = Param5.toInt();
 
 
   if (BasicDebuggingOn == 1)
@@ -164,7 +161,7 @@ void ExicuteTheCurrentLine()
       // looks for the 'to'
       r = gotoTestFor.lastIndexOf("to");
       String VarTestIfDone = gotoTestFor.substring(r + 2); //getValue(gotoTestFor, ' ', 5);
-      VarTestIfDone.trim();
+      //VarTestIfDone.trim();
       //Serial.print("VarTestIfDone " + VarTestIfDone);
 
       if (ForNextReturnLocations[i] == 0) return;
@@ -172,7 +169,7 @@ void ExicuteTheCurrentLine()
 
       if (VarTest == Param1)
       {
-        float test1 = evaluate(VarTest).toFloat();
+        float test1 = VarialbeLookup(VarTest).toFloat();
         float test2 = evaluate(VarTestIfDone).toFloat(); //GetMeThatVar(VarTestIfDone).toFloat();
 
         //Serial.println(test1);
@@ -400,35 +397,9 @@ void ExicuteTheCurrentLine()
     r = ExtractArguments(inData);
     //valParam1 = GetMeThatVar(Param1).toInt();
     delay(args[0]);
-    DeAllocateArguments();
+    DeAllocateArguments();  // don't forget to call this function after each ExtractArguments
     return;
   }
-
-
-  //  if ( Param0 == F("timer"))
-  //  {
-  //     // this is an example of extraction using the ExtractArgument function just for 2 parameters
-  //     // this command is not really appropriate as the 2nd argument (the line label) is not a string;
-  //     // so the way this command is called needs to be changed; I'll do later TBD
-  //    r = ExtractArguments(inData);
-  //    //TimerWaitTime = GetMeThatVar(Param1).toInt();
-  //    //TimerBranch = Param2;
-  //    Serial.println(num_args);
-  //    if (num_args == 2)
-  //    {
-  //      TimerWaitTime = args[0];
-  //      if (args_str[1] != NULL)  // this is a protection in case of the 2nd argument is not a string
-  //      {
-  //        Serial.println(*args_str[1]);
-  //        TimerBranch = String(*args_str[1]);
-  //        Serial.println(TimerWaitTime);
-  //      }
-  //
-  //      timerLastActiveTime = millis();
-  //    }
-  //    DeAllocateArguments();
-  //    return;
-  //  }
 
   if ( Param0 == F("timer"))
   {
@@ -456,7 +427,7 @@ void ExicuteTheCurrentLine()
   if ( Param0 == F("sleep"))
   {
     // this command needs to be checked!
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     ESP.deepSleep(evaluate(Param1).toInt() * 1000000, WAKE_RF_DEFAULT);
     return;
   }
@@ -466,7 +437,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("print"))
   {
     // this is an example of extraction using directly the evaluate function taking into account all the text after the command (so after the ' ' )
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     //PrintAndWebOut(GetMeThatVar(Param1));
     PrintAndWebOut(evaluate(Param1));
     return;
@@ -475,7 +446,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("serialprint"))
   {
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     //Serial.print(GetMeThatVar(Param1));
     Serial.print(evaluate(Param1));
     return;
@@ -484,7 +455,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("serialprintln"))
   {
     //Serial.println(GetMeThatVar(Param1));
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Serial.println(evaluate(Param1));
     return;
   }
@@ -492,7 +463,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("serial2begin"))
   {
     //Serial1.begin(GetMeThatVar(Param1).toInt());
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Serial1.begin(evaluate(Param1).toInt());
     return;
   }
@@ -517,7 +488,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("baudrate"))
   {
     //Serial.begin(GetMeThatVar(Param1).toInt());
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Serial.begin(evaluate(Param1).toInt());
     return;
   }
@@ -609,7 +580,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("wprint") | Param0 == F("html"))
   {
-    Param1 = inData.substring(inData.indexOf(' ') + 1);
+     Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Param1 = evaluate(Param1);
     HTMLout += Param1;
     //Serial.print(HTMLout);
@@ -652,7 +623,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("textbox"))
   {
     String tempTextBox = GenerateIDtag(TextBox);
-   VarialbeLookup(Param1);
+    VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
       SetMeThatVar(Param1, "");
@@ -1087,20 +1058,24 @@ void ExicuteTheCurrentLine()
 
   // let command down here for a reason
 
-
-  if ( Param1 == F("="))
+  if ( Param1.startsWith(F("=")))
   {
-    Param0 = getValue(inData, ' ', 0);
-    Param5 = Param4;
-    Param4 = Param3;
-    Param3 = Param2;
-    Param2 = Param1;
-    Param1 = Param0;
     Param0 = "let";
   }
 
+  if ( Param0.indexOf('=') > 1 )
+  {  Serial.println("Found the  = sign");
+    inData.replace(F("="),F(" = "));
+    Param0 = "let";
+  }
+
+
+  
+
   if ( Param0 == F("let"))
   {
+    Serial.println("Evaluating . .. .");
+    Serial.println(inData);
     //SetMeThatVar(Param1, DoMathForMe(GetMeThatVar(Param3), Param4, GetMeThatVar(Param5)));
 
     // we should use a more "scientific" way to recognize the line;
@@ -1126,10 +1101,10 @@ void ExicuteTheCurrentLine()
     }
     Param1 = inData.substring(0, equal_pos);
     Param1.trim();
-    //        Serial.println(Param1);
+            Serial.println(Param1);
     Param2 = inData.substring(equal_pos + 1);
     Param2.trim();
-    //        Serial.println(Param2);
+            Serial.println(Param2);
     Param3 = evaluate(Param2);
     //    Serial.print("risultato ");
     //    Serial.println(Param3);
@@ -1139,5 +1114,6 @@ void ExicuteTheCurrentLine()
   //Serial.println(RunningProgramCurrentLine);
   //Param0 = getValue(inData, ' ', 0);
   if ( inData != "")  evaluate(inData); //will exicure any functions if no other commands were found.
+  PrintAndWebOut(String(F("syntax error on line ")) + String(RunningProgramCurrentLine));
   return;
 }

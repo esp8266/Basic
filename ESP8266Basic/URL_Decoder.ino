@@ -7,7 +7,7 @@ String GetRidOfurlCharacters(String urlChars)
   String result = "";
   for (i=0; i<urlChars.length(); i++)
   {
-    if (urlChars[i] == '%')  // if the char found is '#'
+    if (urlChars[i] == '%')  // if the char found is '%'
     {
       // start of encoded char
       //take the 2 chars following the % in hexadecimal and convert to char

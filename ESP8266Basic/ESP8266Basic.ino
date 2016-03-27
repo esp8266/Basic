@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 2";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 3";
 
 
 
@@ -87,7 +87,7 @@ const char BasicVersion[] = "ESP Basic 2.0.Alpha 2";
 // there is a definition PARSER_PREC that can be double or float
 #include "expression_parser_string.h"
 char* _parser_error_msg;
-String Line_For_Eval;
+//String Line_For_Eval;
 PARSER_PREC numeric_value;
 String string_value ;
 
@@ -166,9 +166,10 @@ PROGMEM const char UploadPage[] = R"=====(
 PROGMEM const char EditorPageHTML[] =  R"=====(
 <script src="editor.js"></script>
 <form action='edit' id="usrform">
-<input type="text" name="name" value="*program name*">
+<input type="text" id="FileName" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
 </form>
+<button onclick="ShowTheFileList()">Files List</button>
 <button onclick="SaveTheCode()">Save</button>
 <br>
 <textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
@@ -180,7 +181,7 @@ PROGMEM const char editCodeJavaScript[] =  R"=====(
 function SaveTheCode() {
   var textArea = document.getElementById("code");
   var arrayOfLines = textArea.value.split("\n");
-  httpGet("/codein?SaveTheCode=start");
+  httpGet("/codein?SaveTheCode=start&FileName="+document.getElementById("FileName").value);
   httpGet("/codein?SaveTheCode=yes");
   block = 0;
 for (i = 0; i < arrayOfLines.length; i++) 
@@ -188,10 +189,7 @@ for (i = 0; i < arrayOfLines.length; i++)
   x = i + 1;
   if (arrayOfLines[i] != "undefined")
   {
-    arrayOfLines[i] = replaceAll(arrayOfLines[i],"+", "%2B");
-    arrayOfLines[i] = replaceAll(arrayOfLines[i],"&", "%26");
-    arrayOfLines[i] = replaceAll(arrayOfLines[i],"#", "%23");
-  stocca(encodeURI(arrayOfLines[i]));
+    stocca(encodeURIComponent(arrayOfLines[i]));
     document.getElementById("Status").value = i.toString();
   }
 }
@@ -476,7 +474,7 @@ void setup() {
       if ( server.arg("open") == F("Open") )
       {
         // really takes just the name for the new file otherwise it uses the previous one
-        ProgramName = server.arg("name");
+        ProgramName = GetRidOfurlCharacters(server.arg("name"));
         ProgramName.trim();
         if (ProgramName == "")
         {
@@ -552,21 +550,41 @@ void setup() {
   });
 
 
+  server.on("/filelist", []() 
+  {
+    String ret = "";
+    String fn;
+    Dir dir = SPIFFS.openDir(String(F("/") ));
+    while (dir.next()) 
+    {
+      fn = dir.fileName();  
+      if (fn.indexOf(F(".bas")) != -1)
+        ret +=  fn +"\n";
+      delay(0);
+    }
 
 
+    server.send(200, "text/html", ret);
+  });
 
   server.on("/codein", []() {
-    ProgramName.trim();
-    if (ProgramName == "")
-    {
-      ProgramName = F("/default.bas");
-    }
+//    ProgramName.trim();
+//    if (ProgramName == "")
+//    {
+//      ProgramName = F("/default.bas");
+//    }
 
     if (server.arg("SaveTheCode") == F("start"))
     {
       inData = "end";
       ExicuteTheCurrentLine();
       Serial.println(F("start save"));
+      ProgramName = GetRidOfurlCharacters(server.arg("FileName"));
+      if (ProgramName == "")
+          ProgramName = F("/default.bas");
+      ProgramName.trim();
+      if (ProgramName[0] != '/')
+          ProgramName = "/" + ProgramName;
       OpenToWriteOnFlash( ProgramName );
     }
 
@@ -577,7 +595,7 @@ void setup() {
       int y = LineNoForWebEditorIn.toInt();
       delay(0);
       //Serial.println(server.arg("code"));
-      Serial.println(ProgramName + F(".bas/") + String(y));
+      Serial.println(ProgramName + F("/") + String(y));
       //BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
       WriteBasicLineOnFlash(GetRidOfurlCharacters(server.arg("code")));
       delay(0);
@@ -870,7 +888,7 @@ void DoSomeFileManagerCode()
       String FileNameToView = server.arg("fileName");
       FileNameToView = GetRidOfurlCharacters(FileNameToView);
       //FileNameToView.replace("/uploads/", "");
-      WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./edit?name=item&open=Open" />)=====");
+      WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="1; url=./edit?name=item&open=Open" />)=====");
       WholeUploadPage.replace("item", FileNameToView);
     }
 
@@ -1079,12 +1097,35 @@ void runTillWaitPart2()
     delay(0);
     RunningProgramCurrentLine++;
     inData = BasicProgram(RunningProgramCurrentLine);
+    inData = StripCommentsFromLine(inData);
     if (fileOpenFail == 1) inData  = "end";
     ExicuteTheCurrentLine();
     delay(0);
   }
 }
 
+String StripCommentsFromLine(String ret)
+{
+  // comment handling stuff
+  // we try to remove all the comment from the line
+  // the comment is defined as all the text following the ' (single quote) until the end of the line
+  // the problem is that the ' can be also inside a string (text included between quotes " )
+  // so we need to understand if the ' is inside quotes or not
+  // let's go
+  bool quotes = false;
+  for (int i = 0; i < ret.length(); i++)
+  {
+    if (ret[i] == '"')
+      quotes = !quotes;
+
+    if ( (ret[i] == '\'') && (quotes == false) )
+    {
+      ret = ret.substring(0, i);  // cut the line at the current position (removes all the comments from the line
+      break;
+    }
+  }
+  return ret;
+}
 
 
 
@@ -1168,98 +1209,6 @@ String getValue(String data, char separator, int index)
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-String DoMathForMe(String cc, String f, String dd )
-{
-  double e;
-  String ee = cc;
-
-  double c = cc.toFloat();
-  double d = dd.toFloat();
-
-  f.trim();
-
-  if (f == "-") {
-    e = c - d;
-    ee = FloatToString(e);
-  }
-  if (f == "+") {
-    e = c + d;
-    ee = FloatToString(e);
-  }
-  if (f == "*") {
-    e = c * d;
-    ee = FloatToString(e);
-  }
-  if (f == "/") {
-    e = c / d;
-    ee = FloatToString(e);
-  }
-  if (f == "^") {
-    e = pow(c , d);
-    ee = FloatToString(e);
-  }
-
-
-
-  if (f == "&") {
-    ee = String(cc + dd);
-  }
-
-
-  if (f ==  ">") {
-    ee = String((c > d));
-  }
-  if (f ==  "<") {
-    ee = String((c < d));
-  }
-
-
-  if (f ==  ">=") {
-    ee = String((c >= d));
-  }
-  if (f ==  "<=") {
-    ee = String((c <= d));
-  }
-
-  if (f == "<>" || f == " != ")
-  {
-    if (cc != dd)
-    {
-      ee = "1";
-    }
-    else
-    {
-      if (c != d)
-      {
-        ee = "1";
-      }
-    }
-  }
-
-
-  if (f == "==")
-  {
-    ee = String((cc == dd));
-  }
-
-  if (f == "=")
-  {
-    ee = String((c == d));
-  }
-  return ee;
-}
 
 
 

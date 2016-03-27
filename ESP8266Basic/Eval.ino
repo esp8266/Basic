@@ -9,6 +9,11 @@ String evaluate(String expr)
   //  Serial.print("eval function ");
   //  Serial.print(expr);
   //  Serial.print("---");
+  // check if the expression is empty; in that case returns an empty string
+  if (expr == "")
+  {
+    return "";
+  }
   delay(0);
   status = parse_expression_with_callbacks( expr.c_str(), variable_callback, function_callback, NULL, &numeric_value, string_value  );
   if (_parser_error_msg != NULL)
@@ -22,6 +27,9 @@ String evaluate(String expr)
     return FloatToString(numeric_value);
 
 }
+
+
+
 
 
 /**
@@ -254,10 +262,10 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     return PARSER_STRING;
   }
   else if ( fname == F("int") && num_args == 1 ) {
-    // example of the oct(value)
+    // example of the int(value)
     // set return value
-    *value_str  = String((int) args[0]);
-    return PARSER_STRING;
+    *value  = (int) args[0];
+    return PARSER_TRUE;
   }
   else if ( fname == F("chr") | fname == F("chr$") && num_args == 1 ) {
     // example of the chr(value)
@@ -309,7 +317,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     return PARSER_STRING;
   }
   else if ( fname == F("wget") && num_args > 0 ) {
-    // function wget(url)
+    // function wget(url) or wget (url, port)
     // set return value
     if (num_args == 1)  *value_str  =  FetchWebUrl(*args_str[0], 80);
     else if (num_args == 2 )   *value_str  =  FetchWebUrl(*args_str[0], args[1]);
@@ -317,14 +325,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   }
 
   else if ( fname == F("sendts") && num_args == 2 ) {
-    // function wget(url)
+    // function sendts(url, field)
     // set return value
     FetchWebUrl(String(F("api.thingspeak.com/update?key=")) + *args_str[0] + "&field" + *args_str[1] + "=" + *args_str[2], 80);
     return PARSER_STRING;
   }
 
   else if ( fname == F("readts") && num_args == 2 ) {
-    // function wget(url)
+    // function readts(url, field)
     // set return value
 
     String MyOut =  FetchWebUrl(String(F("api.thingspeak.com/channels/")) + *args_str[1] + "/field/" + *args_str[2] + "/last.xml?api_key=" + *args_str[0], 80);

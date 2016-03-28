@@ -16,7 +16,7 @@ String evaluate(String expr)
   }
   delay(0);
   status = parse_expression_with_callbacks( expr.c_str(), variable_callback, function_callback, NULL, &numeric_value, string_value  );
-  if (_parser_error_msg != NULL)
+  if (_parser_error_msg != NULL & _parser_error_msg != "Comparaison between string and number!")
   {
     PrintAndWebOut(String(_parser_error_msg));
     return F("error");

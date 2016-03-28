@@ -54,9 +54,9 @@ void ExicuteTheCurrentLine()
 
   Param0.toLowerCase();
 
-// Line_For_Eval = inData; /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Line_For_Eval = inData; /////////////////////////////////////////////////////////////////////////////////////////////////
 
-//  int valParam0 = Param0.toInt();
+  //  int valParam0 = Param0.toInt();
   int valParam1 = Param1.toInt();
   int valParam2 = Param2.toInt();
 
@@ -110,7 +110,14 @@ void ExicuteTheCurrentLine()
     inData.trim();
     //Serial.println(inData);
     //Param0 = inData.substring(0, inData.indexOf(' '));    // recover the new command
-    Param0 = getValue(inData, ' ', 0);   // recover the new command
+    Param0 = getValue(inData, ' ', 0);// recover the new command
+    Param1 = getValue(inData, ' ', 1);
+    Param2 = getValue(inData, ' ', 2);
+    Param3 = getValue(inData, ' ', 3);
+    Param4 = getValue(inData, ' ', 4);
+    Param5 = getValue(inData, ' ', 5);
+
+    Param0.toLowerCase();
   }
 
 
@@ -580,7 +587,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("wprint") | Param0 == F("html"))
   {
-     Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Param1 = evaluate(Param1);
     HTMLout += Param1;
     //Serial.print(HTMLout);
@@ -1064,18 +1071,18 @@ void ExicuteTheCurrentLine()
   }
 
   if ( Param0.indexOf('=') > 1 )
-  {  Serial.println("Found the  = sign");
-    inData.replace(F("="),F(" = "));
+  { Serial.println("Found the  = sign");
+    inData.replace(F("="), F(" = "));
     Param0 = "let";
   }
 
 
-  
+
 
   if ( Param0 == F("let"))
   {
-    Serial.println("Evaluating . .. .");
-    Serial.println(inData);
+    //Serial.println("Evaluating . .. .");
+    //Serial.println(inData);
     //SetMeThatVar(Param1, DoMathForMe(GetMeThatVar(Param3), Param4, GetMeThatVar(Param5)));
 
     // we should use a more "scientific" way to recognize the line;
@@ -1101,10 +1108,10 @@ void ExicuteTheCurrentLine()
     }
     Param1 = inData.substring(0, equal_pos);
     Param1.trim();
-            Serial.println(Param1);
+    //Serial.println(Param1);
     Param2 = inData.substring(equal_pos + 1);
     Param2.trim();
-            Serial.println(Param2);
+    //Serial.println(Param2);
     Param3 = evaluate(Param2);
     //    Serial.print("risultato ");
     //    Serial.println(Param3);
@@ -1113,7 +1120,10 @@ void ExicuteTheCurrentLine()
   }
   //Serial.println(RunningProgramCurrentLine);
   //Param0 = getValue(inData, ' ', 0);
-  if ( inData != "")  evaluate(inData); //will exicure any functions if no other commands were found.
+  if ( inData != "") {
+    evaluate(inData);//will exicure any functions if no other commands were found.
+    return;
+  }
   PrintAndWebOut(String(F("syntax error on line ")) + String(RunningProgramCurrentLine));
   return;
 }

@@ -313,25 +313,25 @@ void ExicuteTheCurrentLine()
   if ( Param0 == F("po"))
   {
 
-    valParam2 = GetMeThatVar(Param2).toInt();
+    valParam2 = VarialbeLookup(Param2).toInt();
 
-    UniversalPinIO("po", GetMeThatVar(Param1), valParam2);
+    UniversalPinIO("po", VarialbeLookup(Param1), valParam2);
     return;
   }
 
 
   if ( Param0 == F("pwi"))
   {
-    SetMeThatVar(Param2, String(UniversalPinIO("pwi", GetMeThatVar(Param1), 0)));
+    SetMeThatVar(Param2, String(UniversalPinIO("pwi", VarialbeLookup(Param1), 0)));
     return;
   }
 
   if ( Param0 == F("pwo"))
   {
 
-    valParam2 = GetMeThatVar(Param2).toInt();
+    valParam2 = VarialbeLookup(Param2).toInt();
 
-    UniversalPinIO("pwo", GetMeThatVar(Param1), valParam2);
+    UniversalPinIO("pwo", VarialbeLookup(Param1), valParam2);
     return;
   }
 
@@ -356,9 +356,9 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == F("servo"))
   {
-    valParam2 = GetMeThatVar(Param2).toInt();
+    valParam2 = VarialbeLookup(Param2).toInt();
 
-    UniversalPinIO(F("servo"), GetMeThatVar(Param1), valParam2);
+    UniversalPinIO(F("servo"), VarialbeLookup(Param1), valParam2);
     return;
   }
 
@@ -375,7 +375,7 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == F("write"))
   {
-    SaveDataToFile(GetMeThatVar(Param1), GetMeThatVar(Param2));
+    SaveDataToFile(GetMeThatVar(Param1), VarialbeLookup(Param2));
     return;
   }
 

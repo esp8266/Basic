@@ -1,9 +1,7 @@
 String GetMeThatVar(String VariableNameToFind)
 {
   delay(0);
-  VarialbeLookup(VariableNameToFind);
-  delay(0);
-  return VariableNameToFind;
+  return VarialbeLookup(VariableNameToFind);
 }
 
 String VarialbeLookup(String VariableNameToFind)

@@ -356,9 +356,9 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == F("servo"))
   {
-    valParam2 = VarialbeLookup(Param2).toInt();
-
-    UniversalPinIO(F("servo"), VarialbeLookup(Param1), valParam2);
+    valParam2 = evaluate(Param2).toInt();
+    delay(0);
+    UniversalPinIO(F("servo"), evaluate(Param1), valParam2);
     return;
   }
 

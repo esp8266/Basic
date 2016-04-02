@@ -61,7 +61,8 @@ int variable_callback( void *user_data, const char *name, float *value, String *
       // we make a fast check, needs to be improved!
       *value =  atof(AllMyVaribles[i][1].c_str());
       *value_str = AllMyVaribles[i][1];
-
+      if (AllMyVaribles[i][1] == "")
+        return PARSER_STRING;
       //we can define phases for the identification of the number; this doesn't works for the exponential numbers (ex 1.5e15)
       //phase 0 : space or sign '+' or sign '-' or digit
       //phase 1 : any digits or '.'
@@ -139,6 +140,22 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   // arguments allowed for the following functions from the user-data function
   max_args = *((int*)user_data);
 
+
+  // this is in first position as it is required to be as fast as possible
+  if( fname == F("udpread") && num_args == 0 ){
+      // function udpread()
+      //Serial.println(UdpBuffer);
+      *value_str = String(UdpBuffer);
+      //UdpBuffer = ""; // clear the variable after the read
+    return PARSER_STRING;
+  }
+  else
+  if( fname == F("udpremote") && num_args == 0 ){
+      // function udpremote()
+      *value_str = UdpRemoteIP.toString() + String(F(":")) + String(UdpRemotePort);
+    return PARSER_STRING;
+  }
+  else
   if ( fname == F("millis") && num_args == 0 ) // the function is millis()
   {
     // set return value and return true

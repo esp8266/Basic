@@ -1,4 +1,4 @@
-//ESP8266 Basic Interperter
+///ESP8266 Basic Interperter
 //HTTP://ESP8266BASIC.COM
 //
 //The MIT License (MIT)
@@ -52,7 +52,7 @@
 #include "ESP8266httpUpdate.h"
 #include <time.h>
 //#include <HttpClient.h>                   // that line needs to be commented for esp8266-2.0.0-rc1
-#include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
+//#include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
 //LCD Stuff
 #include <LiquidCrystal_SR.h>
@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 6";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 7";
 
 
 
@@ -105,7 +105,8 @@ int Emailport;
 String EmailSMTPuser;
 String EmailSMTPpassword;
 
-
+// udp client
+WiFiUDP udp;
 
 WiFiClient client;
 ESP8266WebServer server(80);
@@ -301,6 +302,10 @@ String ButtonsInUse[11];
 String   msgbranch;
 String   MsgBranchRetrnData;
 
+int UdpBranchLine = 0;
+String  UdpBuffer = "";
+IPAddress UdpRemoteIP;
+int UdpRemotePort;
 
 // Buffer to store incoming commands from serial port
 String inData;
@@ -1101,7 +1106,16 @@ void runTillWaitPart2()
     if (fileOpenFail == 1) inData  = "end";
     ExicuteTheCurrentLine();
     delay(0);
+    CheckForUdpData();
   }
+  if (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 1 )
+  {
+    //Serial.print("sto in wait ");
+    //Serial.println(RunningProgramCurrentLine);
+    CheckForUdpData();
+  }
+   
+    
 }
 
 String StripCommentsFromLine(String ret)
@@ -1127,8 +1141,37 @@ String StripCommentsFromLine(String ret)
   return ret;
 }
 
+void CheckForUdpData()
+{
+  int numBytes = udp.parsePacket();
+  if ( numBytes) 
+  {
+//    Serial.print("Packet received ");
+//    Serial.print(RunningProgramCurrentLine);
+//    Serial.print("  ");
+//    Serial.println(udp.available());
 
+    if (numBytes > 0)
+    {
+      char Buffer[numBytes + 1];
+      UdpRemoteIP = udp.remoteIP();
+      UdpRemotePort = udp.remotePort();
+      delay(0);      
+      udp.read(Buffer, numBytes);
+      Buffer[numBytes] = '\0'; // terminate the string with '\0'
+      UdpBuffer = String(Buffer);
+    }
 
+    //// test of gosub ///////
+    if (UdpBranchLine != 0)
+    {
+      NumberOfReturns = NumberOfReturns + 1;
+      ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine - WaitForTheInterpertersResponse;  // if the program is in wait, it returns to the previous line to wait again
+      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub      
+      RunningProgramCurrentLine = UdpBranchLine + 1; // gosub after the udpbranch label
+    }
+  }  
+}
 
 String getValueforPrograming(String data, char separator, int index)
 {

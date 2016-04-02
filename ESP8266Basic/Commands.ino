@@ -1063,6 +1063,136 @@ void ExicuteTheCurrentLine()
   }
 
 
+
+  // CiccioCB UDP commands
+  //////////////////////////////////////////////////////////////////////////////////
+  if (Param0 == F("udpbegin"))  // the command is : udpbegin port
+  {
+    String ar = inData.substring(Param0.length() + 1);    // starts just after the command
+    int v = evaluate(ar).toInt();        
+    udp.begin(v);
+
+    return;
+  }
+
+
+  if (Param0 == F("udpbeginmulticast"))  // the command is : udpbeginmulticast multicast_ip, port
+  {
+    r = ExtractArguments(inData);
+    IPAddress RemoteIP;
+    if (num_args == 2)
+    {
+      //1st arg is the multicast IP address
+      // convert it from String to int
+      int st = 0;
+      int en;
+      for (int i=0; i<4; i++)
+      {
+        en = args_str[0]->indexOf('.', st);
+        RemoteIP[i] =  args_str[0]->substring(st, en).toInt();
+        st = en + 1;
+      }
+      udp.beginMulticast(WiFi.localIP(), RemoteIP, args[1]);
+    }
+     
+    DeAllocateArguments();
+    return;
+  }
+
+  
+  if (Param0 == F("udpwrite"))  // the command is : udpwrite ip_address, port, message
+  {
+    r = ExtractArguments(inData);
+    IPAddress RemoteIP;
+    if (num_args == 3)
+    {
+      //1st arg is the IP address
+      // convert it from String to int
+      int st = 0;
+      int en;
+      for (int i=0; i<4; i++)
+      {
+        en = args_str[0]->indexOf('.', st);
+        RemoteIP[i] =  args_str[0]->substring(st, en).toInt();
+        st = en + 1;
+      }
+      udp.beginPacket(RemoteIP, args[1]);
+      udp.write(args_str[2]->c_str());
+      udp.endPacket();
+    }
+    DeAllocateArguments();
+    return;
+  }
+
+
+  if (Param0 == F("udpwritemulticast"))  // the command is : udpwritemulticast, ip_address_multi, port, message
+  {
+    r = ExtractArguments(inData);
+    IPAddress RemoteIP;
+    if (num_args == 3)
+    {
+      //1st arg is the IP address
+      // convert it from String to int
+      int st = 0;
+      int en;
+      for (int i=0; i<4; i++)
+      {
+        en = args_str[0]->indexOf('.', st);
+        RemoteIP[i] =  args_str[0]->substring(st, en).toInt();
+        st = en + 1;
+      }
+      udp.beginPacketMulticast(RemoteIP, args[1], WiFi.localIP());
+      udp.write(args_str[2]->c_str());
+      udp.endPacket();
+    }
+    DeAllocateArguments();
+    return;
+  }
+
+  if (Param0 == F("udpreply"))  // the command is : udpreply message
+  {
+    String ar = inData.substring(Param0.length() + 1);    // starts just after the command
+    String rep = evaluate(ar); 
+    udp.beginPacket(UdpRemoteIP, UdpRemotePort);
+//    Serial.println(UdpRemoteIP);
+//    Serial.println(UdpRemotePort);
+    
+    udp.write(rep.c_str());
+    udp.endPacket();
+    return;
+  }
+
+  
+  
+  if (Param0 == F("udpstop"))
+  {
+    udp.stop();
+    return;
+  }
+
+  if (Param0 == F("udpbranch"))
+  {
+    UdpBranchLine = 0;
+    for (int i = 1; i <= TotalNumberOfLines; i++) 
+    {
+      String gotoTest = BasicProgram(i);
+      gotoTest.trim();
+      if (fileOpenFail == 1) break;
+      if (gotoTest == Param1 | String(gotoTest + ":") == Param1 )
+      {
+          UdpBranchLine = i - 1;
+          break;
+      }
+    }
+    if (UdpBranchLine == 0)
+      PrintAndWebOut(F("UdpBranch line not found!"));
+//    Serial.print("udpbranch");
+//    Serial.println(UdpBranchLine);
+    return;    
+  }
+
+  ////////////////////////////
+  
   // let command down here for a reason
 
   if ( Param1.startsWith(F("=")))

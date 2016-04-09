@@ -95,8 +95,9 @@ void LoadBasicProgramFromFlash__(String fileNameForSave)
 
 static File BasicFileToSave;
 static int  program_nb_lines = 0;
-static uint16_t  line_seeks[256];
+//static uint16_t  line_seeks[256];
 static File BasicFileOpened;
+static File BasicFileLinePos;
 
 String BasicProgram(int linenum)
 {
@@ -111,13 +112,20 @@ String BasicProgram(int linenum)
   if (linenum == 0)
 		return "";
 
-  char buff[200];
+  //char buff[200];
   String ret;
   delay(0);
-  BasicFileOpened.seek(line_seeks[linenum-1], SeekSet);
-  BasicFileOpened.readBytes(buff, line_seeks[linenum] - line_seeks[linenum-1]);
-  buff[line_seeks[linenum] - line_seeks[linenum-1]] = '\0';
-  ret = String(buff);
+  //BasicFileOpened.seek(line_seeks[linenum-1], SeekSet);
+  //BasicFileOpened.readBytes(buff, line_seeks[linenum] - line_seeks[linenum-1]);
+  //buff[line_seeks[linenum] - line_seeks[linenum-1]] = '\0';
+  //ret = String(buff);
+  uint16_t pos;
+  uint8_t *p = (uint8_t *) &pos; 
+  BasicFileLinePos.seek((linenum-1) *2, SeekSet);
+  BasicFileLinePos.read(p,2);
+  //Serial.println(pos);
+  BasicFileOpened.seek(pos, SeekSet);
+  ret = BasicFileOpened.readStringUntil('\n');
   ret.replace("\n","");
   ret.replace("\r","");
   
@@ -166,7 +174,10 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
   program_nb_lines = 0;
   //SPIFFS.begin();
   BasicFileOpened.close();
+  BasicFileLinePos.close();
+  SPIFFS.remove(F("/linepos.bin"));
   File f = SPIFFS.open(fileNameForRead, "r");
+  BasicFileLinePos = SPIFFS.open(F("/linepos.bin"), "w");
   BasicFileOpened = f;
   if (!f)
   {
@@ -176,13 +187,20 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
   {
     for (i = 0; i <= TotalNumberOfLines; i++)
     {
+      program_nb_lines++;      
       if (f.available() == 0) break;
-      line_seeks[program_nb_lines] = f.position();
+      //line_seeks[program_nb_lines] = f.position();
+      uint16_t pos = f.position();
+      uint8_t *p = (uint8_t *) &pos;   
+      BasicFileLinePos.write( p, 2);  // write the position of the line in the file as 2 bytes (max 65536 bytes)
+      //Serial.println(pos);      
       f.readStringUntil('\n');
 
-      program_nb_lines++;
+
     }
 //    f.close();
+      BasicFileLinePos.close();
+      BasicFileLinePos = SPIFFS.open(F("/linepos.bin"), "r");
   }
   return;
 }

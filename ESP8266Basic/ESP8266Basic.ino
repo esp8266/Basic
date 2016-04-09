@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 8";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 9";
 
 
 
@@ -315,7 +315,7 @@ int UdpRemotePort;
 // Buffer to store incoming commands from serial port
 String inData;
 
-int TotalNumberOfLines = 255;
+int TotalNumberOfLines = 5000;            //this is the maximum number of lines that can be saved/loaded; it can go until 65535
 //String BasicProgram[255];                                //Array of strings to hold basic program
 
 String AllMyVaribles[50][2];
@@ -324,10 +324,10 @@ bool VariableLocated;
 
 
 bool RunningProgram = 1;                                //Will be set to 1 if the program is currently running
-byte RunningProgramCurrentLine = 0;                     //Keeps track of the currently running line of code
+int RunningProgramCurrentLine = 0;                     //Keeps track of the currently running line of code
 byte NumberOfReturns;
 bool BasicDebuggingOn;
-byte ReturnLocations[254];
+uint16_t ReturnLocations[254];
 
 int TimerWaitTime;
 int timerLastActiveTime;
@@ -353,7 +353,7 @@ int SerialTimeOut;
 
 
 
-byte ForNextReturnLocations[255];
+uint16_t ForNextReturnLocations[255];
 
 
 
@@ -525,7 +525,7 @@ void setup() {
           if ( (i > TotalNumberOfLines) || (fileOpenFail == 1) )
           {
             fileOpenFail = 0;
-            iii = 9999;
+            iii = 99999;
             break;
           }
 
@@ -1409,7 +1409,7 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
   String str = "             ";
   String ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
   String PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
-  byte numberOwebTries;
+  byte numberOwebTries = 0;
   // ServerToConnectTo ;
   //PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
 
@@ -1420,14 +1420,11 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
   if (client.connect(ServerToConnectTo.c_str() , PortNoForPage))
   {
     client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
-    delay(3500);
-    //    while ( ! client.available() && numberOwebTries < 10 ) {
-    //      numberOwebTries++;
-    //      delay(1000);   // 1 second
-    //    }
-
-
-
+    // wait for maximum 12 x 300msec = 3.6 seconds
+    while ( ! client.available() && numberOwebTries < 12 ) {
+      numberOwebTries++;
+      delay(300);   // 300ms
+    }
 
     while (client.available())
     {
@@ -1436,6 +1433,12 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
 
       str.concat( (const char)client.read());
       delay(0);
+      if (client.available() == false)
+      {
+        // if no data, wait for 300ms hoping that new data arrive
+        delay(300);
+      }
+      
     }
 
 

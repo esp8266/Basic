@@ -205,9 +205,10 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 
   else if ( fname == F("timesetup") && num_args > 0 ) {
     String bla;
-    SaveDataToFile("TimeZone", *args_str[0]);
-    SaveDataToFile("DaylightSavings", *args_str[1]);
+    SaveDataToFile("TimeZone", String(args[0]));
+    SaveDataToFile("DaylightSavings", String(args[1]));
     configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
+    *value_str = "";
     return PARSER_STRING;
   }
   else if ( fname == F("mid") && num_args == 2 ) {

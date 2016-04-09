@@ -1201,7 +1201,7 @@ void ExicuteTheCurrentLine()
   }
 
   if ( Param0.indexOf('=') > 1 )
-  { Serial.println("Found the  = sign");
+  { //Serial.println("Found the  = sign");
     inData.replace(F("="), F(" = "));
     Param0 = "let";
   }

@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 7";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 8";
 
 
 
@@ -94,6 +94,11 @@ String string_value ;
 
 OneWire oneWire(2);
 DallasTemperature sensors(&oneWire);
+
+
+
+#include <DHT.h>   // adafruit library
+DHT dht(5, DHT21);   // 5 is GPIO5, DHT21 you may want change at DHT11 or DHT22 
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
 
@@ -378,6 +383,7 @@ int dst = 0;
 FSInfo fs_info;
 
 void setup() {
+  dht.begin();
   pixels.begin();
   SPIFFS.begin();
   Serial.begin(9600);

@@ -343,7 +343,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("ip") && num_args == 0 ) {
     // function wifi.scan() -> no arguments
     // set return value
-    *value_str =  String(WiFi.localIP().toString());
+    if (WiFi.localIP() == 0)
+    {
+      *value_str = String(WiFi.softAPIP().toString());
+    }
+    else
+    {
+      *value_str =  String(WiFi.localIP().toString());
+    }
     return PARSER_STRING;
   }
   else if ( fname == F("wget") && num_args > 0 ) {
@@ -430,7 +437,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  = dht.computeHeatIndex(dht.readTemperature(), dht.readHumidity(), false);
     return PARSER_TRUE;
   }
-  
+
   else if ( fname == F("neocls") && num_args == 0 ) {
     // function json(buffer, key)
     // set return value

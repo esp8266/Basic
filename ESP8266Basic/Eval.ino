@@ -142,21 +142,19 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 
 
   // this is in first position as it is required to be as fast as possible
-  if( fname == F("udpread") && num_args == 0 ){
-      // function udpread()
-      //Serial.println(UdpBuffer);
-      *value_str = String(UdpBuffer);
-      //UdpBuffer = ""; // clear the variable after the read
+  if ( fname == F("udpread") && num_args == 0 ) {
+    // function udpread()
+    //Serial.println(UdpBuffer);
+    *value_str = String(UdpBuffer);
+    //UdpBuffer = ""; // clear the variable after the read
     return PARSER_STRING;
   }
-  else
-  if( fname == F("udpremote") && num_args == 0 ){
-      // function udpremote()
-      *value_str = UdpRemoteIP.toString() + String(F(":")) + String(UdpRemotePort);
+  else if ( fname == F("udpremote") && num_args == 0 ) {
+    // function udpremote()
+    *value_str = UdpRemoteIP.toString() + String(F(":")) + String(UdpRemotePort);
     return PARSER_STRING;
   }
-  else
-  if ( fname == F("millis") && num_args == 0 ) // the function is millis()
+  else if ( fname == F("millis") && num_args == 0 ) // the function is millis()
   {
     // set return value and return true
     *value = millis();
@@ -240,6 +238,20 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value = -1;
     return PARSER_STRING;
   }
+  else if ( fname == F("word") && num_args > 1 ) {
+    // example of the word(string, length)
+    // set return value
+    char bla;
+    if (num_args == 2) bla = ' ';
+    if (num_args == 3) bla = *args_str[2]->c_str();
+
+    *value_str = getValue(*args_str[0], bla  , (int) args[1] - 1 );
+    *value = -1;
+    return PARSER_STRING;
+  }
+
+
+
   else if ( fname == F("len") && num_args == 1 ) {
     // example of the len(string)
     // set return value
@@ -392,6 +404,32 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     pixels.show();
     return PARSER_STRING;
   }
+  else if ( fname == F("temp") && num_args > 0 ) {
+    // function temp(sensor #)
+    // set return value
+    *value  = sensors.getTempCByIndex(args[0]);
+    return PARSER_TRUE;
+  }
+
+  else if ( fname == F("dht.temp") ) {
+    // function dht.temp()
+    // set return value
+    *value  = dht.readTemperature();
+    return PARSER_TRUE;
+  }
+  else if ( fname == F("dht.hum") ) {
+    // function dht.hum()
+    // set return value
+    *value  = dht.readHumidity();
+    return PARSER_TRUE;
+  }
+  else if ( fname == F("dht.heatindex") ) {
+    // function dht.heatindex()
+    // set return value
+    *value  = dht.computeHeatIndex(dht.readTemperature(), dht.readHumidity(), false);
+    return PARSER_TRUE;
+  }
+  
   else if ( fname == F("neocls") && num_args == 0 ) {
     // function json(buffer, key)
     // set return value

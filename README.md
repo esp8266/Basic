@@ -1,5 +1,5 @@
 Basic
-Basic Interpreter from scratch by MMISCOOL
+Basic Interpreter from scratch started by MMISCOOL.
 
 http://esp8266basic.com
 
@@ -13,4 +13,7 @@ The libraries folder contains the libraries currently being used.
 Look at licence information for each.
 
 Compile using the arduino ESP8266 package using the staging version 2.0.0-rc1
+
+Special thanks to the people who have worked to extend and improve ESP BASIC.
+Contributers include MMiscool, Cicciob and Rotohammer.
 

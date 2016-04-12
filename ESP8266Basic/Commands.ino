@@ -142,7 +142,7 @@ void ExicuteTheCurrentLine()
     Param2.trim();
     Param3 = Param1.substring(r + 1);
     Param3.trim();
-    SetMeThatVar(Param2, evaluate(Param3));
+    SetMeThatVar(Param2, evaluate(Param3), PARSER_TRUE);
     return;
   }
 
@@ -186,7 +186,7 @@ void ExicuteTheCurrentLine()
         {
           RunningProgramCurrentLine = ForNextReturnLocations[i];
 
-          SetMeThatVar(Param1, evaluate(Param1 + "+1"));
+          SetMeThatVar(Param1, evaluate(Param1 + "+1"), PARSER_TRUE);
           break;
         }
         else
@@ -244,10 +244,11 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("memclear"))
   {
-    for (byte i = 0; i < 50; i++)
+    for (int i = 0; i < TotalNumberOfVariables; i++)
     {
-      AllMyVaribles[i][0] = "";
-      AllMyVaribles[i][1] = "";
+      AllMyVariables[i].Name = "";
+      AllMyVariables[i].Content = "";
+      AllMyVariables[i].Format = PARSER_FALSE;
     }
     return;
   }
@@ -298,7 +299,7 @@ void ExicuteTheCurrentLine()
   if ( Param0 == F("pi"))
   {
 
-    SetMeThatVar(Param2, String(UniversalPinIO("pi", GetMeThatVar(Param1), 0)));
+    SetMeThatVar(Param2, String(UniversalPinIO("pi", GetMeThatVar(Param1), 0)), PARSER_TRUE);
     return;
   }
 
@@ -322,7 +323,7 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == F("pwi"))
   {
-    SetMeThatVar(Param2, String(UniversalPinIO("pwi", VarialbeLookup(Param1), 0)));
+    SetMeThatVar(Param2, String(UniversalPinIO("pwi", VarialbeLookup(Param1), 0)), PARSER_TRUE);
     return;
   }
 
@@ -335,6 +336,15 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if ( Param0 == F("pwmfreq"))
+  {
+
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
+    valParam1 = evaluate(Param1).toInt();
+    if ((valParam1 > 0) && (valParam1 <= 8000))
+      analogWriteFreq(valParam1);
+    return;
+  }
 
   if ( Param0 == "temp" | Param0 == "ti")
   {
@@ -343,14 +353,14 @@ void ExicuteTheCurrentLine()
     // request to all devices on the bus
     sensors.requestTemperatures(); // Send the command to get temperatures
 
-    SetMeThatVar(Param2, String(sensors.getTempCByIndex(valParam1)));
+    SetMeThatVar(Param2, String(sensors.getTempCByIndex(valParam1)), PARSER_TRUE);
     return;
   }
 
 
   if ( Param0 == F("ai"))
   {
-    SetMeThatVar(Param1, String(analogRead(A0)));
+    SetMeThatVar(Param1, String(analogRead(A0)), PARSER_TRUE);
     return;
   }
 
@@ -368,7 +378,7 @@ void ExicuteTheCurrentLine()
   //Feading and writing variables to flash memory
   if ( Param0 == F("read"))
   {
-    SetMeThatVar(Param2, LoadDataFromFile(GetMeThatVar(Param1)));
+    SetMeThatVar(Param2, LoadDataFromFile(GetMeThatVar(Param1)), PARSER_STRING);
     return;
   }
 
@@ -378,24 +388,6 @@ void ExicuteTheCurrentLine()
     SaveDataToFile(GetMeThatVar(Param1), VarialbeLookup(Param2));
     return;
   }
-
-
-  if ( Param0 == F("comando"))
-  {
-    r = ExtractArguments(inData);
-
-    if (num_args == 2)
-    {
-      if (isnan(args[0]))
-        Serial.println(*args_str[0]);
-      if (isnan(args[1]))
-        Serial.println(*args_str[1]);
-    }
-    DeAllocateArguments();
-    return;
-  }
-
-
 
   if ( Param0 == F("delay"))
   {
@@ -633,7 +625,7 @@ void ExicuteTheCurrentLine()
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "");
+      SetMeThatVar(Param1, "", PARSER_STRING);
       GetMeThatVar(Param1);
     }
 
@@ -651,7 +643,7 @@ void ExicuteTheCurrentLine()
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "");
+      SetMeThatVar(Param1, "", PARSER_STRING);
       GetMeThatVar(Param1);
     }
 
@@ -669,7 +661,7 @@ void ExicuteTheCurrentLine()
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "");
+      SetMeThatVar(Param1, "", PARSER_STRING);
       GetMeThatVar(Param1);
     }
     tempSlider.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
@@ -710,7 +702,7 @@ void ExicuteTheCurrentLine()
     Param2 = GetMeThatVar(Param2);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param2, "");
+      SetMeThatVar(Param2, "", PARSER_STRING);
       GetMeThatVar(Param2);
     }
 
@@ -874,12 +866,12 @@ void ExicuteTheCurrentLine()
   {
     if (Param2 == "")
     {
-      SetMeThatVar(Param1, getSerialInput());
+      SetMeThatVar(Param1, getSerialInput(), PARSER_STRING);
     }
     else
     {
       Serial.print(GetMeThatVar(Param1));
-      SetMeThatVar(Param2, getSerialInput());
+      SetMeThatVar(Param2, getSerialInput(), PARSER_STRING);
     }
     //PrintAndWebOut("");
     return;
@@ -1058,7 +1050,7 @@ void ExicuteTheCurrentLine()
     int str_len = Param1.length() + 1;
     char MgetToTest[str_len];
     Param1.toCharArray(MgetToTest, str_len);
-    SetMeThatVar(Param2, GetRidOfurlCharacters(server.arg( MgetToTest  )));
+    SetMeThatVar(Param2, GetRidOfurlCharacters(server.arg( MgetToTest  )), PARSER_STRING);
     return;
   }
 
@@ -1245,7 +1237,7 @@ void ExicuteTheCurrentLine()
     Param3 = evaluate(Param2);
     //    Serial.print("risultato ");
     //    Serial.println(Param3);
-    SetMeThatVar(Param1, Param3);
+    SetMeThatVar(Param1, Param3, parser_result);
     return;
   }
   //Serial.println(RunningProgramCurrentLine);

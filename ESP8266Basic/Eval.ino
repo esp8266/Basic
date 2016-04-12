@@ -4,7 +4,7 @@ extern char* _parser_error_msg;
 
 String evaluate(String expr)
 {
-  int status;
+  //int status;
   //  expr = GetRidOfurlCharacters(expr);
   //  Serial.print("eval function ");
   //  Serial.print(expr);
@@ -15,13 +15,13 @@ String evaluate(String expr)
     return "";
   }
   delay(0);
-  status = parse_expression_with_callbacks( expr.c_str(), variable_callback, function_callback, NULL, &numeric_value, string_value  );
-  if (_parser_error_msg != NULL & _parser_error_msg != "Comparaison between string and number!")
+  parser_result = parse_expression_with_callbacks( expr.c_str(), variable_callback, function_callback, NULL, &numeric_value, string_value  );
+  if (_parser_error_msg != NULL)
   {
     PrintAndWebOut(String(_parser_error_msg));
     return F("error");
   }
-  if (status == PARSER_STRING)
+  if (parser_result == PARSER_STRING)
     return string_value;
   else
     return FloatToString(numeric_value);
@@ -52,61 +52,15 @@ int variable_callback( void *user_data, const char *name, float *value, String *
 
   String Name = String(name);
   delay(0);
-  for (byte i = 0; i < 50; i++)
+  for (int i = 0; i < TotalNumberOfVariables; i++)
   {
-    if (AllMyVaribles[i][0] == Name)
+      if (AllMyVariables[i].Name == Name)
     {
-      delay(0);
-      // we need to put some intelligence in order to understand if the variable is a string or a number
-      // we make a fast check, needs to be improved!
-      *value =  atof(AllMyVaribles[i][1].c_str());
-      *value_str = AllMyVaribles[i][1];
-      if (AllMyVaribles[i][1] == "")
-        return PARSER_STRING;
-      //we can define phases for the identification of the number; this doesn't works for the exponential numbers (ex 1.5e15)
-      //phase 0 : space or sign '+' or sign '-' or digit
-      //phase 1 : any digits or '.'
-      //phase 2 : any digits until the end of the line
-      //phase 9 : error! number not valid
-      int phase = 0;
-      char c;
-      for (int j = 0; j < AllMyVaribles[i][1].length(); j++)
-      {
-        LastVarNumberLookedUp = i;
+        *value =  atof(AllMyVariables[i].Content.c_str());
+        *value_str = AllMyVariables[i].Content;
+        //Serial.print("Variable "); Serial.print(Name); Serial.print(AllMyVaribles_format[i]);
         VariableLocated = 1;
-        c = AllMyVaribles[i][1][j];
-        switch (phase)
-        {
-          case 0:
-            if (c == ' ')
-              break;
-            if (c == '-' || c == '+' || isdigit(c))
-              phase = 1;
-            else
-              phase = 9;
-            break;
-          case 1:
-            if (isdigit(c))
-              break;
-            if (c == '.')
-              phase = 2;
-            else
-              phase = 9;
-            break;
-          case 2:
-            if (!isdigit(c))
-              phase = 9;
-            break;
-        }
-        if (phase == 9)
-          break;
-      }
-      //if ( (*value == 0) &&  (AllMyVaribles[i][1].length() > 1)) // if the converted value is zero but the string is not "0"
-      if (phase == 9)
-        return PARSER_STRING;
-      else
-        return PARSER_TRUE;
-      break;
+        return AllMyVariables[i].Format; // returns the format of the variable : PARSER_TRUE if numeric, PARSER_STRING if string
     }
   }
   // failed to find variable, return false
@@ -214,70 +168,96 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("mid") && num_args == 2 ) {
     // example of the mid(string, start)
     // set return value
-    *value_str = args_str[0]->substring((int) args[1] - 1);
-    *value = -1;
-    return PARSER_STRING;
+    if (args_str[0] != NULL)  // we should trigger an error if the argument is not a string
+    {
+      *value_str = args_str[0]->substring((int) args[1] - 1);
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("MID() : The first argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("mid") && num_args == 3 ) {
     // example of the mid(string, start, end)
     // set return value
-    *value_str = args_str[0]->substring((int) args[1] - 1, (int) (args[1] + args[2]) - 1 );
-    *value = -1;
-    return PARSER_STRING;
+    if (args_str[0] != NULL) 
+    {
+      *value_str = args_str[0]->substring((int) args[1] - 1, (int) (args[1] + args[2]) - 1 );
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("MID() : The first argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("right") && num_args == 2 ) {
     // example of the right(string, length)
     // set return value
-    *value_str = args_str[0]->substring(args_str[0]->length() - (int) args[1]);
-    *value = -1;
-    return PARSER_STRING;
+    if (args_str[0] != NULL) 
+    {
+      *value_str = args_str[0]->substring(args_str[0]->length() - (int) args[1]);
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("RIGHT() : The first argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("left") && num_args == 2 ) {
     // example of the left(string, length)
     // set return value
-    *value_str = args_str[0]->substring(0, (int) args[1]);
-    *value = -1;
-    return PARSER_STRING;
+    if (args_str[0] != NULL) 
+    {    
+      *value_str = args_str[0]->substring(0, (int) args[1]);
+      return PARSER_STRING;
+    }
+     else { PrintAndWebOut(F("LEFT() : The first argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("word") && num_args > 1 ) {
     // example of the word(string, length)
     // set return value
     char bla;
+    if ( (args_str[0] == NULL) || ( (num_args == 3) && (args_str[2] == NULL)) )
+       { PrintAndWebOut(F("WORD() : The first and 3rd argument must be string!")); return PARSER_FALSE; }
     if (num_args == 2) bla = ' ';
     if (num_args == 3) bla = *args_str[2]->c_str();
-
     *value_str = getValue(*args_str[0], bla  , (int) args[1] - 1 );
     *value = -1;
     return PARSER_STRING;
   }
-
-
-
   else if ( fname == F("len") && num_args == 1 ) {
     // example of the len(string)
     // set return value
+    if (args_str[0] != NULL)  // we should trigger an error if the argument is not a string
+    {
     *value  = args_str[0]->length();
     return PARSER_TRUE;
+  }
+   else { PrintAndWebOut(F("LEN() : The argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("upper") && num_args == 1 ) {
     // example of the upper(string)
     // set return value
-    args_str[0]->toUpperCase();
-    *value_str  =  *args_str[0];
-    return PARSER_STRING;
+    if (args_str[0] != NULL)  // we should trigger an error if the argument is not a string
+    {
+      args_str[0]->toUpperCase();
+      *value_str  =  *args_str[0];
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("UPPER() : The argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("lower") && num_args == 1 ) {
     // example of the lower(string)
     // set return value
-    args_str[0]->toLowerCase();
-    *value_str  =  *args_str[0];
-    return PARSER_STRING;
+    if (args_str[0] != NULL)  // we should trigger an error if the argument is not a string
+    {
+      args_str[0]->toLowerCase();
+      *value_str  =  *args_str[0];
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("LOWER() : The argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("instr") && num_args == 2 ) {
     // example of the instr(string, string)
     // set return value
-    *value  = args_str[0]->indexOf(*args_str[1]) + 1;
-    return PARSER_TRUE;
+    if ( (args_str[0] != NULL) && (args_str[1] != NULL))
+    {
+      *value  = args_str[0]->indexOf(*args_str[1]) + 1;
+      return PARSER_TRUE;
+    }
+    else { PrintAndWebOut(F("INSTR() : Both arguments must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("hex") && num_args == 1 ) {
     // example of the hex(value)
@@ -306,15 +286,43 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("asc") && num_args == 1 ) {
     // example of the asc(string) -> return the ascii code of the 1st char
     // set return value
-    *value = (*args_str[0])[0];
-    return PARSER_TRUE;
+    if (args_str[0] != NULL)
+    {
+      *value = (*args_str[0])[0];
+      return PARSER_TRUE;
+    }
+    else { PrintAndWebOut(F("ASC() : The argument must be a string!")); return PARSER_FALSE; }
+  }
+  else if ( fname == F("val") && num_args == 1 ) {
+    // function val(string) -> return the numeric value of the string
+    // set return value
+    if (args_str[0] != NULL)
+    {
+      *value = (int) strtol( args_str[0]->c_str(), 0, 10);
+      return PARSER_TRUE;
+    }
+    else { PrintAndWebOut(F("VAL() : The argument must be a string!")); return PARSER_FALSE; }
+  }
+      else if ( fname == F("hextoint") && num_args == 1 ) {
+    // function hextoint(string) -> return the numeric value of the hex string
+    // set return value
+    if (args_str[0] != NULL)
+    {
+      *value = (int) strtol( args_str[0]->c_str(), 0, 16);
+      return PARSER_TRUE;
+    }
+    else { PrintAndWebOut(F("HEXTOINT() : The argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("replace") && num_args == 3 ) {
     // example of the replace(string, string to search for, string to replacement for}
     // set return value
-    args_str[0]->replace(*args_str[1], *args_str[2]);
-    *value_str = *args_str[0];
-    return PARSER_STRING;
+    if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) )
+    {
+      args_str[0]->replace(*args_str[1], *args_str[2]);
+      *value_str = *args_str[0];
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("REPLACE() : All the arguments must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("str") && num_args == 1 ) {
     // example of str(number) converts the number to string
@@ -343,51 +351,66 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("ip") && num_args == 0 ) {
     // function wifi.scan() -> no arguments
     // set return value
-    if (WiFi.localIP() == 0)
-    {
-      *value_str = String(WiFi.softAPIP().toString());
-    }
+    if (WiFi.localIP() == INADDR_NONE)
+      *value_str =  String(WiFi.softAPIP().toString());
     else
-    {
       *value_str =  String(WiFi.localIP().toString());
-    }
     return PARSER_STRING;
   }
   else if ( fname == F("wget") && num_args > 0 ) {
     // function wget(url) or wget (url, port)
     // set return value
-    if (num_args == 1)  *value_str  =  FetchWebUrl(*args_str[0], 80);
-    else if (num_args == 2 )   *value_str  =  FetchWebUrl(*args_str[0], args[1]);
-    return PARSER_STRING;
+    if (args_str[0] != NULL)
+    { 
+      if (num_args == 1)  *value_str  =  FetchWebUrl(*args_str[0], 80);
+      else if (num_args == 2 )   *value_str  =  FetchWebUrl(*args_str[0], args[1]);
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("WGET() : The first arguments must be a string!")); return PARSER_FALSE; }
   }
 
-  else if ( fname == F("sendts") && num_args == 2 ) {
+  else if ( fname == F("sendts") && num_args == 3 ) {
     // function sendts(url, field)
     // set return value
-    FetchWebUrl(String(F("api.thingspeak.com/update?key=")) + *args_str[0] + "&field" + *args_str[1] + "=" + *args_str[2], 80);
-    return PARSER_STRING;
+    if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) )
+    {
+      FetchWebUrl(String(F("api.thingspeak.com/update?key=")) + *args_str[0] + "&field" + *args_str[1] + "=" + *args_str[2], 80);
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("SENDTS() : All the arguments must be a string!")); return PARSER_FALSE; }
   }
 
-  else if ( fname == F("readts") && num_args == 2 ) {
+  else if ( fname == F("readts") && num_args == 3 ) {
     // function readts(url, field)
     // set return value
-
-    String MyOut =  FetchWebUrl(String(F("api.thingspeak.com/channels/")) + *args_str[1] + "/field/" + *args_str[2] + "/last.xml?api_key=" + *args_str[0], 80);
-    MyOut = MyOut.substring(MyOut.indexOf(String("<field" + *args_str[2] + ">") ) + 8, MyOut.indexOf(String("</field" + *args_str[2] + ">")));
-    *value_str = MyOut;
-    return PARSER_STRING;
+    if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) )
+    {
+      String MyOut =  FetchWebUrl(String(F("api.thingspeak.com/channels/")) + *args_str[1] + "/field/" + *args_str[2] + "/last.xml?api_key=" + *args_str[0], 80);
+      MyOut = MyOut.substring(MyOut.indexOf(String("<field" + *args_str[2] + ">") ) + 8, MyOut.indexOf(String("</field" + *args_str[2] + ">")));
+      *value_str = MyOut;
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("READTS() : All the arguments must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("readopenweather") && num_args == 2 ) {
     // function readopenweather(url, index)
     // set return value
-    *value_str  =  FetchOpenWeatherMapApi(*args_str[0], String(args[1]));
-    return PARSER_STRING;
+    if (args_str[0] != NULL)
+    {
+      *value_str  =  FetchOpenWeatherMapApi(*args_str[0], String(args[1]));
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("ReadOpenWeather() : The first argument must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("json") && num_args == 2 ) {
     // function json(buffer, key)
     // set return value
-    *value_str  =  Parsifal(*args_str[0], *args_str[1]);
-    return PARSER_STRING;
+    if ( (args_str[0] != NULL) && (args_str[1] != NULL) )
+    {
+      *value_str  =  Parsifal(*args_str[0], *args_str[1]);
+      return PARSER_STRING;
+    }
+    else { PrintAndWebOut(F("JSON() : Both arguments must be a string!")); return PARSER_FALSE; }
   }
   else if ( fname == F("io") && num_args > 0 ) {
     // function json(buffer, key)
@@ -437,7 +460,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  = dht.computeHeatIndex(dht.readTemperature(), dht.readHumidity(), false);
     return PARSER_TRUE;
   }
-
+  
   else if ( fname == F("neocls") && num_args == 0 ) {
     // function json(buffer, key)
     // set return value
@@ -480,17 +503,6 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str  =  String(Wire.read());
     return PARSER_STRING;
   }
-  else if ( fname == F("hextoint") && num_args == 1 ) {
-    // function i2c.requestfrom(device id, key)
-    // set return value
-    *value_str  =  String(StrToHex(*args_str[0] ));
-    return PARSER_STRING;
-  }
-
-
-
-
-
   else if ( fname == F("htmlvar") && num_args > 0 ) {
     // function json(buffer, key)
     // set return value
@@ -498,7 +510,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     return PARSER_STRING;
   }
   else if ( fname == F("unixtime") || fname == F("time") ) {
-    // function time(format) or unixtime(value, format)
+    // function time(format) or unixtime(value, format)  - value can be string or number
     time_t now;
     String *ar =  args_str[0];
     if (fname == F("time"))
@@ -507,7 +519,10 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
     else
     {
-      now = args[0];
+      if (ar != NULL) // the input value is a string; we convert it to number before
+        now = strtol( args_str[0]->c_str(), 0, 10);
+      else
+        now = args[0];
       ar =  args_str[1];
     }
     // set return value
@@ -517,14 +532,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     {
       ar->toUpperCase();
       ar->trim();
-      ar->replace(F("TIME"),  String(Mid(*value_str, 11, 8)));
-      ar->replace(F("DOW"),   String(Mid(*value_str, 0, 3)));
-      ar->replace(F("MONTH"), String(Mid(*value_str, 4, 3)));
-      ar->replace(F("DATE"),  String(Mid(*value_str, 8, 2)));
-      ar->replace(F("HOUR"),  String(Mid(*value_str, 11, 2)));
-      ar->replace(F("MIN"),   String(Mid(*value_str, 14, 2)));
-      ar->replace(F("SEC"),   String(Mid(*value_str, 17, 2)));
-      ar->replace(F("YEAR"),  String(Mid(*value_str, 20, 4)));
+      ar->replace(F("TIME"),  value_str->substring( 11, 19));
+      ar->replace(F("DOW"),   value_str->substring(  0, 3));
+      ar->replace(F("MONTH"), value_str->substring(  4, 7));
+      ar->replace(F("DATE"),  value_str->substring(  8, 10));
+      ar->replace(F("HOUR"),  value_str->substring( 11, 13));
+      ar->replace(F("MIN"),   value_str->substring( 14, 16));
+      ar->replace(F("SEC"),   value_str->substring( 17, 19));
+      ar->replace(F("YEAR"),  value_str->substring( 20, 24));
       // set return value
       *value_str = *ar;
     }

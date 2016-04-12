@@ -1,4 +1,4 @@
-///ESP8266 Basic Interperter
+///ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
 //
 //The MIT License (MIT)
@@ -78,7 +78,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 9";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 10";
 
 
 
@@ -90,7 +90,7 @@ char* _parser_error_msg;
 //String Line_For_Eval;
 PARSER_PREC numeric_value;
 String string_value ;
-
+int parser_result;
 
 OneWire oneWire(2);
 DallasTemperature sensors(&oneWire);
@@ -98,7 +98,7 @@ DallasTemperature sensors(&oneWire);
 
 
 #include <DHT.h>   // adafruit library
-DHT dht(5, DHT21);   // 5 is GPIO5, DHT21 you may want change at DHT11 or DHT22 
+DHT dht(5, DHT21);   // 5 is GPIO5, DHT21 you may want change at DHT11 or DHT22
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
 
@@ -315,12 +315,18 @@ int UdpRemotePort;
 // Buffer to store incoming commands from serial port
 String inData;
 
-int TotalNumberOfLines = 5000;            //this is the maximum number of lines that can be saved/loaded; it can go until 65535
-//String BasicProgram[255];                                //Array of strings to hold basic program
+const int TotalNumberOfLines = 5000;            //this is the maximum number of lines that can be saved/loaded; it can go until 65535
 
-String AllMyVaribles[50][2];
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 bool VariableLocated;
+
+const int TotalNumberOfVariables = 50;
+struct basicVariable
+{
+  String Name;
+  String Content;
+  byte Format;
+} AllMyVariables[TotalNumberOfVariables];
 
 
 bool RunningProgram = 1;                                //Will be set to 1 if the program is currently running
@@ -335,7 +341,7 @@ String TimerBranch;
 
 String refreshBranch;
 
-int GraphicsEliments[100][7];
+uint16_t GraphicsEliments[100][7];
 
 File fsUploadFile;
 
@@ -420,9 +426,10 @@ void setup() {
     else
     {
       WebOut += F("<div style='float: left;'>Variable Dump:");
-      for (byte i = 0; i < 50; i++)
+      for (byte i = 0; i < TotalNumberOfVariables; i++)
       {
-        if (AllMyVaribles[i][0] != "" ) WebOut += String("<hr>" + AllMyVaribles[i][0] + " = " + AllMyVaribles[i][1]);
+        if (AllMyVariables[i].Name != "") WebOut += String("<hr>" + AllMyVariables[i].Name + " = " + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") +
+              AllMyVariables[i].Content      + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
       }
 
 
@@ -561,16 +568,16 @@ void setup() {
   });
 
 
-  server.on("/filelist", []() 
+  server.on("/filelist", []()
   {
     String ret = "";
     String fn;
     Dir dir = SPIFFS.openDir(String(F("/") ));
-    while (dir.next()) 
+    while (dir.next())
     {
-      fn = dir.fileName();  
+      fn = dir.fileName();
       if (fn.indexOf(F(".bas")) != -1)
-        ret +=  fn +"\n";
+        ret +=  fn + "\n";
       delay(0);
     }
 
@@ -579,11 +586,11 @@ void setup() {
   });
 
   server.on("/codein", []() {
-//    ProgramName.trim();
-//    if (ProgramName == "")
-//    {
-//      ProgramName = F("/default.bas");
-//    }
+    //    ProgramName.trim();
+    //    if (ProgramName == "")
+    //    {
+    //      ProgramName = F("/default.bas");
+    //    }
 
     if (server.arg("SaveTheCode") == F("start"))
     {
@@ -592,10 +599,10 @@ void setup() {
       Serial.println(F("start save"));
       ProgramName = GetRidOfurlCharacters(server.arg("FileName"));
       if (ProgramName == "")
-          ProgramName = F("/default.bas");
+        ProgramName = F("/default.bas");
       ProgramName.trim();
       if (ProgramName[0] != '/')
-          ProgramName = "/" + ProgramName;
+        ProgramName = "/" + ProgramName;
       OpenToWriteOnFlash( ProgramName );
     }
 
@@ -838,13 +845,21 @@ String getContentType(String filename) {
 
 void StartUpProgramTimer()
 {
-  while  (millis() < 60000)
+  pinMode(0, INPUT_PULLUP);  // set GPIO0 to input with pullup; so if float should read 1, 0 on ground
+  while  (millis() < 30000)
   {
     delay(0);
     //Serial.println(millis());
     server.handleClient();
     if (WaitForTheInterpertersResponse == 0) return;
+
+    // MOD cicciocb April 2016
+    // if the pin GPIO0 is taken to GND, the program will not start
+    if (digitalRead(0) == 0)  return; // if the pin GPIO0 is at GND , stop the autorun
   }
+
+
+
   Serial.println(F("Starting Default Program"));
   RunningProgram = 1;
   RunningProgramCurrentLine = 0;
@@ -1120,8 +1135,8 @@ void runTillWaitPart2()
     //Serial.println(RunningProgramCurrentLine);
     CheckForUdpData();
   }
-   
-    
+
+
 }
 
 String StripCommentsFromLine(String ret)
@@ -1150,19 +1165,19 @@ String StripCommentsFromLine(String ret)
 void CheckForUdpData()
 {
   int numBytes = udp.parsePacket();
-  if ( numBytes) 
+  if ( numBytes)
   {
-//    Serial.print("Packet received ");
-//    Serial.print(RunningProgramCurrentLine);
-//    Serial.print("  ");
-//    Serial.println(udp.available());
+    //    Serial.print("Packet received ");
+    //    Serial.print(RunningProgramCurrentLine);
+    //    Serial.print("  ");
+    //    Serial.println(udp.available());
 
     if (numBytes > 0)
     {
       char Buffer[numBytes + 1];
       UdpRemoteIP = udp.remoteIP();
       UdpRemotePort = udp.remotePort();
-      delay(0);      
+      delay(0);
       udp.read(Buffer, numBytes);
       Buffer[numBytes] = '\0'; // terminate the string with '\0'
       UdpBuffer = String(Buffer);
@@ -1173,10 +1188,10 @@ void CheckForUdpData()
     {
       NumberOfReturns = NumberOfReturns + 1;
       ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine - WaitForTheInterpertersResponse;  // if the program is in wait, it returns to the previous line to wait again
-      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub      
+      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
       RunningProgramCurrentLine = UdpBranchLine + 1; // gosub after the udpbranch label
     }
-  }  
+  }
 }
 
 String getValueforPrograming(String data, char separator, int index)
@@ -1438,7 +1453,7 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
         // if no data, wait for 300ms hoping that new data arrive
         delay(300);
       }
-      
+
     }
 
 

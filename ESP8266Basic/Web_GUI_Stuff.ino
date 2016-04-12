@@ -36,10 +36,10 @@ String RunningProgramGui()
     Serial.println( HTMLout);
   }
 
-  for (int i = 50; i >= 0; i--)
+  for (int i = TotalNumberOfVariables; i >= 0; i--)
   {
     delay(0);
-    WebOut.replace(String(F("VARS|")) + String(i), AllMyVaribles[i][1]);
+    WebOut.replace(String(F("VARS|")) + String(i), AllMyVariables[i].Content);
   }
 
 
@@ -176,7 +176,7 @@ void CheckFOrWebVarInput()
   String bla;
 
 
-  for (int i = 0; i < 50; i++)
+  for (int i = 0; i < TotalNumberOfVariables; i++)
   {
     int str_len = String(i).length() + 1;
     char ArgumentToTest[str_len];
@@ -185,7 +185,7 @@ void CheckFOrWebVarInput()
     bla = server.arg(ArgumentToTest);
     if (bla.length() > 0)
     {
-      AllMyVaribles[i][1] = GetRidOfurlCharacters(bla);
+      AllMyVariables[i].Content = GetRidOfurlCharacters(bla);
     }
   }
   return;

@@ -1,4 +1,4 @@
-///ESP8266 Basic Interpreter
+//ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
 //
 //The MIT License (MIT)
@@ -71,14 +71,13 @@
 #include <Time.h>
 
 #include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);;
 
-
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(256, 15, NEO_GRB + NEO_KHZ800);;
 
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 10";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 13";
 
 
 
@@ -210,7 +209,7 @@ function stocca(s)
 {
  Sendy += s;
  block++;
- if ((Sendy.length > 512) || (s == ">>-save_<<"))
+ if ((Sendy.length > 1024) || (s == ">>-save_<<"))
  {
   if (s == ">>-save_<<")
    Sendy = Sendy.substr(0,Sendy.length-10); 
@@ -312,6 +311,11 @@ String  UdpBuffer = "";
 IPAddress UdpRemoteIP;
 int UdpRemotePort;
 
+
+// place where the program will jump on serial data reception
+int SerialBranchLine = 0;
+
+
 // Buffer to store incoming commands from serial port
 String inData;
 
@@ -321,12 +325,59 @@ int LastVarNumberLookedUp;                                 //Array to hold all o
 bool VariableLocated;
 
 const int TotalNumberOfVariables = 50;
-struct basicVariable
+#define VariablesNameLength  10
+class basicVariable
 {
-  String Name;
-  String Content;
-  byte Format;
+  private:
+  char *_name = NULL;
+  String *_Text = NULL;
+  float _Number;
+  
+  public:
+  byte Format = 0;
+
+  String getName()
+  {
+    if (_name != NULL)
+      return String(_name);
+    else
+      return String("");
+  }
+
+  void setName(String n)    // the name is max 'VariablesNameLength' chars long
+  {
+    if (_name == NULL)
+    {
+      _name = (char *) malloc(VariablesNameLength + 1);  // allocate a buffer for 11 chars (10 + \0)
+    }
+    strncpy(_name, n.c_str(), VariablesNameLength + 1);
+  }
+
+  String getVar()
+  {
+    if (_Text != NULL)
+      return *_Text;
+    else
+      return String("");
+  }
+
+  void setVar(String v)
+  {
+    if (_Text == NULL)
+      _Text = new String();
+
+    *_Text = v;
+  }
+  void remove()
+  {
+    delete _Text;
+    free(_name);
+    _Text = NULL;
+    _name = NULL;
+  }
+  
 } AllMyVariables[TotalNumberOfVariables];
+
 
 
 bool RunningProgram = 1;                                //Will be set to 1 if the program is currently running
@@ -419,6 +470,7 @@ void setup() {
   server.on("/vars", []()
   {
     String WebOut = AdminBarHTML;
+    String FixSpaces;
     if ( CheckIfLoggedIn() )
     {
       WebOut = LogInPage;
@@ -426,10 +478,12 @@ void setup() {
     else
     {
       WebOut += F("<div style='float: left;'>Variable Dump:");
-      for (byte i = 0; i < TotalNumberOfVariables; i++)
+      for (int i = 0; i < TotalNumberOfVariables; i++)
       {
-        if (AllMyVariables[i].Name != "") WebOut += String("<hr>" + AllMyVariables[i].Name + " = " + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") +
-              AllMyVariables[i].Content      + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
+        FixSpaces = AllMyVariables[i].getVar();
+        FixSpaces.replace(' ' , char(160));
+        if ( AllMyVariables[i].getName() != "") WebOut += String("<hr>" + AllMyVariables[i].getName() + " = " + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") +
+                                                                                            FixSpaces         + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
       }
 
 
@@ -1184,12 +1238,28 @@ void CheckForUdpData()
     }
 
     //// test of gosub ///////
-    if (UdpBranchLine != 0)
+    if (UdpBranchLine > 0)
     {
       NumberOfReturns = NumberOfReturns + 1;
       ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine - WaitForTheInterpertersResponse;  // if the program is in wait, it returns to the previous line to wait again
       WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
       RunningProgramCurrentLine = UdpBranchLine + 1; // gosub after the udpbranch label
+      UdpBranchLine = - UdpBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+    }
+  }
+  //// 
+  if (Serial.available() > 0)
+  {
+    delay(50); // insure that the data can be received
+    //Serial.print("Serial.available() " +  String(Serial.available()));
+    //// test of gosub ///////
+    if (SerialBranchLine > 0)
+    {
+      NumberOfReturns = NumberOfReturns + 1;
+      ReturnLocations[NumberOfReturns] = RunningProgramCurrentLine - WaitForTheInterpertersResponse;  // if the program is in wait, it returns to the previous line to wait again
+      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+      RunningProgramCurrentLine = SerialBranchLine + 1; // gosub after the SerialBranch label
+      SerialBranchLine = - SerialBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
     }
   }
 }

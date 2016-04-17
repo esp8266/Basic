@@ -76,7 +76,7 @@ using namespace std;
  @brief maximum number of arguments to user-defined functions, define this in the compiler opetions to change.
 */
 #if !defined(PARSER_MAX_ARGUMENT_COUNT)
-#define PARSER_MAX_ARGUMENT_COUNT 4
+#define PARSER_MAX_ARGUMENT_COUNT 5
 #endif
 
 /**

@@ -185,7 +185,7 @@ int ICACHE_FLASH_ATTR parser_read_Value( parser_data *pd, PARSER_PREC *value, St
 			parser_eat( pd );
 
 		// read optional chars until next " or |
-		while( parser_peek(pd) != c )
+		while( (parser_peek(pd) != c) && (parser_peek(pd) != '\0') ) // stop if the end of String is reached
 			token[pos++] = parser_eat( pd );
 
 		// consume the final " or |
@@ -321,7 +321,7 @@ int ICACHE_FLASH_ATTR parser_read_builtin( parser_data *pd, PARSER_PREC *value, 
 	if( isalpha(c) || c == '_' ){
 		// alphabetic character or underscore, indicates that either a function 
 		// call or variable follows
-		while( isalpha(c) || isdigit(c) || c == '_' || c == '.'){  // the variable/function can contains a point in the name as my.port.id
+		while( isalpha(c) || isdigit(c) || c == '_' || c == '.' || c == '$') {  // the variable/function can contains a point in the name as my.port.id or the $ as A$
 			token[pos++] = parser_eat( pd );
 			c = parser_peek( pd );
 		}

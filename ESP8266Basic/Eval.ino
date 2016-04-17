@@ -54,10 +54,11 @@ int variable_callback( void *user_data, const char *name, float *value, String *
   delay(0);
   for (int i = 0; i < TotalNumberOfVariables; i++)
   {
-      if (AllMyVariables[i].Name == Name)
+      if (AllMyVariables[i].getName() == Name)
     {
-        *value =  atof(AllMyVariables[i].Content.c_str());
-        *value_str = AllMyVariables[i].Content;
+        *value =  atof(AllMyVariables[i].getVar().c_str());
+        
+        *value_str = AllMyVariables[i].getVar();
         //Serial.print("Variable "); Serial.print(Name); Serial.print(AllMyVaribles_format[i]);
         VariableLocated = 1;
         return AllMyVariables[i].Format; // returns the format of the variable : PARSER_TRUE if numeric, PARSER_STRING if string
@@ -249,12 +250,21 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
     else { PrintAndWebOut(F("LOWER() : The argument must be a string!")); return PARSER_FALSE; }
   }
-  else if ( fname == F("instr") && num_args == 2 ) {
+  else if ( (fname == F("instr") || fname == F("instrrev")) && ( (num_args == 2) || (num_args == 3) ) ) {
     // example of the instr(string, string)
     // set return value
     if ( (args_str[0] != NULL) && (args_str[1] != NULL))
     {
-      *value  = args_str[0]->indexOf(*args_str[1]) + 1;
+      if (fname == F("instr"))
+      {
+        i = (num_args == 3) ? args[2] - 1 : 0;
+        *value  = args_str[0]->indexOf(*args_str[1], i) + 1;
+      }
+      else
+      {
+        i = (num_args == 3) ? args[2] - 1 : - 1;
+        *value  = args_str[0]->lastIndexOf(*args_str[1], i) + 1;
+      }
       return PARSER_TRUE;
     }
     else { PrintAndWebOut(F("INSTR() : Both arguments must be a string!")); return PARSER_FALSE; }
@@ -543,11 +553,22 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       // set return value
       *value_str = *ar;
     }
-
-
     return PARSER_STRING;
   }
-
+  else
+  if ( (i = Search_Array(fname)) != -1) // check if is an array
+  {
+      if (basic_arrays[i].Format == PARSER_STRING) // string format
+      {
+        *value_str = basic_arrays[i].getString(args[0]);
+        return PARSER_STRING;
+      }
+      else
+      {
+        *value = basic_arrays[i].getFloat(args[0]);
+        return PARSER_TRUE;
+      }
+  }
 
 
   // failed to evaluate function, return false

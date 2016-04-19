@@ -77,7 +77,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 13";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 14";
 
 
 

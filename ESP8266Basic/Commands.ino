@@ -886,7 +886,7 @@ void ExicuteTheCurrentLine()
     SetMeThatVar(Param1, Param2, PARSER_STRING);
     return;
   }
-  
+
   if (Param0 == F("serialflush"))
   {
 
@@ -1073,7 +1073,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("udpbegin"))  // the command is : udpbegin port
   {
     String ar = inData.substring(Param0.length() + 1);    // starts just after the command
-    int v = evaluate(ar).toInt();        
+    int v = evaluate(ar).toInt();
     udp.begin(v);
 
     return;
@@ -1090,7 +1090,7 @@ void ExicuteTheCurrentLine()
       // convert it from String to int
       int st = 0;
       int en;
-      for (int i=0; i<4; i++)
+      for (int i = 0; i < 4; i++)
       {
         en = args_str[0]->indexOf('.', st);
         RemoteIP[i] =  args_str[0]->substring(st, en).toInt();
@@ -1098,12 +1098,12 @@ void ExicuteTheCurrentLine()
       }
       udp.beginMulticast(WiFi.localIP(), RemoteIP, args[1]);
     }
-     
+
     DeAllocateArguments();
     return;
   }
 
-  
+
   if (Param0 == F("udpwrite"))  // the command is : udpwrite ip_address, port, message
   {
     r = ExtractArguments(inData);
@@ -1114,7 +1114,7 @@ void ExicuteTheCurrentLine()
       // convert it from String to int
       int st = 0;
       int en;
-      for (int i=0; i<4; i++)
+      for (int i = 0; i < 4; i++)
       {
         en = args_str[0]->indexOf('.', st);
         RemoteIP[i] =  args_str[0]->substring(st, en).toInt();
@@ -1139,7 +1139,7 @@ void ExicuteTheCurrentLine()
       // convert it from String to int
       int st = 0;
       int en;
-      for (int i=0; i<4; i++)
+      for (int i = 0; i < 4; i++)
       {
         en = args_str[0]->indexOf('.', st);
         RemoteIP[i] =  args_str[0]->substring(st, en).toInt();
@@ -1156,18 +1156,18 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("udpreply"))  // the command is : udpreply message
   {
     String ar = inData.substring(Param0.length() + 1);    // starts just after the command
-    String rep = evaluate(ar); 
+    String rep = evaluate(ar);
     udp.beginPacket(UdpRemoteIP, UdpRemotePort);
-//    Serial.println(UdpRemoteIP);
-//    Serial.println(UdpRemotePort);
-    
+    //    Serial.println(UdpRemoteIP);
+    //    Serial.println(UdpRemotePort);
+
     udp.write(rep.c_str());
     udp.endPacket();
     return;
   }
 
-  
-  
+
+
   if (Param0 == F("udpstop"))
   {
     udp.stop();
@@ -1177,50 +1177,50 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("udpbranch"))
   {
     UdpBranchLine = 0;
-    for (int i = 1; i <= TotalNumberOfLines; i++) 
+    for (int i = 1; i <= TotalNumberOfLines; i++)
     {
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1 )
       {
-          UdpBranchLine = i - 1;
-          break;
+        UdpBranchLine = i - 1;
+        break;
       }
     }
     if (UdpBranchLine == 0)
       PrintAndWebOut(F("UdpBranch line not found!"));
-//    Serial.print("udpbranch");
-//    Serial.println(UdpBranchLine);
-    return;    
+    //    Serial.print("udpbranch");
+    //    Serial.println(UdpBranchLine);
+    return;
   }
 
   if (Param0 == F("serialbranch"))
   {
     SerialBranchLine = 0;
-    for (int i = 1; i <= TotalNumberOfLines; i++) 
+    for (int i = 1; i <= TotalNumberOfLines; i++)
     {
       String gotoTest = BasicProgram(i);
       gotoTest.trim();
       if (fileOpenFail == 1) break;
       if (gotoTest == Param1 | String(gotoTest + ":") == Param1 )
       {
-          SerialBranchLine = i - 1;
-          break;
+        SerialBranchLine = i - 1;
+        break;
       }
     }
     if (SerialBranchLine == 0)
       PrintAndWebOut(F("SerialBranch line not found!"));
     //Serial.print("serialbranch");
     //Serial.println(SerialBranchLine);
-    return;    
+    return;
   }
   ////////////////////////////
-  
+
   /////// NEW mid STUFF //////
   if ( Param0.startsWith(F("mid(")) )
   {
-//    Serial.println("mid start");
+    //    Serial.println("mid start");
     // find the closing paranthesys
     int num_par = 1;
     int i;
@@ -1231,39 +1231,54 @@ void ExicuteTheCurrentLine()
       if (num_par == 0) break;
     }
     if (num_par != 0)  // no closing parenthesys ->Error
-      {  PrintAndWebOut(F("Mid: missing closing parenthesys"));  return; }
+    {
+      PrintAndWebOut(F("Mid: missing closing parenthesys"));
+      return;
+    }
     // check if the '=' follow
     int eq = inData.indexOf('=', i);
     if (eq == -1) // missing = on the line
-      {  PrintAndWebOut(F("Mid: missing = on the line"));  return; }
+    {
+      PrintAndWebOut(F("Mid: missing = on the line"));
+      return;
+    }
     Param1 = inData.substring(4 , i);
-//    Serial.println(Param1);
+    //    Serial.println(Param1);
     r = ExtractArguments(Param1);
     DeAllocateArguments();
     if ( (num_args != 2) && (num_args != 3) )
-      {  PrintAndWebOut(F("Mid: number of arguments not valid"));  return; }
-     
-//    Serial.println("mid in");
+    {
+      PrintAndWebOut(F("Mid: number of arguments not valid"));
+      return;
+    }
+
+    //    Serial.println("mid in");
 
     // we need to check if the args are valid
     // first we must extract the variable name
     int com = inData.indexOf(',');
     Param2 = inData.substring(4, com);
     Param2.trim();
-//    Serial.println("variable is " + Param2);
+    //    Serial.println("variable is " + Param2);
     r = VariablePosition(Param2);
     if (r == -1)
-      {  PrintAndWebOut(F("Mid: destination variable not defined"));  return; }
-     
+    {
+      PrintAndWebOut(F("Mid: destination variable not defined"));
+      return;
+    }
+
     Param3 = evaluate(inData.substring( eq + 1 ));
     if (parser_result != PARSER_STRING)
-      { PrintAndWebOut(F("Mid: set value must be string"));  return; }
-//    Serial.println("eval is " + Param3);
+    {
+      PrintAndWebOut(F("Mid: set value must be string"));
+      return;
+    }
+    //    Serial.println("eval is " + Param3);
 
     if  (num_args == 2)
       args[2] = Param3.length();
     Param4 = AllMyVariables[r].getVar();
-    Param4 = Param4.substring(0, args[1]-1) + Param3.substring(0, args[2]) + Param4.substring(args[1]-1 + args[2]);
+    Param4 = Param4.substring(0, args[1] - 1) + Param3.substring(0, args[2]) + Param4.substring(args[1] - 1 + args[2]);
     AllMyVariables[r].setVar(Param4);
     return;
   }
@@ -1278,34 +1293,45 @@ void ExicuteTheCurrentLine()
       // find the closing paranthesys
       int num_par = 1;
       int i;
-      for (i = r+1 ; i < inData.length(); i++)
+      for (i = r + 1 ; i < inData.length(); i++)
       {
         if ( inData[i] == '(' ) num_par++;
         if ( inData[i] == ')' ) num_par--;
         if (num_par == 0) break;
       }
       if (num_par != 0)  // no closing parenthesys ->Error
-        {  PrintAndWebOut(F("DIM: missing closing parenthesys"));  return; }
+      {
+        PrintAndWebOut(F("DIM: missing closing parenthesys"));
+        return;
+      }
 
       Param1 = inData.substring(3, r); // array name
       Param1.trim();
-//      Serial.println("array name " + Param1 );
-      if (Param1 == "") 
-        {  PrintAndWebOut(F("DIM: the array name is missing"));  return; }
-      Param2 = inData.substring(r+1 ,i);  // arguments
-//      Serial.println("arguments " +  Param2);
+      //      Serial.println("array name " + Param1 );
+      if (Param1 == "")
+      {
+        PrintAndWebOut(F("DIM: the array name is missing"));
+        return;
+      }
+      Param2 = inData.substring(r + 1 , i); // arguments
+      //      Serial.println("arguments " +  Param2);
       r = ExtractArguments(Param2);
       DeAllocateArguments();
-      if (num_args != 1) 
-        {  PrintAndWebOut(F("DIM: number of arguments must be 1"));  return; }
+      if (num_args != 1)
+      {
+        PrintAndWebOut(F("DIM: number of arguments must be 1"));
+        return;
+      }
 
       // here we are OK, we can create the array; for the moment array with $ are string, without float
       // we should check before if the same array name exists
-      if (Search_Array(Param1) != -1)
-        {  PrintAndWebOut(F("DIM: array already defined - use UNDIM to delete before"));  return; }
+      if ((r = Search_Array(Param1)) != -1)    basic_arrays[r].remove();
 
       if ( (r = Search_First_Available_Array()) == -1)
-         {  PrintAndWebOut(F("DIM: no more array space available"));  return; }
+      {
+        PrintAndWebOut(F("DIM: no more array space available"));
+        return;
+      }
 
       // determine if the arrays is number or string
       if ((Param1.indexOf('$') != -1) || (inData.indexOf(F("as string")) != -1))
@@ -1318,49 +1344,61 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("undim"))
   {
-    // remove an already dimensioned array; maybe the name "undim" should be modified 
+    // remove an already dimensioned array; maybe the name "undim" should be modified
     if ( (r = Search_Array(Param1)) == -1)
-        {  PrintAndWebOut(F("UNDIM: array not defined"));  return; }
-        
+    {
+      PrintAndWebOut(F("UNDIM: array not defined"));
+      return;
+    }
+
     basic_arrays[r].remove();
     return;
   }
 
-  
+
   /// NEW array identification //
   if ((r = Param0.indexOf('(')) != -1) // there is a parenthesys in the command; maybe it's an array
   {
     // find the closing parenthesys
     int num_par = 1;
     int i;
-    for (i = r+1 ; i < inData.length(); i++)
+    for (i = r + 1 ; i < inData.length(); i++)
     {
       if ( inData[i] == '(' ) num_par++;
       if ( inData[i] == ')' ) num_par--;
       if (num_par == 0) break;
     }
     if (num_par != 0)  // no closing parenthesys ->Error
-      {  PrintAndWebOut(F("Array: missing closing parenthesys"));  return; }
+    {
+      PrintAndWebOut(F("Array: missing closing parenthesys"));
+      return;
+    }
     // check if the '=' follow
     int eq = inData.indexOf('=', i);
     if (eq != -1) // the '=' is present on the line; so this should be an array init
     {
-        //{  PrintAndWebOut(F("Array: missing = on the line"));  return; }      
+      //{  PrintAndWebOut(F("Array: missing = on the line"));  return; }
       Param1 = Param0.substring(0, r); // array name
       Param1.trim();
-  //    Serial.println("array name " + Param1 );
-      Param2 = inData.substring(r+1 ,i);  // arguments
-  //    Serial.println("arguments " +  Param2);
+      //    Serial.println("array name " + Param1 );
+      Param2 = inData.substring(r + 1 , i); // arguments
+      //    Serial.println("arguments " +  Param2);
       r = ExtractArguments(Param2);
       DeAllocateArguments();
-      if (num_args != 1) 
-        {  PrintAndWebOut(F("Array: number of arguments must be 1"));  return; }
-  
+      if (num_args != 1)
+      {
+        PrintAndWebOut(F("Array: number of arguments must be 1"));
+        return;
+      }
+
       Param3 = evaluate(inData.substring( eq + 1 ));
-  
+
       if ( (r = Search_Array(Param1)) == -1)
-          {  PrintAndWebOut(F("Array not defined"));  return; }
-  
+      {
+        PrintAndWebOut(F("Array not defined"));
+        return;
+      }
+
       if (basic_arrays[r].Format == PARSER_STRING) // string format
       {
         basic_arrays[r].setString(args[0], Param3);

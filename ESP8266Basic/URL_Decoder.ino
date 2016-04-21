@@ -1,6 +1,6 @@
 String GetRidOfurlCharacters(String urlChars)
 {
-
+  urlChars.replace('+', ' ');
   int i;
   char c;
   const char *s;

@@ -493,8 +493,18 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("neostripcolor") && num_args > 0 ) {
     // function json(buffer, key)
     // set return value
-    for (int LedNo = args[0]; LedNo <= args[1]& LedNo < 255  ; LedNo++) {
+    for (int LedNo = args[0]; LedNo <= args[1]& LedNo < 512  ; LedNo++) {
       pixels.setPixelColor(LedNo, pixels.Color(args[2], args[3], args[4]));
+      delay(0);
+    }
+    pixels.show();
+    return PARSER_STRING;
+  }
+  else if ( fname == F("neocls") && num_args == 0 ) {
+    // function json(buffer, key)
+    // set return value
+    for (int LedNo = 0; LedNo < 512  ; LedNo++) {
+      pixels.setPixelColor(LedNo, pixels.Color(0, 0, 0));
       delay(0);
     }
     pixels.show();
@@ -526,16 +536,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     return PARSER_TRUE;
   }
 
-  else if ( fname == F("neocls") && num_args == 0 ) {
-    // function json(buffer, key)
-    // set return value
-    for (int LedNo = 0; LedNo < 255  ; LedNo++) {
-      pixels.setPixelColor(LedNo, pixels.Color(0, 0, 0));
-      delay(0);
-    }
-    pixels.show();
-    return PARSER_STRING;
-  }
+
   else if ( fname == F("i2c.begin") && num_args == 1 ) {
     // function i2c.begin(address)
     // set return value

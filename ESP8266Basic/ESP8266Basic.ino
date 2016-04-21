@@ -77,7 +77,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);;
 //ThingSpeak Stuff
 
 
-const char BasicVersion[] = "ESP Basic 2.0.Alpha 14";
+const char BasicVersion[] = "ESP Basic 2.0.Alpha 15";
 
 
 
@@ -547,6 +547,7 @@ void setup() {
       {
         // really takes just the name for the new file otherwise it uses the previous one
         ProgramName = GetRidOfurlCharacters(server.arg("name"));
+        
         ProgramName.trim();
         if (ProgramName == "")
         {

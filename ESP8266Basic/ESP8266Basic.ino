@@ -79,6 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 16";
 
 // SPI STUFF
 #include <SPI.h>
@@ -573,8 +574,8 @@ void setup() {
   server.on("/editor.js", []() {
     server.send(200, "text/html", editCodeJavaScript);
   });
-  
 
+  
   server.on("/filelist", []()
   {
     String ret = "";

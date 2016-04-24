@@ -730,7 +730,7 @@ void ExicuteTheCurrentLine()
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "", PARSER_TRUE);
+      SetMeThatVar(Param1, "", PARSER_STRING);
       GetMeThatVar(Param1);
     }
     tempSlider.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));

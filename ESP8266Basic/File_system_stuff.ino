@@ -170,6 +170,12 @@ void CloseWriteOnFlash(void)
 
 void LoadBasicProgramFromFlash(String fileNameForRead)
 {
+  // clear the List of the goto/gosub
+  JumpList.clear();
+  // clear the LIst of the If then else endif positions
+  IfBlockList.clear();
+  
+  String ret;
   int i = 0;
   program_nb_lines = 0;
   //SPIFFS.begin();
@@ -194,13 +200,25 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
       uint8_t *p = (uint8_t *) &pos;   
       BasicFileLinePos.write( p, 2);  // write the position of the line in the file as 2 bytes (max 65536 bytes)
       //Serial.println(pos);      
-      f.readStringUntil('\n');
+      ret = f.readStringUntil('\n');
+      ret.replace("\n","");
+      ret.replace("\r","");      
+      ret.trim();
+      if ( (ret[0] == '[') && (ret[ret.length()-1] == ']') ) // this is a label
+        JumpList.add(ret, program_nb_lines);
 
-
+      if ( (ret.startsWith(F("if "))) && (ret.endsWith(F(" then"))) )
+        IfBlockList.setIf(program_nb_lines);
+      if (ret.startsWith(F("else")))
+        IfBlockList.setElse(program_nb_lines);
+      if ( (ret.startsWith(F("endif"))) || (ret.startsWith(F("end if"))) )
+        IfBlockList.setEndif(program_nb_lines);
+      
     }
 //    f.close();
       BasicFileLinePos.close();
       BasicFileLinePos = SPIFFS.open(F("/linepos.bin"), "r");
+      IfBlockList.check();  // check that all the endif complete the if
   }
   return;
 }

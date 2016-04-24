@@ -1,6 +1,5 @@
 String GetRidOfurlCharacters(String urlChars)
 {
-  urlChars.replace('+', ' ');
   int i;
   char c;
   const char *s;
@@ -23,14 +22,14 @@ String GetRidOfurlCharacters(String urlChars)
       {
         result.concat(urlChars[i]);  // else take the original char
       }
-
+      
     }
     else
     {
-      result.concat(urlChars[i]);  // else take the original char
+     result.concat(urlChars[i]);  // else take the original char
     }
   }
 
   return result;
-
+  
 }

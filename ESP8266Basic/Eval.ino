@@ -54,14 +54,15 @@ int variable_callback( void *user_data, const char *name, float *value, String *
   delay(0);
   for (int i = 0; i < TotalNumberOfVariables; i++)
   {
-    if (AllMyVariables[i].getName() == Name)
+      if (AllMyVariables[i].getName() == Name)
     {
-      *value =  atof(AllMyVariables[i].getVar().c_str());
-
-      *value_str = AllMyVariables[i].getVar();
-      //Serial.print("Variable "); Serial.print(Name); Serial.print(AllMyVaribles_format[i]);
-      VariableLocated = 1;
-      return AllMyVariables[i].Format; // returns the format of the variable : PARSER_TRUE if numeric, PARSER_STRING if string
+      LastVarNumberLookedUp = i;
+        *value =  atof(AllMyVariables[i].getVar().c_str());
+        
+        *value_str = AllMyVariables[i].getVar();
+        //Serial.print("Variable "); Serial.print(Name); Serial.print(AllMyVaribles_format[i]);
+        VariableLocated = 1;
+        return AllMyVariables[i].Format; // returns the format of the variable : PARSER_TRUE if numeric, PARSER_STRING if string
     }
   }
   // failed to find variable, return false
@@ -183,7 +184,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("mid") && num_args == 3 ) {
     // example of the mid(string, start, end)
     // set return value
-    if (args_str[0] != NULL)
+    if (args_str[0] != NULL) 
     {
       *value_str = args_str[0]->substring((int) args[1] - 1, (int) (args[1] + args[2]) - 1 );
       return PARSER_STRING;
@@ -196,7 +197,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("right") && num_args == 2 ) {
     // example of the right(string, length)
     // set return value
-    if (args_str[0] != NULL)
+    if (args_str[0] != NULL) 
     {
       *value_str = args_str[0]->substring(args_str[0]->length() - (int) args[1]);
       return PARSER_STRING;
@@ -209,8 +210,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("left") && num_args == 2 ) {
     // example of the left(string, length)
     // set return value
-    if (args_str[0] != NULL)
-    {
+    if (args_str[0] != NULL) 
+    {    
       *value_str = args_str[0]->substring(0, (int) args[1]);
       return PARSER_STRING;
     }
@@ -239,9 +240,9 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     // set return value
     if (args_str[0] != NULL)  // we should trigger an error if the argument is not a string
     {
-      *value  = args_str[0]->length();
-      return PARSER_TRUE;
-    }
+    *value  = args_str[0]->length();
+    return PARSER_TRUE;
+  }
     else {
       PrintAndWebOut(F("LEN() : The argument must be a string!"));
       return PARSER_FALSE;
@@ -297,11 +298,19 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_FALSE;
     }
   }
-  else if ( fname == F("hex") && num_args == 1 ) {
-    // example of the hex(value)
-    // set return value
-    *value_str  = String((int) args[0], HEX);
-    return PARSER_STRING;
+  else if ( fname == F("hex") ) {
+    if ( num_args == 1 ) {
+      // example of the hex(value)
+      // set return value
+      *value_str  = String((int) args[0], HEX);
+      return PARSER_STRING;
+    }
+    else
+      if ( num_args == 2 ) {   // example of the hex(value, nb_digits)
+        String tmp = "0000000" + String((int) args[0], HEX);
+        *value_str = tmp.substring(tmp.length() - args[1]);
+            return PARSER_STRING;
+      }
   }
   else if ( fname == F("oct") && num_args == 1 ) {
     // example of the oct(value)
@@ -347,7 +356,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_FALSE;
     }
   }
-  else if ( fname == F("hextoint") && num_args == 1 ) {
+      else if ( fname == F("hextoint") && num_args == 1 ) {
     // function hextoint(string) -> return the numeric value of the hex string
     // set return value
     if (args_str[0] != NULL)
@@ -411,7 +420,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     // function wget(url) or wget (url, port)
     // set return value
     if (args_str[0] != NULL)
-    {
+    { 
       if (num_args == 1)  *value_str  =  FetchWebUrl(*args_str[0], 80);
       else if (num_args == 2 )   *value_str  =  FetchWebUrl(*args_str[0], args[1]);
       return PARSER_STRING;
@@ -483,60 +492,120 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str  =  UniversalPinIO(*args_str[0], *args_str[1],  args[2]);
     return PARSER_STRING;
   }
+  else if ( fname == F("neo.setup") && num_args == 1 ) {
+    // function neosetup(pin)
+    if (pixels != NULL)
+      delete pixels;
+    pixels = new Adafruit_NeoPixel(512, args[0], NEO_GRB + NEO_KHZ800);
+    pixels->begin();
+    return PARSER_STRING;
+  }
   else if ( fname == F("neo") && num_args > 0 ) {
     // function neo(led no, r, g, b)
-    // set return value
-    pixels.setPixelColor(args[0], pixels.Color(args[1], args[2], args[3]));
-    pixels.show();
+    if (pixels == NULL)
+    {
+      pixels = new Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);
+      pixels->begin();
+    }
+    pixels->setPixelColor(args[0], pixels->Color(args[1], args[2], args[3]));
+    pixels->show();
     return PARSER_STRING;
   }
-  else if ( fname == F("neostripcolor") && num_args > 0 ) {
-    // function json(buffer, key)
-    // set return value
-    for (int LedNo = args[0]; LedNo <= args[1]& LedNo < 512  ; LedNo++) {
-      pixels.setPixelColor(LedNo, pixels.Color(args[2], args[3], args[4]));
+  else if ( fname == F("neostripcolor")| fname == F("neo.stripcolor") && num_args > 0 ) {
+    // function neostripcolor(start, end, r, g, b)
+    if (pixels == NULL)
+    {
+      pixels = new Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);   
+      pixels->begin();
+    }
+    for (int LedNo = args[0]; (LedNo <= args[1]) && (LedNo < 512); LedNo++) {
+      pixels->setPixelColor(LedNo, pixels->Color(args[2], args[3], args[4]));
       delay(0);
     }
-    pixels.show();
+    pixels->show();
     return PARSER_STRING;
   }
-  else if ( fname == F("neocls") && num_args == 0 ) {
-    // function json(buffer, key)
+  else if ( fname == F("neocls") |  fname == F("neo.cls") && num_args == 0 ) {
+    // function neocls()
     // set return value
+    if (pixels == NULL)
+    {
+      pixels = new Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);       
+      pixels->begin();
+    }
     for (int LedNo = 0; LedNo < 512  ; LedNo++) {
-      pixels.setPixelColor(LedNo, pixels.Color(0, 0, 0));
+      pixels->setPixelColor(LedNo, pixels->Color(0, 0, 0));
       delay(0);
     }
-    pixels.show();
+    pixels->show();
     return PARSER_STRING;
-  }
+  }  
   else if ( fname == F("temp") && num_args > 0 ) {
     // function temp(sensor #)
     // set return value
     *value  = sensors.getTempCByIndex(args[0]);
     return PARSER_TRUE;
   }
-
+  else if ( fname == F("dht.setup") ) // dht.setup(model, pin) -> model can be 11, 21, 22
+  {
+    // function dht.setup( model, pin)
+    uint8_t pin;
+    uint8_t model;
+    switch ( num_args )
+    {
+      case 1:
+        model = args[0];
+        pin = 5;
+        break;
+      case 2:
+        model = args[0];
+        pin = args[1];
+        break;
+      default:
+        model = 21; // default DHT21
+        pin = 5; // default pin
+        break;
+    } 
+    if (dht != NULL)
+      delete dht;
+    dht = new DHT(pin, model);
+    dht->begin();
+    // set return value
+    return PARSER_TRUE;
+  }
   else if ( fname == F("dht.temp") ) {
     // function dht.temp()
     // set return value
-    *value  = dht.readTemperature();
+    if (dht == NULL)
+    {
+      dht = new DHT(5, 21);
+      dht->begin();
+    }
+    *value  = dht->readTemperature();
     return PARSER_TRUE;
   }
   else if ( fname == F("dht.hum") ) {
     // function dht.hum()
     // set return value
-    *value  = dht.readHumidity();
+    if (dht == NULL)
+    {
+      dht = new DHT(5, 21);
+      dht->begin();
+    }    
+    *value  = dht->readHumidity();
     return PARSER_TRUE;
   }
   else if ( fname == F("dht.heatindex") ) {
     // function dht.heatindex()
     // set return value
-    *value  = dht.computeHeatIndex(dht.readTemperature(), dht.readHumidity(), false);
+    if (dht == NULL)
+    {
+      dht = new DHT(5, 21);
+      dht->begin();
+    }    
+    *value  = dht->computeHeatIndex(dht->readTemperature(), dht->readHumidity(), false);
     return PARSER_TRUE;
   }
-
-
   else if ( fname == F("i2c.begin") && num_args == 1 ) {
     // function i2c.begin(address)
     // set return value
@@ -579,6 +648,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("htmlvar") && num_args > 0 ) {
     // function json(buffer, key)
     // set return value
+
     *value_str  = String(String(F("VARS|")) + String(LastVarNumberLookedUp));
     return PARSER_STRING;
   }
@@ -618,20 +688,86 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
     return PARSER_STRING;
   }
-  else if ( (i = Search_Array(fname)) != -1) // check if is an array
+  else if ( fname == F("gpio1reset") && num_args == 0 )
   {
-    if (basic_arrays[i].Format == PARSER_STRING) // string format
+     // function gpi01reset()  -> restore the normal functionality of the pin GPIO1 (TX)
+     pinMode(1, SPECIAL);
+     return PARSER_STRING;
+  }
+  else if ( fname == F("spi.setup") && num_args > 0 ) {
+    SPI.begin();
+    switch(num_args)
     {
-      *value_str = basic_arrays[i].getString(args[0]);
-      return PARSER_STRING;
+      case 1:  //spi.setup(speed)
+        SPI.beginTransaction( SPISettings(args[0], MSBFIRST, SPI_MODE0)); 
+        break;
+      case 2:  //spi.setup(speed, SPI_MODE)
+        SPI.beginTransaction( SPISettings(args[0], MSBFIRST, args[1])); 
+        break;    
+      case 3:  //spi.setup(speed, SPI_MODE, MSBFIRST)
+        SPI.beginTransaction( SPISettings(args[0], args[2], args[1])); 
+        break;                
     }
-    else
+      // set return value
+      *value = 0;
+     return PARSER_TRUE;
+  }
+  else if ( fname == F("spi.byte") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
+    *value = SPI.transfer(args[0]);
+    return PARSER_TRUE;
+  }
+  else if ( fname == F("spi.string") && num_args == 2 ) { // let a$ = spi.string(value_string, length) -> send and receive a buffer of 'length' bytes
+    String ret;
+    char c;
+    ret.reserve(args[1]);
+    for (i=0; i<args[1]; i++)
     {
-      *value = basic_arrays[i].getFloat(args[0]);
-      return PARSER_TRUE;
+      c = SPI.transfer(args_str[0]->c_str()[i]);
+      ret.concat(c);
+    }
+    *value_str = ret;
+    return PARSER_STRING;
+  }  
+  else if ( fname == F("spi.hex") && num_args == 2 ) { // let a$ = spi.hex(value_string, length) -> send and receive a buffer of 'length' bytes; each byte is a 2 char hex string
+    if (args_str[0] == NULL)  { PrintAndWebOut(F("spi.hex() : First argument must be a string!")); return PARSER_FALSE; }
+    String ret;
+    char c, t;
+    String s;
+    ret.reserve(args[1] * 2); // each received byte is 2 chars
+    for (i = 0; i < (args[1] * 2); i += 2)
+    {
+      s = args_str[0]->substring(i , i + 2);
+      t = (char) strtol( s.c_str(), 0, 16);
+      c = SPI.transfer(t);
+      s = String( c, HEX);
+      if (s.length() == 1) s = "0" + s;
+      ret.concat(s);
+    }
+    *value_str = ret;
+    return PARSER_STRING;
+  }    
+  else
+  if ( (i = Search_Array(fname)) != -1) // check if is an array
+  {
+    if ( num_args == 0) // the array is just defined as a name without arguments such as a$()
+    {
+      Serial.println(String(F("Array without argument ")) + fname  + String(i));
+      return PARSER_FALSE;
+    }
+    else if ( num_args == 1)
+    {
+      if (basic_arrays[i].Format == PARSER_STRING) // string format
+      {
+        *value_str = basic_arrays[i].getString(args[0]);
+        return PARSER_STRING;
+      }
+      else
+      {
+        *value = basic_arrays[i].getFloat(args[0]);
+        return PARSER_TRUE;
+      }
     }
   }
-
 
   // failed to evaluate function, return false
   return PARSER_FALSE;

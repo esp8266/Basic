@@ -79,6 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha cicciocb 17";
 
 // SPI STUFF
 #include <SPI.h>
@@ -573,8 +574,8 @@ void setup() {
   server.on("/editor.js", []() {
     server.send(200, "text/html", editCodeJavaScript);
   });
-  
 
+  
   server.on("/filelist", []()
   {
     String ret = "";
@@ -1206,8 +1207,7 @@ void CheckForUdpData()
     //// test of gosub ///////
     if (UdpBranchLine > 0)
     {
-      // if the program is in wait, it returns to the previous line to wait again
-      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+      return_Stack.push(RunningProgramCurrentLine); // push the current position in the return stack
       WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
       RunningProgramCurrentLine = UdpBranchLine + 1; // gosub after the udpbranch label
       UdpBranchLine = - UdpBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
@@ -1220,8 +1220,7 @@ void CheckForUdpData()
     //// put like a gosub ///////
     if (SerialBranchLine > 0)
     {
-      // if the program is in wait, it returns to the previous line to wait again
-      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+      return_Stack.push(RunningProgramCurrentLine); // push the current position in the return stack
       WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
       RunningProgramCurrentLine = SerialBranchLine + 1; // gosub after the SerialBranch label
       SerialBranchLine = - SerialBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
@@ -1235,8 +1234,7 @@ void CheckForUdpData()
       //// put like a gosub ///////
       if (Serial2BranchLine > 0)
       {
-        // if the program is in wait, it returns to the previous line to wait again
-        return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+        return_Stack.push(RunningProgramCurrentLine); // push the current position in the return stack
         WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
         RunningProgramCurrentLine = Serial2BranchLine + 1; // gosub after the SerialBranch label
         Serial2BranchLine = - Serial2BranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command

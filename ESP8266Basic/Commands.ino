@@ -777,7 +777,7 @@ void ExicuteTheCurrentLine()
 
     tempDropDownList.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
     tempDropDownList.replace(F("options"),  TempItems);
-    if (Param3.toInt() > 1 | Param0 == F("dropdown")) Param3 = "1";
+    if (Param3.toInt() < 1 | Param0 == F("dropdown")) Param3 = "1";
     tempDropDownList.replace(F("theSize"), String(Param3.toInt()));
 
     HTMLout = String(HTMLout + tempDropDownList);

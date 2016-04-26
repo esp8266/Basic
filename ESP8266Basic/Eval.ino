@@ -496,7 +496,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     // function neosetup(pin)
     if (pixels != NULL)
       delete pixels;
-    pixels = new Adafruit_NeoPixel(512, args[0], NEO_GRB + NEO_KHZ800);
+    pixels = new Adafruit_NeoPixel(512, PinFinderForNodeMCU(*args_str[0]), NEO_GRB + NEO_KHZ800);
     pixels->begin();
     return PARSER_STRING;
   }
@@ -559,7 +559,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         break;
       case 2:
         model = args[0];
-        pin = args[1];
+        pin = PinFinderForNodeMCU(*args_str[1]);   //args[1];
         break;
       default:
         model = 21; // default DHT21

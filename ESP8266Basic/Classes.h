@@ -53,6 +53,7 @@ class basicVariable
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //This class manage to index all the 'if' 'then' 'else' '{endif | end if}' lines
 PROGMEM const char _ERR4[] = "Label already defined ";
+PROGMEM const char _ERR7[] = "Too much labels in the program ";
 class JUMPLIST
 {
   private:
@@ -63,42 +64,78 @@ class JUMPLIST
   };
   uint16_t _length = 0;
 
-  hop **list = (hop **) malloc( sizeof(hop **));
-  
+  hop *temp = NULL; 
+  hop *list = NULL;
+
+  int checkPos(String label)
+  {
+    uint16_t i;
+    for (i=0; i<_length; i++)
+    {
+      if (strncmp(temp[i]._label, label.c_str(), VariablesNameLength + 1) == 0)
+        return temp[i]._pos;
+    }
+    return -1;
+  }
+    
   public:
+
+  void clear()
+  {
+    // initialise the temporary buffer (dimensioned for 300 elements)
+    // release the list buffer
+    if (list != NULL)
+      free(list);
+    // if allocated, release the temp buffer and create a new one
+    if (temp != NULL)
+      free(temp);
+    temp = (hop *) malloc( sizeof(hop) * 300);
+    _length = 0;
+  }
+  
   void add(String label, uint16_t pos)
   {
-    if ( getPos(label) != -1)
+    if ( checkPos(label) != -1)
     {
-      PrintAndWebOut(String(_ERR4) + label);
+      PrintAndWebOut(String(_ERR4) + label);  // label already defined
       return;
     }
-    list[_length] = new hop;
-    strncpy(list[_length]->_label, label.c_str(), VariablesNameLength + 1);
-    list[_length]->_pos = pos;
+    if (_length >= 300)
+    {
+      PrintAndWebOut(String(_ERR7) + label); // too much labels
+      return;
+    }    
+    //list[_length] = new hop;
+    strncpy(temp[_length]._label, label.c_str(), VariablesNameLength + 1);
+    temp[_length]._pos = pos;
     _length++;
   }
 
+  void check()
+  {
+    // copy the temporary list (based on a max of 300 jumps)
+    // to the final list that will be dimensioned exactly to the
+    // required number of elements found
+    // allocate the buffer
+    list = (hop *) malloc( sizeof(hop) * _length);
+    // copy the data
+    memcpy(list, temp, sizeof(hop) * _length);
+    // release the temporary buffer
+    free (temp);
+    temp = NULL;
+  }
+  
   int getPos(String label)
   {
     uint16_t i;
     for (i=0; i<_length; i++)
     {
-      if (strncmp(list[i]->_label, label.c_str(), VariablesNameLength + 1) == 0)
-        return list[i]->_pos;
+      if (strncmp(list[i]._label, label.c_str(), VariablesNameLength + 1) == 0)
+        return list[i]._pos;
     }
     return -1;
   }
 
-  void clear()
-  {
-    uint16_t i;
-    for (i=0; i<_length; i++)
-    {
-      delete list[i];
-    }
-    _length = 0;
-  }
   
 } JumpList;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,9 +195,26 @@ class IFBLOCKLIST
   IfBlock stack[10]; // 10 nested if then else should be enough
 
   int _length = 0; // the list length
-  IfBlock list[100]; // 100 max if then else should be enough
+  IfBlock *temp  = NULL; 
+  IfBlock *list  = NULL;
   
   public:
+
+  // empty the complete structure; this needs to be done at each file reload
+  void clear()
+  {
+    _length = 0; 
+    _ptr = -1; 
+    // clear the list if allocated
+    if (list != NULL)
+      free(list);
+    // if allocateed clear the temporary buffer
+    if (temp != NULL)
+      free(temp);
+    // create a new temporary buffer
+    temp  = (IfBlock *) malloc(sizeof(IfBlock) * 300);  // 300 max if then else should be enough
+  }
+    
   void setIf(uint16_t pos)
   {
     if (_ptr >= 10)
@@ -191,21 +245,36 @@ class IFBLOCKLIST
       PrintAndWebOut(String(_ERR2) + String(pos));  // endif without IF
       return;
     }
-    if (_length > 100)
+    if (_length >= 300)
     {
       PrintAndWebOut(String(_ERR6) + String(stack[_ptr]._ifpos));  // Too much 'if else' in the program
       return;
     }
     stack[_ptr]._endifpos = pos - stack[_ptr]._ifpos;
 
-    list[_length]._ifpos = stack[_ptr]._ifpos;
-    list[_length]._elsepos = stack[_ptr]._elsepos;
-    list[_length]._endifpos = stack[_ptr]._endifpos;
+    temp[_length]._ifpos = stack[_ptr]._ifpos;
+    temp[_length]._elsepos = stack[_ptr]._elsepos;
+    temp[_length]._endifpos = stack[_ptr]._endifpos;
     //Serial.println("Endif " + String(list[_length]->_ifpos) + " " +  String(list[_length]->_elsepos) + " " + String(list[_length]->_endifpos));
     
     _length++;
     _ptr--;
   }
+
+  // check if all the if have been closed by endif
+  // copy the temporary buffer to the definitive space (list)
+  int check()
+  {
+    // allocate space to the final buffer
+    list = (IfBlock *) malloc(sizeof(IfBlock) * _length);
+    memcpy(list, temp, sizeof(IfBlock) * _length);
+    // clear the temporary buffer
+    free(temp);
+    temp = NULL;
+    if (_ptr != -1)
+      PrintAndWebOut(String(_ERR3) + String(stack[_ptr]._ifpos) + " " + String(_ptr));  // if without endif
+  }
+    
   // gets the position of the associated else, if exists, endif if don't
   uint16_t getElse(uint16_t IFpos)
   {
@@ -236,30 +305,7 @@ class IFBLOCKLIST
     }
     return 0;
   }
-  
-  // check if all the if have been closed by endif
-  int check()
-  {
-    if (_ptr != -1)
-      PrintAndWebOut(String(_ERR3) + String(stack[_ptr]._ifpos) + " " + String(_ptr));  // if without endif
-    empty_stack();
-  }
-
-  // empty the stack; the stack is used only during the search of the positions then needs to be cleaned
-  void empty_stack()
-  {
-    _ptr = -1;
-  }
-
-  // empty the complete structure; this needs to be done at each file reload
-  void clear()
-  {
-    uint16_t i;
-    empty_stack();
-    _length = 0;   
-  }
-
-  
+    
 } IfBlockList;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

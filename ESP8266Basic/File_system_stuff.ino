@@ -94,7 +94,7 @@ void LoadBasicProgramFromFlash__(String fileNameForSave)
 //////////// New file stuff by CiccioCB /////////////
 
 static File BasicFileToSave;
-static int  program_nb_lines = 0;
+//static int  program_nb_lines = 0;
 //static uint16_t  line_seeks[256];
 static File BasicFileOpened;
 static File BasicFileLinePos;
@@ -172,7 +172,7 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
 {
   // clear the List of the goto/gosub
   JumpList.clear();
-  // clear the LIst of the If then else endif positions
+  // clear the List of the If then else endif positions
   IfBlockList.clear();
   
   String ret;
@@ -219,6 +219,7 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
       BasicFileLinePos.close();
       BasicFileLinePos = SPIFFS.open(F("/linepos.bin"), "r");
       IfBlockList.check();  // check that all the endif complete the if
+      JumpList.check();  // check that all jumps are completed
   }
   return;
 }

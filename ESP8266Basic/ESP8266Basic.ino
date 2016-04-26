@@ -1,4 +1,4 @@
-///ESP8266 Basic Interpreter
+//ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
 //
 //The MIT License (MIT)
@@ -79,7 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 17";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 18";
 
 // SPI STUFF
 #include <SPI.h>
@@ -324,6 +324,7 @@ int Serial2BranchLine = 0;
 String inData;
 
 const int TotalNumberOfLines = 5000;            //this is the maximum number of lines that can be saved/loaded; it can go until 65535
+int  program_nb_lines = 0;                      //this is the number of program lines read from the file
 
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 bool VariableLocated;
@@ -531,22 +532,18 @@ void setup() {
       int iii;
       int i;
       fileOpenFail = 0;
-      for (iii = 1; iii <= TotalNumberOfLines; iii += 50) // important START FROM 1!!!!
-      {
-        TextboxProgramBeingEdited = "";
-        for (i = iii; i < (iii + 50); i++)
+      TextboxProgramBeingEdited = BasicProgram(1);
+      for (i = 2; (i < program_nb_lines); i++)
         {
-          delay(0);
+        TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
 
-          if ( (i > TotalNumberOfLines) || (fileOpenFail == 1) )
+        if (TextboxProgramBeingEdited.length() > 2048)
           {
-            fileOpenFail = 0;
-            iii = 99999;
-            break;
+          server.sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
+          server.sendContent(TextboxProgramBeingEdited + CRLF);
+          TextboxProgramBeingEdited = "";
+          delay(0);
           }
-
-          TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
-
         }
         if (TextboxProgramBeingEdited.length() > 0)
         {
@@ -554,7 +551,7 @@ void setup() {
           server.sendContent(TextboxProgramBeingEdited + CRLF);
           delay(0);
         }
-      }
+
       WebOut = String(EditorPageHTML);
       WebOut = WebOut.substring(WebOut.indexOf(F("</textarea>")));
       server.sendContent(String(WebOut.length(), 16) + CRLF);

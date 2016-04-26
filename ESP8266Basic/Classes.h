@@ -343,21 +343,26 @@ class FORNEXT
     v.trim();
     strncpy(stack[_ptr]._var, v.c_str(), VariablesNameLength + 1);
 
-    v = ForLine.substring(equal_pos + 1, to_pos);    
-    stack[_ptr]._init_val = v.toFloat();
+    v = ForLine.substring(equal_pos + 1, to_pos); 
+    evaluate(v);
+    stack[_ptr]._init_val = numeric_value;
     
     if (step_pos == -1) // no step defined
     {
       stack[_ptr]._step = 1;
       v = ForLine.substring(to_pos + 3);
-      stack[_ptr]._end_val = v.toFloat(); 
+      evaluate(v);
+      stack[_ptr]._end_val = numeric_value;
     }
     else
     {
       v = ForLine.substring(to_pos + 3, step_pos);
-      stack[_ptr]._end_val = v.toFloat(); 
+      evaluate(v);
+      stack[_ptr]._end_val = numeric_value;
       v = ForLine.substring(step_pos + 5);
-      stack[_ptr]._step = v.toFloat();
+      evaluate(v);
+      stack[_ptr]._step = numeric_value;
+      
     }
 
     SetMeThatVar(String(stack[_ptr]._var), FloatToString(stack[_ptr]._init_val), PARSER_TRUE);

@@ -678,7 +678,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       ar->replace(F("TIME"),  value_str->substring( 11, 19));
       ar->replace(F("DOW"),   value_str->substring(  0, 3));
       ar->replace(F("MONTH"), value_str->substring(  4, 7));
-      ar->replace(F("DATE"),  value_str->substring(  8, 10));
+      ar->replace(F("DAY"),   value_str->substring(  8, 10));
       ar->replace(F("HOUR"),  value_str->substring( 11, 13));
       ar->replace(F("MIN"),   value_str->substring( 14, 16));
       ar->replace(F("SEC"),   value_str->substring( 17, 19));

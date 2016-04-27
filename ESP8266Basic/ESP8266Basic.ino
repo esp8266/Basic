@@ -79,7 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 19";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 20";
 
 // SPI STUFF
 #include <SPI.h>
@@ -303,7 +303,7 @@ PROGMEM const char GraphicsEllipseCode[] =  R"=====(<ellipse cx="*x1*" cy="*y1*"
 PROGMEM const char GraphicsRectangleCode[] =  R"=====(<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>)=====";
 
 byte numberButtonInUse = 0;
-String ButtonsInUse[11];
+String ButtonsInUse[20];
 
 
 String   msgbranch;

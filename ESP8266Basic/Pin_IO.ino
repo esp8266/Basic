@@ -194,29 +194,3 @@ void servoWrite(byte pin, int ValueForIO)
 //  End all of the I/O code
 
 
-
-
-byte PinFinderForNodeMCU(String PinDesignaor)
-{
-  byte pin = PinDesignaor.toInt();
-  PinDesignaor.toUpperCase();
-  PinDesignaor.replace(F(".00"), "");
-
-  //PIN DESIGNATIONS FOR NODE MCU
-  if (PinDesignaor == F("D0"))  pin = 16;
-  if (PinDesignaor == F("D1"))  pin = 5;
-  if (PinDesignaor == F("D2"))  pin = 4;
-  if (PinDesignaor == F("D3"))  pin = 0;
-  if (PinDesignaor == F("D4"))  pin = 2;
-  if (PinDesignaor == F("D5"))  pin = 14;
-  if (PinDesignaor == F("D6"))  pin = 12;
-  if (PinDesignaor == F("D7"))  pin = 13;
-  if (PinDesignaor == F("D8"))  pin = 15;
-  if (PinDesignaor == F("RX"))  pin = 3;
-  if (PinDesignaor == F("TX"))  pin = 1;
-
-  return pin;
-}
-
-
-

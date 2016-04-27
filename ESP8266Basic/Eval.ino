@@ -49,7 +49,8 @@ int variable_callback( void *user_data, const char *name, float *value, String *
 
 
 
-
+  String NameForPin = String(name);
+  NameForPin.toUpperCase();
   String Name = String(name);
   delay(0);
   for (int i = 0; i < TotalNumberOfVariables; i++)
@@ -65,6 +66,20 @@ int variable_callback( void *user_data, const char *name, float *value, String *
         return AllMyVariables[i].Format; // returns the format of the variable : PARSER_TRUE if numeric, PARSER_STRING if string
     }
   }
+  // now look for the constants
+  if (NameForPin == F("D0")) { *value = 16; return PARSER_TRUE;}
+  if (NameForPin == F("D1")) { *value =  5; return PARSER_TRUE;}
+  if (NameForPin == F("D2")) { *value =  4; return PARSER_TRUE;}
+  if (NameForPin == F("D3")) { *value =  0; return PARSER_TRUE;}
+  if (NameForPin == F("D4")) { *value =  2; return PARSER_TRUE;}
+  if (NameForPin == F("D5")) { *value = 14; return PARSER_TRUE;}
+  if (NameForPin == F("D6")) { *value = 12; return PARSER_TRUE;}
+  if (NameForPin == F("D7")) { *value = 13; return PARSER_TRUE;}
+  if (NameForPin == F("D8")) { *value = 13; return PARSER_TRUE;}
+  if (NameForPin == F("RX")) { *value =  3; return PARSER_TRUE;}
+  if (NameForPin == F("TX")) { *value =  1; return PARSER_TRUE;}
+
+    
   // failed to find variable, return false
   *value = 0;
   *value_str = name;
@@ -489,14 +504,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("io") && num_args > 0 ) {
     // function json(buffer, key)
     // set return value
-    *value_str  =  UniversalPinIO(*args_str[0], *args_str[1],  args[2]);
-    return PARSER_STRING;
+    *value  =  UniversalPinIO(*args_str[0], String(args[1]),  args[2]);
+    return PARSER_TRUE;
   }
   else if ( fname == F("neo.setup") && num_args == 1 ) {
     // function neosetup(pin)
     if (pixels != NULL)
       delete pixels;
-    pixels = new Adafruit_NeoPixel(512, PinFinderForNodeMCU(*args_str[0]), NEO_GRB + NEO_KHZ800);
+    pixels = new Adafruit_NeoPixel(512, args[0], NEO_GRB + NEO_KHZ800);
     pixels->begin();
     return PARSER_STRING;
   }
@@ -559,7 +574,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         break;
       case 2:
         model = args[0];
-        pin = PinFinderForNodeMCU(*args_str[1]);   //args[1];
+        pin = args[1];
         break;
       default:
         model = 21; // default DHT21

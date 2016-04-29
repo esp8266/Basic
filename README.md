@@ -1,5 +1,5 @@
 Basic
-Basic Interpreter from scratch started by MMISCOOL.
+Basic Interpreter from scratch especialy for the ESP8266.
 
 http://esp8266basic.com
 

@@ -1,3 +1,4 @@
+#define TFT_DEMO
 #include "expression_parser_string.h"
 
 extern char* _parser_error_msg;
@@ -49,8 +50,7 @@ int variable_callback( void *user_data, const char *name, float *value, String *
 
 
 
-  String NameForPin = String(name);
-  NameForPin.toUpperCase();
+
   String Name = String(name);
   delay(0);
   for (int i = 0; i < TotalNumberOfVariables; i++)
@@ -66,18 +66,19 @@ int variable_callback( void *user_data, const char *name, float *value, String *
         return AllMyVariables[i].Format; // returns the format of the variable : PARSER_TRUE if numeric, PARSER_STRING if string
     }
   }
+  Name.toUpperCase();
   // now look for the constants
-  if (NameForPin == F("D0")) { *value = 16; return PARSER_TRUE;}
-  if (NameForPin == F("D1")) { *value =  5; return PARSER_TRUE;}
-  if (NameForPin == F("D2")) { *value =  4; return PARSER_TRUE;}
-  if (NameForPin == F("D3")) { *value =  0; return PARSER_TRUE;}
-  if (NameForPin == F("D4")) { *value =  2; return PARSER_TRUE;}
-  if (NameForPin == F("D5")) { *value = 14; return PARSER_TRUE;}
-  if (NameForPin == F("D6")) { *value = 12; return PARSER_TRUE;}
-  if (NameForPin == F("D7")) { *value = 13; return PARSER_TRUE;}
-  if (NameForPin == F("D8")) { *value = 13; return PARSER_TRUE;}
-  if (NameForPin == F("RX")) { *value =  3; return PARSER_TRUE;}
-  if (NameForPin == F("TX")) { *value =  1; return PARSER_TRUE;}
+  if (Name == F("D0")) { *value = 16; return PARSER_TRUE;}
+  if (Name == F("D1")) { *value =  5; return PARSER_TRUE;}
+  if (Name == F("D2")) { *value =  4; return PARSER_TRUE;}
+  if (Name == F("D3")) { *value =  0; return PARSER_TRUE;}
+  if (Name == F("D4")) { *value =  2; return PARSER_TRUE;}
+  if (Name == F("D5")) { *value = 14; return PARSER_TRUE;}
+  if (Name == F("D6")) { *value = 12; return PARSER_TRUE;}
+  if (Name == F("D7")) { *value = 13; return PARSER_TRUE;}
+  if (Name == F("D8")) { *value = 13; return PARSER_TRUE;}
+  if (Name == F("RX")) { *value =  3; return PARSER_TRUE;}
+  if (Name == F("TX")) { *value =  1; return PARSER_TRUE;}
 
     
   // failed to find variable, return false
@@ -561,7 +562,10 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  = sensors.getTempCByIndex(args[0]);
     return PARSER_TRUE;
   }
-  else if ( fname == F("dht.setup") ) // dht.setup(model, pin) -> model can be 11, 21, 22
+  else if (fname.startsWith(F("dht.")) )      // block DHT functions; this reduces the number of compares  
+  {
+    fname = fname.substring(4); // skip the term i2c.   
+    if ( fname == F("setup") ) // dht.setup(model, pin) -> model can be 11, 21, 22
   {
     // function dht.setup( model, pin)
     uint8_t pin;
@@ -588,7 +592,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     // set return value
     return PARSER_TRUE;
   }
-  else if ( fname == F("dht.temp") ) {
+    else if ( fname == F("temp") ) {
     // function dht.temp()
     // set return value
     if (dht == NULL)
@@ -599,7 +603,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  = dht->readTemperature();
     return PARSER_TRUE;
   }
-  else if ( fname == F("dht.hum") ) {
+    else if ( fname == F("hum") ) {
     // function dht.hum()
     // set return value
     if (dht == NULL)
@@ -610,7 +614,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  = dht->readHumidity();
     return PARSER_TRUE;
   }
-  else if ( fname == F("dht.heatindex") ) {
+    else if ( fname == F("heatindex") ) {
     // function dht.heatindex()
     // set return value
     if (dht == NULL)
@@ -621,44 +625,49 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  = dht->computeHeatIndex(dht->readTemperature(), dht->readHumidity(), false);
     return PARSER_TRUE;
   }
-  else if ( fname == F("i2c.begin") && num_args == 1 ) {
+  }
+  else if (fname.startsWith(F("i2c.")) )      // block I2C functions; this reduces the number of compares  
+  {
+    fname = fname.substring(4); // skip the term i2c.  
+    if ( fname == F("begin") && num_args == 1 ) {
     // function i2c.begin(address)
     // set return value
     Wire.beginTransmission((byte)args[0]);
     *value_str  =  String(F(""));
     return PARSER_STRING;
   }
-  else if ( fname == F("i2c.write") && num_args == 1 ) {
+    else if ( fname == F("write") && num_args == 1 ) {
     // function i2c.write(byte to be written)
     // set return value
     *value_str  =  String(Wire.write((byte)args[0]));
     return PARSER_STRING;
   }
-  else if ( fname == F("i2c.end") && num_args == 0 ) {
+    else if ( fname == F("end") && num_args == 0 ) {
     // function i2c.end()
     // set return value
     *value_str  =  String(Wire.endTransmission());
     return PARSER_STRING;
   }
-  else if ( fname == F("i2c.requestfrom") && num_args > 0 ) {
+    else if ( fname == F("requestfrom") && num_args > 0 ) {
     // function i2c.requestfrom(address, qty)
     // set return value
     *value_str  =  String(Wire.requestFrom((byte)args[0], (byte)args[1]));
     return PARSER_STRING;
   }
 
-  else if ( fname == F("i2c.available") && num_args == 0 ) {
+    else if ( fname == F("available") && num_args == 0 ) {
     // function i2c.available()
     // set return value
     *value_str  =  String(Wire.available());
     return PARSER_STRING;
   }
 
-  else if ( fname == F("i2c.read") && num_args == 0 ) {
+    else if ( fname == F("read") && num_args == 0 ) {
     // function i2c.read()
     // set return value
     *value_str  =  String(Wire.read());
     return PARSER_STRING;
+  }
   }
   else if ( fname == F("htmlvar") && num_args > 0 ) {
     // function json(buffer, key)
@@ -709,7 +718,10 @@ int function_callback( void *user_data, const char *name, const int num_args, co
      pinMode(1, SPECIAL);
      return PARSER_STRING;
   }
-  else if ( fname == F("spi.setup") && num_args > 0 ) {
+  else if (fname.startsWith(F("spi.")) )      // block SPI functions; this reduces the number of compares  
+  {
+    fname = fname.substring(4); // skip the term spi.
+    if ( fname == F("setup") && num_args > 0 ) {
     SPI.begin();
     switch(num_args)
     {
@@ -727,11 +739,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value = 0;
      return PARSER_TRUE;
   }
-  else if ( fname == F("spi.byte") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
+    else if ( fname == F("byte") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
     *value = SPI.transfer(args[0]);
     return PARSER_TRUE;
   }
-  else if ( fname == F("spi.string") && num_args == 2 ) { // let a$ = spi.string(value_string, length) -> send and receive a buffer of 'length' bytes
+    else if ( fname == F("string") && num_args == 2 ) { // let a$ = spi.string(value_string, length) -> send and receive a buffer of 'length' bytes
     String ret;
     char c;
     ret.reserve(args[1]);
@@ -743,7 +755,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str = ret;
     return PARSER_STRING;
   }  
-  else if ( fname == F("spi.hex") && num_args == 2 ) { // let a$ = spi.hex(value_string, length) -> send and receive a buffer of 'length' bytes; each byte is a 2 char hex string
+    else if ( fname == F("hex") && num_args == 2 ) { // let a$ = spi.hex(value_string, length) -> send and receive a buffer of 'length' bytes; each byte is a 2 char hex string
     if (args_str[0] == NULL)  { PrintAndWebOut(F("spi.hex() : First argument must be a string!")); return PARSER_FALSE; }
     String ret;
     char c, t;
@@ -761,6 +773,167 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str = ret;
     return PARSER_STRING;
   }    
+  }
+  else if ( fname == F("eval") && num_args == 1) {
+    if (args_str[0] == NULL)  { PrintAndWebOut(F("eval() : The argument must be a string!")); return PARSER_FALSE; }
+    evaluate(*args_str[0]);
+    *value_str = string_value;
+    *value = numeric_value;
+    return parser_result;
+  }
+  else if (fname.startsWith(F("ir.")) )      // block Infrared functions; this reduces the number of compares
+  {
+      fname = fname.substring(3); // skip the term ir.
+      if ( fname == F("send.init") && num_args == 1 ) {
+        // function ir.send.init(pin)   define the pin to be used for the irsend
+        // set return value
+        if (irsend != NULL)
+          delete irsend;
+        irsend = new IRsend(args[0]);
+        irsend->begin();
+        return PARSER_STRING;
+      }
+      else if ( fname == F("send.nec") && num_args == 2 ) {
+        // function ir.send.nec(code, len)   send a NEC code with the first argument and the lenght on the 2nd
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("ir.send.nec() : The first argument must be a string!")); return PARSER_FALSE; }
+        irsend->sendNEC(HexToLongInt(*args_str[0]), (int) args[1]);
+        return PARSER_STRING;
+      }
+      else if ( fname == F("send.sony") && num_args == 2 ) {
+        // function ir.send.nec(code, len)   send a SONY code with the first argument and the lenght on the 2nd
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("ir.send.sony() : The first argument must be a string!")); return PARSER_FALSE; }
+        irsend->sendSony(HexToLongInt(*args_str[0]), (int) args[1]);
+        return PARSER_STRING;
+      }      
+      else if ( fname == F("recv.init") && num_args == 1 ) {
+        // function ir.recv.init(pin)   define the pin to be used for the irsend
+        // set return value
+        if (irrecv != NULL)
+          delete irrecv;
+        irrecv = new IRrecv(args[0]);
+        irrecv->enableIRIn(); // Start the receiver
+        return PARSER_STRING;
+      }
+      else if ( fname == F("recv.get") && num_args == 0 ) {
+        // function ir.recv.get()   gets the code received
+        // set return value
+        *value_str = String(IRresults.value, HEX);
+        irrecv->resume(); // Receive the next value
+        return PARSER_STRING;
+      }
+      else if ( fname == F("recv.full") && num_args == 0 ) {
+        // function ir.recv.type()   gets the type of RC received
+        // set return value
+        *value_str =   String(IRresults.value, HEX) + ":" + IRtype(IRresults.decode_type) + ":" + String(IRresults.bits);
+        irrecv->resume(); // Receive the next value
+        return PARSER_STRING;
+      }  
+      else if ( fname == F("recv.dump") && num_args == 0 ) {
+        // function ir.recv.dump()   verbose the code received permitting to identify the remote controller
+        // set return value
+        IRdump(&IRresults);
+        *value_str = String(IRresults.value, HEX);
+        irrecv->resume(); // Receive the next value
+        return PARSER_STRING;
+      }
+  }
+  else if (fname.startsWith(F("tft.")) )      // block TFT functions; this reduces the number of compares
+  {
+      fname = fname.substring(4); // skip the term tft.
+      if ( fname == F("init") && num_args >= 2 ) {
+        // function tft.init(TFT_CS, TFT_DC, Rotation)   init the ILI9341 display; Rotation can be from 0 to 3
+        // create the class if not defined
+        if (tft == NULL)
+           tft = new Adafruit_ILI9341(args[0], args[1]);
+        tft->begin();
+        if (num_args > 2)
+          tft->setRotation(args[2]);
+        tft->fillScreen(ILI9341_BLACK);
+        return PARSER_TRUE;
+      }
+      else if ( fname == F("fill") && num_args == 1 ) {
+        // function tft.fill(color)   fill the screen with the color (565)
+         tft->fillScreen(args[0]);
+         return PARSER_TRUE;
+      }
+      else if ( fname == F("rgb") && num_args == 3 ) {
+        // function tft.color(red, green, blue)    returns the color in 565 format from rgb 888
+         *value = tft->color565(args[0], args[1], args[2]);
+         return PARSER_TRUE;
+      }  
+      else if ( fname == F("line") && num_args == 5 ) {
+        // function tft.line(x1, y1, x2, y2, color) 
+         tft->drawLine(args[0], args[1], args[2], args[3], args[4]);
+         return PARSER_TRUE;
+      }  
+      else if ( fname == F("rect") && num_args == 5 ) {
+        // function tft.rect(x, y, width, height, color) 
+         tft->drawRect(args[0], args[1], args[2], args[3], args[4]);
+         return PARSER_TRUE;
+      }  
+      else if ( fname == F("rect.fill") && num_args == 5 ) {
+        // function tft.rect.fill(x, y, width, height, color) 
+         tft->fillRect(args[0], args[1], args[2], args[3], args[4]);
+         return PARSER_TRUE;
+      }  
+      else if ( fname == F("rect.round") && num_args == 6 ) {
+        // function tft.rect.round(x, y, width, height, radius, color) 
+         tft->drawRoundRect(args[0], args[1], args[2], args[3], args[4], args[5]);
+         return PARSER_TRUE;
+      }  
+      else if ( fname == F("rect.round.fill") && num_args == 5 ) {
+        // function tft.rect.round.fill(x, y, width, height, radius, color) 
+         tft->fillRoundRect(args[0], args[1], args[2], args[3], args[4], args[5]);
+         return PARSER_TRUE;
+      }
+      else if ( fname == F("circle") && num_args == 4 ) {
+        // function tft.circle(x, y, radius, color) 
+         tft->drawCircle(args[0], args[1], args[2], args[3]);
+         return PARSER_TRUE;
+      }   
+      else if ( fname == F("circle.fill") && num_args == 4 ) {
+        // function tft.circle.fill(x, y, radius, color) 
+         tft->fillCircle(args[0], args[1], args[2], args[3]);
+         return PARSER_TRUE;
+      }   
+      else if ( fname == F("text.cursor") && num_args == 2 ) {
+        // function tft.text.cursor(x, y) 
+         tft->setCursor(args[0], args[1]);
+         return PARSER_TRUE;
+      } 
+      else if ( fname == F("text.color") && num_args > 0 ) {
+        // function tft.text.color(color, {backcolor})   // the back color is optional
+        if (num_args == 1)
+          tft->setTextColor(args[0]);
+        else
+          tft->setTextColor(args[0], args[1]);
+        return PARSER_TRUE;
+      } 
+      else if ( fname == F("text.size") && num_args == 1 ) {
+        // function tft.text.size(size) 
+         tft->setTextSize(args[0]);
+         return PARSER_TRUE;
+      } 
+      else if ( fname == F("print") && num_args == 1 ) {
+        // function tft.text.size(size) 
+         if (args_str[0] != NULL)
+            tft->print(*args_str[0]);
+         return PARSER_STRING;
+      } 
+      else if ( fname == F("println") && num_args == 1 ) {
+        // function tft.text.size(size) 
+         if (args_str[0] != NULL)
+            tft->println(*args_str[0]);
+         return PARSER_STRING;
+      }
+#ifdef TFT_DEMO
+      else if ( fname == F("test") && num_args == 0 ) {
+        ILI9341Demo();
+        return PARSER_TRUE;
+      }
+#endif      
+  }
+  
   else
   if ( (i = Search_Array(fname)) != -1) // check if is an array
   {
@@ -794,3 +967,410 @@ String makeMeAString(String StringToReturnFromThisFunction)
   return StringToReturnFromThisFunction;
 }
 
+
+unsigned long HexToLongInt(String h)
+{
+  // this function replace the strtol as this function is not able to handle hex numbers greather than 7fffffff
+  // I'll take char by char converting from hex to char then shifting 4 bits at the time
+  int i;
+  unsigned long tmp = 0;
+  unsigned char c;
+  int s = 0;
+  h.toUpperCase();
+  for (i = h.length() -1; i >=0 ; i--)
+  {
+    // take the char starting from the right
+    c = h[i];
+    // convert from hex to int
+    c = c - '0';
+    if (c > 9)
+      c = c - 7;
+    // add and shift of 4 bits per each char
+    tmp += c << s;
+    s += 4;
+  }
+  return tmp;
+}
+
+
+
+String IRtype(int decode_type)
+{
+  switch (decode_type)
+  {
+    case 1:
+      return F("NEC");
+      break;
+    case 2:
+      return F("SONY");
+      break;
+    case 3:
+      return F("RC5");
+      break;
+    case 4:
+      return F("RC6");
+      break;      
+    case 5:
+      return F("DISH");
+      break;
+    case 6:
+      return F("SHARP");
+      break;
+    case 7:
+      return F("PANASONIC");
+      break;
+    case 8:
+      return F("JVC");
+      break;
+    case 9:
+      return F("SANYO");
+      break;
+    case 10:
+      return F("MITSUBISHI");
+      break;      
+    case 11:
+      return F("SAMSUNG");
+      break;
+    case 12:
+      return F("LG");
+      break;
+     case 13:
+      return F("WHYNTER");
+      break;
+    default:
+      return F("UNKNOWN");
+      break;     
+  }
+}
+
+void IRdump(void *res) {
+  // Dumps out the decode_results structure.
+  // Call this after IRrecv::decode()
+  decode_results *results = (decode_results *) res;
+  int count = results->rawlen;
+  if (results->decode_type == UNKNOWN) {
+    Serial.print(F("Unknown encoding: "));
+  }
+  else if (results->decode_type == NEC) {
+    Serial.print(F("Decoded NEC: "));
+
+  }
+  else if (results->decode_type == SONY) {
+    Serial.print(F("Decoded SONY: "));
+  }
+  else if (results->decode_type == RC5) {
+    Serial.print(F("Decoded RC5: "));
+  }
+  else if (results->decode_type == RC6) {
+    Serial.print(F("Decoded RC6: "));
+  }
+  else if (results->decode_type == PANASONIC) {
+    Serial.print(F("Decoded PANASONIC - Address: "));
+    Serial.print(results->panasonicAddress, HEX);
+    Serial.print(F(" Value: "));
+  }
+  else if (results->decode_type == LG) {
+    Serial.print(F("Decoded LG: "));
+  }
+  else if (results->decode_type == JVC) {
+    Serial.print(F("Decoded JVC: "));
+  }
+  else if (results->decode_type == AIWA_RC_T501) {
+    Serial.print(F("Decoded AIWA RC T501: "));
+  }
+  else if (results->decode_type == WHYNTER) {
+    Serial.print(F("Decoded Whynter: "));
+  }
+  Serial.print(results->value, HEX);
+  Serial.print(F(" ("));
+  Serial.print(results->bits, DEC);
+  Serial.println(F(" bits)"));
+  Serial.print(F("Raw ("));
+  Serial.print(count, DEC);
+  Serial.print(F("): "));
+
+  for (int i = 1; i < count; i++) {
+    if (i & 1) {
+      Serial.print(results->rawbuf[i]*USECPERTICK, DEC);
+    }
+    else {
+      Serial.write('-');
+      Serial.print((unsigned long) results->rawbuf[i]*USECPERTICK, DEC);
+    }
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
+
+#ifdef TFT_DEMO
+void ILI9341Demo()
+{
+  testFillScreen();
+  delay(500);
+  testText();
+  delay(500);
+  testLines(ILI9341_CYAN);
+  delay(500);
+  testFastLines(ILI9341_RED, ILI9341_BLUE);
+  delay(500);
+  testRects(ILI9341_GREEN);
+  delay(500);
+  testFilledRects(ILI9341_YELLOW, ILI9341_MAGENTA);
+  delay(500);
+  testFilledCircles(10, ILI9341_MAGENTA);
+  delay(500);
+  testCircles(10, ILI9341_WHITE);
+  delay(500);
+  testTriangles();
+  delay(500);
+  testFilledTriangles();
+  delay(500);
+  testRoundRects();
+  delay(500);
+  testFilledRoundRects();
+}
+
+unsigned long testFillScreen() {
+  unsigned long start = micros();
+  tft->fillScreen(ILI9341_BLACK);
+  tft->fillScreen(ILI9341_RED);
+  tft->fillScreen(ILI9341_GREEN);
+  tft->fillScreen(ILI9341_BLUE);
+  tft->fillScreen(ILI9341_BLACK);
+  return micros() - start;
+}
+
+unsigned long testText() {
+  tft->fillScreen(ILI9341_BLACK);
+  unsigned long start = micros();
+  tft->setCursor(0, 0);
+  tft->setTextColor(ILI9341_WHITE);  tft->setTextSize(1);
+  tft->println("Hello World!");
+  tft->setTextColor(ILI9341_YELLOW); tft->setTextSize(2);
+  tft->println(1234.56);
+  tft->setTextColor(ILI9341_RED);    tft->setTextSize(3);
+  tft->println(0xDEADBEEF, HEX);
+  tft->println();
+  tft->setTextColor(ILI9341_GREEN);
+  tft->setTextSize(5);
+  tft->println("Groop");
+  tft->setTextSize(2);
+  tft->println("I implore thee,");
+  tft->setTextSize(1);
+  tft->println("my foonting turlingdromes.");
+  tft->println("And hooptiously drangle me");
+  tft->println("with crinkly bindlewurdles,");
+  tft->println("Or I will rend thee");
+  tft->println("in the gobberwarts");
+  tft->println("with my blurglecruncheon,");
+  tft->println("see if I don't!");
+  return micros() - start;
+}
+
+
+
+unsigned long testLines(uint16_t color) {
+  unsigned long start, t;
+  int           x1, y1, x2, y2,
+                w = tft->width(),
+                h = tft->height();
+
+  tft->fillScreen(ILI9341_BLACK);
+
+  x1 = y1 = 0;
+  y2    = h - 1;
+  start = micros();
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  x2    = w - 1;
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  t     = micros() - start; // fillScreen doesn't count against timing
+
+  tft->fillScreen(ILI9341_BLACK);
+
+  x1    = w - 1;
+  y1    = 0;
+  y2    = h - 1;
+  start = micros();
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  x2    = 0;
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  t    += micros() - start;
+
+  tft->fillScreen(ILI9341_BLACK);
+
+  x1    = 0;
+  y1    = h - 1;
+  y2    = 0;
+  start = micros();
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  x2    = w - 1;
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  t    += micros() - start;
+
+  tft->fillScreen(ILI9341_BLACK);
+
+  x1    = w - 1;
+  y1    = h - 1;
+  y2    = 0;
+  start = micros();
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
+  x2    = 0;
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
+
+  return micros() - start;
+}
+
+unsigned long testFastLines(uint16_t color1, uint16_t color2) {
+  unsigned long start;
+  int           x, y, w = tft->width(), h = tft->height();
+
+  tft->fillScreen(ILI9341_BLACK);
+  start = micros();
+  for(y=0; y<h; y+=5) tft->drawFastHLine(0, y, w, color1);
+  for(x=0; x<w; x+=5) tft->drawFastVLine(x, 0, h, color2);
+
+  return micros() - start;
+}
+
+unsigned long testRects(uint16_t color) {
+  unsigned long start;
+  int           n, i, i2,
+                cx = tft->width()  / 2,
+                cy = tft->height() / 2;
+
+  tft->fillScreen(ILI9341_BLACK);
+  n     = min(tft->width(), tft->height());
+  start = micros();
+  for(i=2; i<n; i+=6) {
+    i2 = i / 2;
+    tft->drawRect(cx-i2, cy-i2, i, i, color);
+  }
+
+  return micros() - start;
+}
+
+unsigned long testFilledRects(uint16_t color1, uint16_t color2) {
+  unsigned long start, t = 0;
+  int           n, i, i2,
+                cx = tft->width()  / 2 - 1,
+                cy = tft->height() / 2 - 1;
+
+  tft->fillScreen(ILI9341_BLACK);
+  n = min(tft->width(), tft->height());
+  for(i=n; i>0; i-=6) {
+    i2    = i / 2;
+    start = micros();
+    tft->fillRect(cx-i2, cy-i2, i, i, color1);
+    t    += micros() - start;
+    // Outlines are not included in timing results
+    tft->drawRect(cx-i2, cy-i2, i, i, color2);
+  }
+
+  return t;
+}
+
+unsigned long testFilledCircles(uint8_t radius, uint16_t color) {
+  unsigned long start;
+  int x, y, w = tft->width(), h = tft->height(), r2 = radius * 2;
+
+  tft->fillScreen(ILI9341_BLACK);
+  start = micros();
+  for(x=radius; x<w; x+=r2) {
+    for(y=radius; y<h; y+=r2) {
+      tft->fillCircle(x, y, radius, color);
+    }
+  }
+
+  return micros() - start;
+}
+
+unsigned long testCircles(uint8_t radius, uint16_t color) {
+  unsigned long start;
+  int           x, y, r2 = radius * 2,
+                w = tft->width()  + radius,
+                h = tft->height() + radius;
+
+  // Screen is not cleared for this one -- this is
+  // intentional and does not affect the reported time.
+  start = micros();
+  for(x=0; x<w; x+=r2) {
+    for(y=0; y<h; y+=r2) {
+      tft->drawCircle(x, y, radius, color);
+    }
+  }
+
+  return micros() - start;
+}
+
+unsigned long testTriangles() {
+  unsigned long start;
+  int           n, i, cx = tft->width()  / 2 - 1,
+                      cy = tft->height() / 2 - 1;
+
+  tft->fillScreen(ILI9341_BLACK);
+  n     = min(cx, cy);
+  start = micros();
+  for(i=0; i<n; i+=5) {
+    tft->drawTriangle(
+      cx    , cy - i, // peak
+      cx - i, cy + i, // bottom left
+      cx + i, cy + i, // bottom right
+      tft->color565(0, 0, i));
+  }
+
+  return micros() - start;
+}
+
+unsigned long testFilledTriangles() {
+  unsigned long start, t = 0;
+  int           i, cx = tft->width()  / 2 - 1,
+                   cy = tft->height() / 2 - 1;
+
+  tft->fillScreen(ILI9341_BLACK);
+  start = micros();
+  for(i=min(cx,cy); i>10; i-=5) {
+    start = micros();
+    tft->fillTriangle(cx, cy - i, cx - i, cy + i, cx + i, cy + i,
+      tft->color565(0, i, i));
+    t += micros() - start;
+    tft->drawTriangle(cx, cy - i, cx - i, cy + i, cx + i, cy + i,
+      tft->color565(i, i, 0));
+  }
+
+  return t;
+}
+
+unsigned long testRoundRects() {
+  unsigned long start;
+  int           w, i, i2,
+                cx = tft->width()  / 2 - 1,
+                cy = tft->height() / 2 - 1;
+
+  tft->fillScreen(ILI9341_BLACK);
+  w     = min(tft->width(), tft->height());
+  start = micros();
+  for(i=0; i<w; i+=6) {
+    i2 = i / 2;
+    tft->drawRoundRect(cx-i2, cy-i2, i, i, i/8, tft->color565(i, 0, 0));
+  }
+
+  return micros() - start;
+}
+
+unsigned long testFilledRoundRects() {
+  unsigned long start;
+  int           i, i2,
+                cx = tft->width()  / 2 - 1,
+                cy = tft->height() / 2 - 1;
+
+  tft->fillScreen(ILI9341_BLACK);
+  start = micros();
+  for(i=min(tft->width(), tft->height()); i>20; i-=6) {
+    i2 = i / 2;
+    tft->fillRoundRect(cx-i2, cy-i2, i, i, i/8, tft->color565(0, i, 0));
+  }
+
+  return micros() - start;
+}
+#endif

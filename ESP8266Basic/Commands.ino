@@ -1030,6 +1030,7 @@ void ExicuteTheCurrentLine()
     UdpBranchLine = abs(UdpBranchLine); // restore the udpBranch command
     SerialBranchLine  = abs(SerialBranchLine);  // restore the serialbranch command
     Serial2BranchLine = abs(Serial2BranchLine); // restore the serial2branch command
+    IRBranchLine = abs(IRBranchLine); // restore the IRbranch command
     return;
   }
 
@@ -1279,6 +1280,19 @@ void ExicuteTheCurrentLine()
     PrintAndWebOut(F("Serial2Branch line not found!"));
     return;    
   }  
+
+  if (Param0 == F("irbranch"))
+  {
+    IRBranchLine = 0;
+    int i;
+    if ((i = JumpList.getPos(Param1)) != -1)
+    {
+      IRBranchLine = i - 1;
+      return;
+    }
+    PrintAndWebOut(F("IRBranch line not found!"));
+    return;    
+  }    
   ////////////////////////////
   
   /////// NEW mid STUFF //////

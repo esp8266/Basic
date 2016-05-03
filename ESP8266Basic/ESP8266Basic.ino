@@ -79,10 +79,28 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 20";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 21";
 
 // SPI STUFF
 #include <SPI.h>
+
+// Infrared Stuff
+#include <IRremoteESP8266.h>
+IRsend *irsend = NULL; //irsend(0); //an IR led is connected to GPIO pin 0
+IRrecv *irrecv = NULL; 
+decode_results IRresults;
+int IRBranchLine = 0;
+
+//ILI9341 Stuff
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9341.h>
+// For the Adafruit shield, these are the default.
+//#define TFT_DC 4
+//#define TFT_CS 5
+// Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
+Adafruit_ILI9341 *tft = NULL; //= Adafruit_ILI9341(TFT_CS, TFT_DC);
+
+
 
 
 // The Math precision is defined, by default, inside expression_parser_string.h
@@ -905,7 +923,7 @@ void DoSomeFileManagerCode()
       String FIleNameForDelete = server.arg("fileName");
       FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
       Serial.println(FIleNameForDelete);
-      SPIFFS.remove(FIleNameForDelete);
+      Serial.println(SPIFFS.remove(FIleNameForDelete));
       //Serial.println(SPIFFS.remove("uploads/settings.png"));
     }
 
@@ -1240,6 +1258,19 @@ void CheckForUdpData()
         Serial2BranchLine = - Serial2BranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
       }
     }  
+  }
+  if (irrecv->decode(&IRresults)) {
+    //Serial.println(IRresults.value, HEX);
+    //dump(&IRresults);
+    //irrecv->resume(); // Receive the next value
+    if (IRBranchLine > 0)
+    {
+      // if the program is in wait, it returns to the previous line to wait again
+      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+      RunningProgramCurrentLine = IRBranchLine + 1; // gosub after the IRBranch label
+      IRBranchLine = - IRBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command    
+    }
   }
 }
 

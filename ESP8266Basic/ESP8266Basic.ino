@@ -79,7 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 21";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 22";
 
 // SPI STUFF
 #include <SPI.h>
@@ -398,8 +398,8 @@ Servo Servo14;
 Servo Servo15;
 Servo Servo16;
 
-String  PinListOfStatus[16];
-int  PinListOfStatusValues[16];
+String  PinListOfStatus[17];
+int  PinListOfStatusValues[17];
 
 
 //time Stff

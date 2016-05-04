@@ -784,7 +784,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if (fname.startsWith(F("ir.")) )      // block Infrared functions; this reduces the number of compares
   {
       fname = fname.substring(3); // skip the term ir.
-      if ( fname == F("send.init") && num_args == 1 ) {
+      if ( fname == F("send.setup") && num_args == 1 ) {
         // function ir.send.init(pin)   define the pin to be used for the irsend
         // set return value
         if (irsend != NULL)
@@ -805,7 +805,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         irsend->sendSony(HexToLongInt(*args_str[0]), (int) args[1]);
         return PARSER_STRING;
       }      
-      else if ( fname == F("recv.init") && num_args == 1 ) {
+      else if ( fname == F("recv.setup") && num_args == 1 ) {
         // function ir.recv.init(pin)   define the pin to be used for the irsend
         // set return value
         if (irrecv != NULL)

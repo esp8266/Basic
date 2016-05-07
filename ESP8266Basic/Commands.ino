@@ -1128,7 +1128,7 @@ void ExicuteTheCurrentLine()
     int str_len = Param1.length() + 1;
     char MgetToTest[str_len];
     Param1.toCharArray(MgetToTest, str_len);
-    SetMeThatVar(Param2, GetRidOfurlCharacters(server.arg( MgetToTest  )), PARSER_STRING);
+    SetMeThatVar(Param2, GetRidOfurlCharacters(server->arg( MgetToTest  )), PARSER_STRING);
     return;
   }
 

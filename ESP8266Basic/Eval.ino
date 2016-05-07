@@ -168,7 +168,12 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str = String(ESP.getChipId());
     return PARSER_STRING;
   }
-
+  else if ( fname == F("version") && num_args == 0 ) {
+    // example of the id()
+    // set return value
+    *value_str = String(BasicVersion);
+    return PARSER_STRING;
+  }
   else if ( fname == F("htmlid") && num_args == 0 ) {
     // example of the htmlid()
     // set return value

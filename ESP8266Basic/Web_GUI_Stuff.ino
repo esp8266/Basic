@@ -148,7 +148,7 @@ byte CheckFOrWebGOTO()
     char ArgumentToTest[str_len];
     String(String("goto" + String(i))).toCharArray(ArgumentToTest, str_len);
     delay(0);
-    bla = server.arg(ArgumentToTest);
+    bla = server->arg(ArgumentToTest);
     if (bla.length() > 0)
     {
       x = i;
@@ -190,7 +190,7 @@ void CheckFOrWebVarInput()
     char ArgumentToTest[str_len];
     String(i).toCharArray(ArgumentToTest, str_len);
     delay(0);
-    bla = server.arg(ArgumentToTest);
+    bla = server->arg(ArgumentToTest);
     if (bla.length() > 0)
     {
       bla.replace('+', ' ');

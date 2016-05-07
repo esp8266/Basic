@@ -42,7 +42,7 @@
 //#include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
-#include <ESP8266httpUpdate.h>               // that file need to be copied into the folder for 2.0.0-rc1
+//#include <ESP8266httpUpdate.h>               // that file need to be copied into the folder for 2.0.0-rc1
 #include <Servo.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -52,7 +52,7 @@
 #include "ESP8266httpUpdate.h"
 #include <time.h>
 //#include <HttpClient.h>                   // that line needs to be commented for esp8266-2.0.0-rc1
-//#include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
+#include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
 //LCD Stuff
 #include <LiquidCrystal_SR.h>
@@ -79,7 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 22";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 23";
 
 // SPI STUFF
 #include <SPI.h>
@@ -135,7 +135,7 @@ String EmailSMTPpassword;
 WiFiUDP udp;
 
 WiFiClient client;
-ESP8266WebServer server(80);
+ESP8266WebServer *server; //server(80);
 
 //Web Server Variables
 String HTMLout;
@@ -282,6 +282,7 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Log In Key:</p></th><th><input type="password" name="LoginKey" value="*LoginKey*"></th></tr>
 <tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
 <tr><th><p align="right">Run default.bas at startup :</p></th><th><input type="checkbox" name="autorun" value="on" **autorun**> Enable<br></th></tr>
+<tr><th><p align="right">Server listening port:</p></th><th><input type="text" name="listenport" value="*listenport*"></th></tr>
 <tr><th><p align="right">OTA URL. Leave blank for default:</p></th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
 <tr><th>
 <input type="submit" value="Save" name="save">
@@ -343,7 +344,7 @@ String inData;
 
 const int TotalNumberOfLines = 5000;            //this is the maximum number of lines that can be saved/loaded; it can go until 65535
 int  program_nb_lines = 0;                      //this is the number of program lines read from the file
-
+ 
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 bool VariableLocated;
 
@@ -415,30 +416,41 @@ void setup() {
 //  pixels.begin();
   SPIFFS.begin();
   Serial.begin(9600);
+  // gets the listening port
+  String listenport = LoadDataFromFile("listenport");
+  // listening port - by default goes to 80 -
+  if (listenport.toInt() == 0)
+    listenport = F("80");
+
+  // print the listening port in the console
+  Serial.print(F("\nServer listening Port: "));
+  Serial.println(listenport.toInt());
+  // create the instance of the web server
+  server = new ESP8266WebServer(listenport.toInt());
+  
   //Serial.setDebugOutput(true);
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
-
   //CheckWaitForRunningCode();
 
-  server.on("/", []()
+  server->on("/", []()
   {
     String WebOut;
     if (LoadDataFromFile("ShowMenueBar") != "off") WebOut =    AdminBarHTML;
     WebOut += RunningProgramGui();
-    server.send(200, "text/html", WebOut);
+    server->send(200, "text/html", WebOut);
   });
 
 
-  server.on("/settings", []()
+  server->on("/settings", []()
   {
 
-    server.send(200, "text/html", SettingsPageHandeler());
+    server->send(200, "text/html", SettingsPageHandeler());
   });
 
 
 
-  server.on("/vars", []()
+  server->on("/vars", []()
   {
     String WebOut = AdminBarHTML;
     String FixSpaces;
@@ -466,11 +478,11 @@ void setup() {
       WebOut += "</div>";
     }
 
-    server.send(200, "text/html", WebOut);
+    server->send(200, "text/html", WebOut);
   });
 
 
-  server.on("/run", []()
+  server->on("/run", []()
   {
     String WebOut;
     RunningProgram = 1;
@@ -483,26 +495,26 @@ void setup() {
     WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
 
     clear_stacks();  
-    server.send(200, "text/html", WebOut);
+    server->send(200, "text/html", WebOut);
   });
 
 
 
-  server.onFileUpload(handleFileUpdate);
+  server->onFileUpload(handleFileUpdate);
 
-  server.on("/filemng", []()
+  server->on("/filemng", []()
   {
     DoSomeFileManagerCode();
   });
 
 
-  server.on("/edit", []()
+  server->on("/edit", []()
   {
     String WebOut;
     if (CheckIfLoggedIn())
     {
       WebOut = String(LogInPage);
-      server.send(200, "text/html", String(AdminBarHTML + WebOut ));
+      server->send(200, "text/html", String(AdminBarHTML + WebOut ));
       return;
     }
     else
@@ -515,10 +527,10 @@ void setup() {
       //WebOut = String("<form action='input'>" + HTMLout + "</form>");
       WebOut = String(EditorPageHTML);
 
-      if ( server.arg("open") == F("Open") )
+      if ( server->arg("open") == F("Open") )
       {
         // really takes just the name for the new file otherwise it uses the previous one
-        ProgramName = GetRidOfurlCharacters(server.arg("name"));
+        ProgramName = GetRidOfurlCharacters(server->arg("name"));
         
         ProgramName.trim();
         if (ProgramName == "")
@@ -534,49 +546,49 @@ void setup() {
       WebOut = WebOut.substring(0, WebOut.indexOf(F("*program txt*")) );
       WebOut.replace(F("*program name*"), ProgramName);
 
-      server.sendContent(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\nTransfer-Encoding: chunked\r\nAccess-Control-Allow-Origin: *\r\n\r\n"));
+      server->sendContent(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\nTransfer-Encoding: chunked\r\nAccess-Control-Allow-Origin: *\r\n\r\n"));
       delay(0);
       Serial.println(F("start sending"));
       // each "chunk" is composed of :
       // the size of the block (in hex) terminated by \r\n
-      server.sendContent(String(String(AdminBarHTML).length(), 16) + CRLF);
+      server->sendContent(String(String(AdminBarHTML).length(), 16) + CRLF);
       // the block terminated by \r\n
-      server.sendContent(String(AdminBarHTML) + CRLF);
+      server->sendContent(String(AdminBarHTML) + CRLF);
       /////// end of first chunk ///////////
       delay(0);
-      server.sendContent(String(WebOut.length(), 16) + CRLF);
-      server.sendContent(WebOut + CRLF);
+      server->sendContent(String(WebOut.length(), 16) + CRLF);
+      server->sendContent(WebOut + CRLF);
       delay(0);
       int iii;
       int i;
       fileOpenFail = 0;
       TextboxProgramBeingEdited = BasicProgram(1);
       for (i = 2; (i < program_nb_lines); i++)
-        {
+      {
         TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
-
+        
         if (TextboxProgramBeingEdited.length() > 2048)
-          {
-          server.sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
-          server.sendContent(TextboxProgramBeingEdited + CRLF);
+        {
+          server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
+          server->sendContent(TextboxProgramBeingEdited + CRLF);
           TextboxProgramBeingEdited = "";
           delay(0);
-          }
         }
-        if (TextboxProgramBeingEdited.length() > 0)
-        {
-          server.sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
-          server.sendContent(TextboxProgramBeingEdited + CRLF);
-          delay(0);
-        }
+      }
+      if (TextboxProgramBeingEdited.length() > 0)
+      {
+        server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
+        server->sendContent(TextboxProgramBeingEdited + CRLF);
+        delay(0);
+      }
 
       WebOut = String(EditorPageHTML);
       WebOut = WebOut.substring(WebOut.indexOf(F("</textarea>")));
-      server.sendContent(String(WebOut.length(), 16) + CRLF);
-      server.sendContent(WebOut + CRLF);
+      server->sendContent(String(WebOut.length(), 16) + CRLF);
+      server->sendContent(WebOut + CRLF);
       // end of transmission
-      server.sendContent(F("0\r\n\r\n"));
-      server.sendContent(F("0\r\n\r\n"));
+      server->sendContent(F("0\r\n\r\n"));
+      server->sendContent(F("0\r\n\r\n"));
       delay(0);
       Serial.println(F("End of Open"));
 
@@ -586,12 +598,12 @@ void setup() {
 
 
 
-  server.on("/editor.js", []() {
-    server.send(200, "text/html", editCodeJavaScript);
+  server->on("/editor.js", []() {
+    server->send(200, "text/html", editCodeJavaScript);
   });
 
   
-  server.on("/filelist", []()
+  server->on("/filelist", []()
   {
     String ret = "";
     String fn;
@@ -605,22 +617,22 @@ void setup() {
     }
 
 
-    server.send(200, "text/html", ret);
+    server->send(200, "text/html", ret);
   });
 
-  server.on("/codein", []() {
+  server->on("/codein", []() {
     //    ProgramName.trim();
     //    if (ProgramName == "")
     //    {
     //      ProgramName = F("/default.bas");
     //    }
 
-    if (server.arg("SaveTheCode") == F("start"))
+    if (server->arg("SaveTheCode") == F("start"))
     {
       inData = "end";
       ExicuteTheCurrentLine();
       Serial.println(F("start save"));
-      ProgramName = GetRidOfurlCharacters(server.arg("FileName"));
+      ProgramName = GetRidOfurlCharacters(server->arg("FileName"));
       if (ProgramName == "")
         ProgramName = F("/default.bas");
       ProgramName.trim();
@@ -629,22 +641,22 @@ void setup() {
       OpenToWriteOnFlash( ProgramName );
     }
 
-    if (server.arg("SaveTheCode") != F("yes") & server.arg("SaveTheCode") != F("start") & server.arg("SaveTheCode") != F("end"))
+    if (server->arg("SaveTheCode") != F("yes") & server->arg("SaveTheCode") != F("start") & server->arg("SaveTheCode") != F("end"))
     {
       String LineNoForWebEditorIn;
-      LineNoForWebEditorIn = server.arg("line");
+      LineNoForWebEditorIn = server->arg("line");
       int y = LineNoForWebEditorIn.toInt();
       delay(0);
-      //Serial.println(server.arg("code"));
+      //Serial.println(server->arg("code"));
       Serial.println(ProgramName + F("/") + String(y));
-      //BasicProgramWriteLine(y, GetRidOfurlCharacters(server.arg("code")));
-      WriteBasicLineOnFlash(GetRidOfurlCharacters(server.arg("code")));
+      //BasicProgramWriteLine(y, GetRidOfurlCharacters(server->arg("code")));
+      WriteBasicLineOnFlash(GetRidOfurlCharacters(server->arg("code")));
       delay(0);
       noOfLinesForEdit = y;
 
     }
 
-    if (server.arg("SaveTheCode") == F("end"))
+    if (server->arg("SaveTheCode") == F("end"))
     {
       // terminate the save
       Serial.println(F("end of save!!"));
@@ -652,7 +664,7 @@ void setup() {
       LoadBasicProgramFromFlash( ProgramName );
     }
 
-    if (server.arg("SaveTheCode") == F("yes"))
+    if (server->arg("SaveTheCode") == F("yes"))
     {
 
       //      String directoryToDeleteFilesFrom;
@@ -666,14 +678,14 @@ void setup() {
       //        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
       //      }
     }
-    server.send(200, "text/html", F("good"));
+    server->send(200, "text/html", F("good"));
   });
 
 
 
 
 
-  server.on("/msg", []() {
+  server->on("/msg", []() {
 
     MsgBranchRetrnData = F("No MSG Branch Defined");
 
@@ -686,30 +698,30 @@ void setup() {
     }
 
 
-    server.send(200, "text/html", MsgBranchRetrnData);
+    server->send(200, "text/html", MsgBranchRetrnData);
   });
 
 
 
 
 
-  server.on("/input", []() {
-    server.send(200, "text/html", RunningProgramGui());
+  server->on("/input", []() {
+    server->send(200, "text/html", RunningProgramGui());
   });
 
-  server.onNotFound ( []() {
+  server->onNotFound ( []() {
     String fileNameToServeUp;
-    fileNameToServeUp = GetRidOfurlCharacters(server.arg("file"));
+    fileNameToServeUp = GetRidOfurlCharacters(server->arg("file"));
     File mySuperFile = SPIFFS.open(String(F("/uploads/")) + fileNameToServeUp, "r");
     if (mySuperFile)
     {
-      server.streamFile(mySuperFile, getContentType(fileNameToServeUp));
-      //server.send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
+      server->streamFile(mySuperFile, getContentType(fileNameToServeUp));
+      //server->send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
 
     }
     else
     {
-      server.send(200, "text/html", RunningProgramGui());
+      server->send(200, "text/html", RunningProgramGui());
     }
     mySuperFile.close();
   });
@@ -740,7 +752,7 @@ void setup() {
 
   LoadBasicProgramFromFlash( ProgramName);
 
-  server.begin();
+  server->begin();
   RunningProgram = 0;
   WaitForTheInterpertersResponse = 1;
   StartUpProgramTimer();
@@ -750,7 +762,7 @@ void setup() {
 
 String SettingsPageHandeler()
 {
-  if ( server.arg("key") == LoadDataFromFile("LoginKey"))
+  if ( server->arg("key") == LoadDataFromFile("LoginKey"))
   {
     LoggedIn = millis();
   }
@@ -766,6 +778,12 @@ String SettingsPageHandeler()
   String ShowMenueBar = LoadDataFromFile("ShowMenueBar");
   String otaUrl = LoadDataFromFile("otaUrl");
   String autorun = LoadDataFromFile("autorun");
+  String listenport = LoadDataFromFile("listenport");
+
+  // listening port - by default goes to 80 -
+  if (listenport.toInt() == 0)
+    listenport = F("80");
+    
   //Serial.print("Loading Settings Files");
 
   if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
@@ -775,10 +793,10 @@ String SettingsPageHandeler()
   else
   {
 
-    if ( server.arg("restart") == F("Restart") ) ESP.restart();
+    if ( server->arg("restart") == F("Restart") ) ESP.restart();
 
 
-    if ( server.arg("update") == F("Update") )
+    if ( server->arg("update") == F("Update") )
     {
 
       //        Serial.println(BasicOTAupgrade());
@@ -802,17 +820,18 @@ String SettingsPageHandeler()
     }
 
 
-    if ( server.arg("save") == F("Save") )
+    if ( server->arg("save") == F("Save") )
     {
-      staName      = GetRidOfurlCharacters(server.arg("staName"));
-      staPass      = GetRidOfurlCharacters(server.arg("staPass"));
-      apName       = GetRidOfurlCharacters(server.arg("apName"));
-      apPass       = GetRidOfurlCharacters(server.arg("apPass"));
-      LoginKey     = GetRidOfurlCharacters(server.arg("LoginKey"));
-      ShowMenueBar = GetRidOfurlCharacters(server.arg("showMenueBar"));
-      otaUrl       = GetRidOfurlCharacters(server.arg("otaurl"));
-      autorun      = GetRidOfurlCharacters(server.arg("autorun"));
-
+      staName      = GetRidOfurlCharacters(server->arg("staName"));
+      staPass      = GetRidOfurlCharacters(server->arg("staPass"));
+      apName       = GetRidOfurlCharacters(server->arg("apName"));
+      apPass       = GetRidOfurlCharacters(server->arg("apPass"));
+      LoginKey     = GetRidOfurlCharacters(server->arg("LoginKey"));
+      ShowMenueBar = GetRidOfurlCharacters(server->arg("showMenueBar"));
+      otaUrl       = GetRidOfurlCharacters(server->arg("otaurl"));
+      autorun      = GetRidOfurlCharacters(server->arg("autorun"));
+      listenport   = GetRidOfurlCharacters(server->arg("listenport"));
+      
       SaveDataToFile("WIFIname" , staName);
       SaveDataToFile("WIFIpass" , staPass);
       SaveDataToFile("APname" , apName);
@@ -821,9 +840,11 @@ String SettingsPageHandeler()
       SaveDataToFile("ShowMenueBar" , ShowMenueBar);
       SaveDataToFile("otaUrl" , otaUrl);
       SaveDataToFile("autorun" , autorun);
+      SaveDataToFile("listenport" , listenport);
+      
     }
 
-    if ( server.arg("format") == F("Format") )
+    if ( server->arg("format") == F("Format") )
     {
       // BasicFileOpened.close();
       Serial.println(F("Formating "));
@@ -837,7 +858,8 @@ String SettingsPageHandeler()
     WebOut.replace(F("*LoginKey*"), LoginKey);
     WebOut.replace(F("*BasicVersion*"), BasicVersion);
     WebOut.replace(F("*otaurl*"), otaUrl);
-
+    WebOut.replace(F("*listenport*"), listenport);
+    
     if ( ShowMenueBar == F("off"))
     {
       WebOut.replace(F("**checked**"), F("checked"));
@@ -886,7 +908,7 @@ void StartUpProgramTimer()
   {
     delay(0);
     //Serial.println(millis());
-    server.handleClient();
+    server->handleClient();
     if (WaitForTheInterpertersResponse == 0) return;
 
     // MOD cicciocb April 2016
@@ -918,9 +940,9 @@ void DoSomeFileManagerCode()
   }
   else
   {
-    if (server.arg("Delete") != "")
+    if (server->arg("Delete") != "")
     {
-      String FIleNameForDelete = server.arg("fileName");
+      String FIleNameForDelete = server->arg("fileName");
       FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
       Serial.println(FIleNameForDelete);
       Serial.println(SPIFFS.remove(FIleNameForDelete));
@@ -935,9 +957,9 @@ void DoSomeFileManagerCode()
 
     WholeUploadPage.replace("*table*", FileListForPage);
 
-    if (server.arg("View") != "")
+    if (server->arg("View") != "")
     {
-      String FileNameToView = server.arg("fileName");
+      String FileNameToView = server->arg("fileName");
       FileNameToView = GetRidOfurlCharacters(FileNameToView);
       FileNameToView.replace("/uploads/", "");
       WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====");
@@ -945,20 +967,20 @@ void DoSomeFileManagerCode()
     }
 
 
-    if (server.arg("Edit") != "")
+    if (server->arg("Edit") != "")
     {
-      String FileNameToView = server.arg("fileName");
+      String FileNameToView = server->arg("fileName");
       FileNameToView = GetRidOfurlCharacters(FileNameToView);
       //FileNameToView.replace("/uploads/", "");
       WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="1; url=./edit?name=item&open=Open" />)=====");
       WholeUploadPage.replace("item", FileNameToView);
     }
 
-    if (server.arg("Rename") != "")
+    if (server->arg("Rename") != "")
     {
-      String FileNameToView = server.arg("fileName");
+      String FileNameToView = server->arg("fileName");
       FileNameToView = GetRidOfurlCharacters(FileNameToView);
-      String newfileName = server.arg("newfileName");
+      String newfileName = server->arg("newfileName");
       newfileName  = GetRidOfurlCharacters(newfileName );
       WholeUploadPage = F(R"=====(<form id="filelist">Old Name<br><input type="text" name="fileName" value="*item name*"><br>New Name<br><input type="text" name="newfileName" value="*item name*"><input type="submit" value="NewName" name="Rename"></form>)=====");
       WholeUploadPage.replace("*item name*", FileNameToView);
@@ -972,15 +994,15 @@ void DoSomeFileManagerCode()
 
 
   }
-  server.send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
+  server->send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
 }
 
 
 
 void handleFileUpdate()
 {
-  //if (server.uri() != "/edit") return;
-  HTTPUpload& upload = server.upload();
+  //if (server->uri() != "/edit") return;
+  HTTPUpload& upload = server->upload();
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
     //DBG_OUTPUT_PORT.print("Upload Name: "); DBG_OUTPUT_PORT.println(filename);
@@ -1108,7 +1130,7 @@ void loop()
 
   RunBasicTillWait();
   delay(0);
-  server.handleClient();
+  server->handleClient();
 }
 
 
@@ -1556,6 +1578,5 @@ void serialFlush()
     char t = Serial.read();
   }
 }
-
 
 

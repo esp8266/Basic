@@ -79,7 +79,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 23";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 24";
 
 // SPI STUFF
 #include <SPI.h>

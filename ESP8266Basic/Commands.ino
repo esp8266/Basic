@@ -843,6 +843,19 @@ void ExicuteTheCurrentLine()
     WaitForTheInterpertersResponse = 1;
     return;
   }
+
+  if (Param0 == F("returngui"))
+  {
+    //HTMLout = String(HTMLout + "<hr>" + GetMeThatVar(Param1));
+    server->send(200, "text/html", RunningProgramGui());
+    server->handleClient();
+    WaitForTheInterpertersResponse = 0;
+    return;
+  }
+
+
+
+  
   //PrintAndWebOut("Just Passed the Wait Command");
 
   if (Param0 == F("cls"))

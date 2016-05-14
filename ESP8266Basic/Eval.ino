@@ -569,7 +569,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   }
   else if (fname.startsWith(F("dht.")) )      // block DHT functions; this reduces the number of compares  
   {
-    fname = fname.substring(4); // skip the term i2c.   
+    fname = fname.substring(4); // skip the term dht.   
     if ( fname == F("setup") ) // dht.setup(model, pin) -> model can be 11, 21, 22
   {
     // function dht.setup( model, pin)
@@ -937,6 +937,68 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         return PARSER_TRUE;
       }
 #endif      
+  }
+  else if (fname.startsWith(F("debug.")) )      // block DEBUG functions; this reduces the number of compares
+  {
+      fname = fname.substring(6); // skip the term debug.
+      if ( fname == F("setvar") && num_args >= 2 ) 
+      {
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("debug.setvar() : The first argument must be a string!")); return PARSER_FALSE; }
+        String tmp = "set~^`" + *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
+        if (args_str[1] == NULL)
+          tmp = tmp + FloatToString(args[1]);
+        else
+          tmp = tmp + *args_str[1];
+
+        webSocket.sendTXT(0,tmp.c_str());
+        return PARSER_TRUE;
+      }
+      else if ( fname == F("getvar") && num_args == 1 ) 
+      {
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("debug.getvar() : The argument must be a string!")); return PARSER_FALSE; }
+        String tmp = "get~^`" + *args_str[0];   // these are special chars the single quote is the reverse one (ascii code 96)
+        webSocket.sendTXT(0,tmp.c_str());
+        WebSockMessage = "";
+        for (int i=0; ((i<5) && (WebSockMessage == "")); i++)     // wait for the answer
+        {
+          webSocket.loop();
+          delay(0);
+        }
+        *value_str = WebSockMessage;
+        return PARSER_STRING;
+      } 
+      else if ( fname == F("gauge") && num_args == 2 ) 
+      {
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("debug.gauge() : The first argument must be a string!")); return PARSER_FALSE; }
+        String tmp = "gauge~^`" + *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
+        if (args_str[1] == NULL)
+          tmp = tmp + FloatToString(args[1]);
+        else
+          tmp = tmp + *args_str[1];
+        webSocket.sendTXT(0,tmp.c_str());
+        return PARSER_TRUE;
+      }             
+      else if ( fname == F("log") && num_args >= 1 ) 
+      {
+        String tmp = "log~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
+        if (args_str[0] == NULL)
+          tmp = tmp + FloatToString(args[1]);
+        else
+          tmp = tmp + *args_str[0];
+
+        webSocket.sendTXT(0,tmp.c_str());
+        return PARSER_TRUE;      
+      }
+      else if ( fname == F("getevent") && num_args == 0 ) 
+      {
+        *value_str = WebSockEventName;
+        return PARSER_STRING;
+      }
+      else if ( fname == F("getchange") && num_args == 0 ) 
+      {
+        *value_str = WebSockChangeName;
+        return PARSER_STRING;
+      }      
   }
   
   else

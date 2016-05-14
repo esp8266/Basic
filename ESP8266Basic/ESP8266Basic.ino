@@ -29,6 +29,9 @@
 //Uploading of bas files improvement added by cicciocb
 //JSON parsing routine added by cicciocb
 
+#include <WebSocketsServer.h>
+#include <Hash.h>
+#include <WebSockets.h>
 
 //#include <ArduinoJson.h>
 #include "spiffs/spiffs.h"
@@ -79,7 +82,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 24";
+PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 25";
 
 // SPI STUFF
 #include <SPI.h>
@@ -87,7 +90,7 @@ PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 24";
 // Infrared Stuff
 #include <IRremoteESP8266.h>
 IRsend *irsend = NULL; //irsend(0); //an IR led is connected to GPIO pin 0
-IRrecv *irrecv = NULL; 
+IRrecv *irrecv = NULL;
 decode_results IRresults;
 int IRBranchLine = 0;
 
@@ -134,21 +137,29 @@ String EmailSMTPpassword;
 // udp client
 WiFiUDP udp;
 
+// WebSockets
+WebSocketsServer webSocket = WebSocketsServer(81);
+String WebSockMessage;
+int WebSockEventBranchLine = 0;
+int WebSockChangeBranchLine = 0;
+String WebSockEventName;
+String WebSockChangeName;
+
 WiFiClient client;
 ESP8266WebServer *server; //server(80);
 
 //Web Server Variables
 String HTMLout;
 PROGMEM const char InputFormText[] = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
-PROGMEM const char TextBox[] = R"=====( <input type="text" id="myid" name="variablenumber" value="variablevalue">)=====";
+PROGMEM const char TextBox[] = R"=====(<input type="text" id="myid" name="variablenumber" value="variablevalue" onchange="objChange(this)">)=====";
 PROGMEM const char passwordbox[] = R"=====( <input type="password" id="myid" name="variablenumber" value="variablevalue">)=====";
-PROGMEM const char Slider[] = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" value=variablevalue>)=====";
-PROGMEM const char GOTObutton[] =  R"=====(<input type="submit" id="myid" value="gotonotext" name="gotonobranch">)=====";
+PROGMEM const char Slider[] = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" onchange="objChange(this)" value=variablevalue >)=====";
+PROGMEM const char GOTObutton[] =  R"=====(<button id="myid" onclick="cmdClick(this)" name="gotonobranch">gotonotext</button>)=====";
 PROGMEM const char GOTOimagebutton[] =  R"=====(<input type="image" id="myid" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
 PROGMEM const char normalImage[] =  R"=====(<img src="/file?file=name">)=====";
 PROGMEM const char javascript[] =  R"=====(<script src="/file?file=name"></script>)=====";
 PROGMEM const char CSSscript[] =  R"=====(<link rel="stylesheet" type="text/css" href="/file?file=name">)=====";
-PROGMEM const char DropDownList[] =  R"=====(<select name="variablenumber" id="myid" size="theSize">options</select>
+PROGMEM const char DropDownList[] =  R"=====(<select name="variablenumber" id="myid" onchange="objChange(this)" size="theSize">options</select>
 <script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
 PROGMEM const char DropDownListOpptions[] =  R"=====(<option>item</option>)=====";
 
@@ -165,6 +176,7 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 <a href="./vars">[ VARS ]</a> 
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>
+<a href="./debug">[ DEBUG ]</a>
 <a href="./settings">[ SETTINGS ]</a>
 <a href="./filemng">[ FILE MANAGER ]</a>
 <hr>)=====";
@@ -203,6 +215,199 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 <input type="text" id="Status" value="">
 )=====";
 
+
+
+PROGMEM const char WebSocketsJS[] =  R"=====(
+connection = new WebSocket('ws://'+location.hostname+':81/', ['arduino']);
+connection.onopen = function () {
+  //connection.send('websocket connected!'); 
+  document.getElementById("connection_status").value = "Connected";
+};
+connection.onclose = function () {
+  document.getElementById("connection_status").value = "Disconnected";
+};
+connection.onerror = function (error) {
+  document.getElementById("connection_status").value = error;
+};
+connection.onmessage = function (e) {
+  //connection.send('OK'); 
+  //alert(e);
+  var res = e.data.split("~^`");
+  if (res[0].toLowerCase() == "var")
+  {
+    var obj = document.getElementById(res[1]);
+    document.getElementsByName(res[1])[0].value = res[2];
+    document.getElementsByName(res[1])[1].value = res[2];
+    document.getElementsByName(res[1])[2].value = res[2];
+    document.getElementsByName(res[1])[3].value = res[2];
+    document.getElementsByName(res[1])[4].value = res[2];
+    document.getElementsByName(res[1])[5].value = res[2];
+    connection.send("OK");
+    return; 
+  }  
+  if (res[0].toLowerCase() == "print")
+  {
+    //alert(e);
+    var bla  = document.body.innerHTML;
+    document.open();
+    document.write(bla +'<hr>'+ res[1]);
+    document.close();
+
+    connection.send("vars");
+    return; 
+  }  
+  if (res[0].toLowerCase() == "guicls")
+  {
+    //alert(e);
+    var bla  = document.body.innerHTML;
+    document.open();
+    document.write('');
+    document.close();
+    location.reload();
+    return; 
+  } 
+  if (res[0].toLowerCase() == "wprint")
+  {
+    var bla  = document.body.innerHTML;
+    document.open();
+    document.write(bla + res[1]);
+    document.close();
+
+    connection.send("vars");
+    return; 
+  } 
+  else if (res[0].toLowerCase() == "get")
+  {
+    var obj = document.getElementById(res[1]);
+    if (obj == null)
+    {
+      connection.send("unknown object");
+      return; 
+    }
+    connection.send(obj.value);
+    return;
+  }
+  else if (res[0].toLowerCase() == "log")
+  {
+    connection.send('OK');
+    var log = document.getElementById("log");
+    log.value = log.value + "\n" + res[1];
+    log.selectionStart = log.selectionEnd = log.value.length;
+    return;
+  }
+  else if (res[0].toLowerCase() == "gauge")
+  {
+    connection.send('OK');
+    Gauge.Collection.get( res[1] ).setValue( res[2] );
+    return;
+  }
+  else
+  {
+    // default 
+    connection.send("KO");
+  }
+};
+function cmdClick(e)
+{
+  connection.send("guicmd:" + e.name);
+}
+function logClear()
+{
+  document.getElementById("log").value = "";
+}
+function objEvent(e)
+{
+  connection.send("guievent:" + e.name +":" + document.getElementById(e.id).value);
+}
+function objChange(e)
+{
+  connection.send("guichange:" + e.name +":" + document.getElementById(e.id).value);
+}
+)=====";
+
+
+
+
+PROGMEM const char DebugPageHTML[] =  R"=====(
+<button id="run" onclick="cmdClick(this)">Run</button>
+<button id="stop" onclick="cmdClick(this)">Stop</button>
+<button id="pause" onclick="cmdClick(this)">Pause</button>
+<button id="continue" onclick="cmdClick(this)">Continue</button>
+<input type="text" id="connection_status" value="Disconnected">
+<button id="clear" onclick="logClear()">Clear</button>
+<textarea rows="20" style="width:100%" id="log">log</textarea>
+<br>
+<script>
+connection = new WebSocket('ws://'+location.hostname+':81/', ['arduino']);
+connection.onopen = function () {
+  //connection.send('websocket connected!'); 
+  document.getElementById("connection_status").value = "Connected";
+};
+connection.onclose = function () {
+  document.getElementById("connection_status").value = "Disconnected";
+};
+connection.onerror = function (error) {
+  document.getElementById("connection_status").value = error;
+};
+connection.onmessage = function (e) {
+  //connection.send('OK'); 
+  var res = e.data.split("~^`");
+  if (res[0].toLowerCase() == "set")
+  {
+    var obj = document.getElementById(res[1]);
+    document.getElementById(res[1]).value = res[2];
+    connection.send("OK");
+    return; 
+  }  
+  else if (res[0].toLowerCase() == "get")
+  {
+    var obj = document.getElementById(res[1]);
+    if (obj == null)
+    {
+      connection.send("unknown object");
+      return; 
+    }
+    connection.send(obj.value);
+    return;
+  }
+  else if (res[0].toLowerCase() == "log")
+  {
+    connection.send('OK');
+    var log = document.getElementById("log");
+    log.value = log.value + "\n" + res[1];
+    log.selectionStart = log.selectionEnd = log.value.length;
+    return;
+  }
+  else if (res[0].toLowerCase() == "gauge")
+  {
+    connection.send('OK');
+    Gauge.Collection.get( res[1] ).setValue( res[2] );
+    return;
+  }
+  else
+  {
+    // default 
+    connection.send("KO");
+  }
+};
+function cmdClick(e)
+{
+  connection.send("cmd:" + e.id);
+}
+function logClear()
+{
+  document.getElementById("log").value = "";
+}
+function objEvent(e)
+{
+  connection.send("event:" + e.id);
+}
+function objChange(e)
+{
+  connection.send("change:" + e.id);
+}
+</script>
+)=====";
 
 PROGMEM const char editCodeJavaScript[] =  R"=====(
 function SaveTheCode() {
@@ -325,6 +530,8 @@ byte numberButtonInUse = 0;
 String ButtonsInUse[20];
 
 
+bool NewGuiItemAddedSinceLastWait;
+
 String   msgbranch;
 String   MsgBranchRetrnData;
 
@@ -344,7 +551,7 @@ String inData;
 
 const int TotalNumberOfLines = 5000;            //this is the maximum number of lines that can be saved/loaded; it can go until 65535
 int  program_nb_lines = 0;                      //this is the number of program lines read from the file
- 
+
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 bool VariableLocated;
 
@@ -381,6 +588,8 @@ int LoggedIn = 0;
 int SerialTimeOut;
 
 
+int TimerCBtime = 0;
+int TimerCBBranchLine;
 
 //uint16_t ForNextReturnLocations[255];
 
@@ -412,8 +621,8 @@ int dst = 0;
 FSInfo fs_info;
 
 void setup() {
-//  dht.begin();
-//  pixels.begin();
+  //  dht.begin();
+  //  pixels.begin();
   SPIFFS.begin();
   Serial.begin(9600);
   // gets the listening port
@@ -427,7 +636,7 @@ void setup() {
   Serial.println(listenport.toInt());
   // create the instance of the web server
   server = new ESP8266WebServer(listenport.toInt());
-  
+
   //Serial.setDebugOutput(true);
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
@@ -466,7 +675,7 @@ void setup() {
         FixSpaces = AllMyVariables[i].getVar();
         FixSpaces.replace(' ' , char(160));
         if ( AllMyVariables[i].getName() != "") WebOut += String("<hr>" + AllMyVariables[i].getName() + " = " + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") +
-                                                                                            FixSpaces         + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
+              FixSpaces         + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
       }
 
 
@@ -491,14 +700,34 @@ void setup() {
     numberButtonInUse = 0;
     HTMLout = "";
     TimerWaitTime = 0;
+    TimerCBtime = 0;
     GraphicsEliments[0][0] = 0;
     WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
 
-    clear_stacks();  
+    clear_stacks();
     server->send(200, "text/html", WebOut);
   });
 
+  server->on("/debug", []()
+  {
+    String WebOut = DebugPageHTML;
 
+    File f = SPIFFS.open(String("/uploads/debug.html"), "r");
+    if (f)
+    {
+      //Serial.print("lkjlkjkjlk");
+      //Serial.println(f.available());
+      String ss = f.readString();
+      //Serial.println(ss);
+      WebOut = WebOut + ss;
+      f.close();
+    }
+
+    f.close();
+
+
+    server->send(200, "text/html", WebOut);
+  });
 
   server->onFileUpload(handleFileUpdate);
 
@@ -531,7 +760,7 @@ void setup() {
       {
         // really takes just the name for the new file otherwise it uses the previous one
         ProgramName = GetRidOfurlCharacters(server->arg("name"));
-        
+
         ProgramName.trim();
         if (ProgramName == "")
         {
@@ -566,7 +795,7 @@ void setup() {
       for (i = 2; (i < program_nb_lines); i++)
       {
         TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
-        
+
         if (TextboxProgramBeingEdited.length() > 2048)
         {
           server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
@@ -602,7 +831,13 @@ void setup() {
     server->send(200, "text/html", editCodeJavaScript);
   });
 
-  
+
+
+  server->on("/WebSockets.js", []() {
+    server->send(200, "text/html", WebSocketsJS);
+  });
+
+
   server->on("/filelist", []()
   {
     String ret = "";
@@ -757,6 +992,10 @@ void setup() {
   WaitForTheInterpertersResponse = 1;
   StartUpProgramTimer();
   InitCommandParser(); // init the commands parser
+
+  // start webSocket server
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
 }
 
 
@@ -783,7 +1022,7 @@ String SettingsPageHandeler()
   // listening port - by default goes to 80 -
   if (listenport.toInt() == 0)
     listenport = F("80");
-    
+
   //Serial.print("Loading Settings Files");
 
   if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
@@ -831,7 +1070,7 @@ String SettingsPageHandeler()
       otaUrl       = GetRidOfurlCharacters(server->arg("otaurl"));
       autorun      = GetRidOfurlCharacters(server->arg("autorun"));
       listenport   = GetRidOfurlCharacters(server->arg("listenport"));
-      
+
       SaveDataToFile("WIFIname" , staName);
       SaveDataToFile("WIFIpass" , staPass);
       SaveDataToFile("APname" , apName);
@@ -841,7 +1080,7 @@ String SettingsPageHandeler()
       SaveDataToFile("otaUrl" , otaUrl);
       SaveDataToFile("autorun" , autorun);
       SaveDataToFile("listenport" , listenport);
-      
+
     }
 
     if ( server->arg("format") == F("Format") )
@@ -859,7 +1098,7 @@ String SettingsPageHandeler()
     WebOut.replace(F("*BasicVersion*"), BasicVersion);
     WebOut.replace(F("*otaurl*"), otaUrl);
     WebOut.replace(F("*listenport*"), listenport);
-    
+
     if ( ShowMenueBar == F("off"))
     {
       WebOut.replace(F("**checked**"), F("checked"));
@@ -877,7 +1116,7 @@ String SettingsPageHandeler()
     {
       WebOut.replace(F("**autorun**"), "");
     }
-    
+
   }
   return WebOut;
 }
@@ -923,7 +1162,7 @@ void StartUpProgramTimer()
   numberButtonInUse = 0;
   HTMLout = "";
 
-  clear_stacks(); 
+  clear_stacks();
   return;
 }
 
@@ -1131,6 +1370,7 @@ void loop()
   RunBasicTillWait();
   delay(0);
   server->handleClient();
+  webSocket.loop();
 }
 
 
@@ -1142,6 +1382,7 @@ void RunBasicTillWait()
   {
     RunningProgram = 0 ;
     TimerWaitTime = 0;
+    TimerCBtime = 0;
     return;
   }
 
@@ -1176,8 +1417,12 @@ void RunBasicTillWait()
 
 void runTillWaitPart2()
 {
+
+  if (NewGuiItemAddedSinceLastWait) webSocket.sendTXT(0, "guicls");NewGuiItemAddedSinceLastWait = 0;
   while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 )
   {
+    Serial.println(inData);
+
     delay(0);
     RunningProgramCurrentLine++;
     inData = BasicProgram(RunningProgramCurrentLine);
@@ -1186,12 +1431,14 @@ void runTillWaitPart2()
     ExicuteTheCurrentLine();
     delay(0);
     CheckForUdpData();
+    webSocket.loop();
   }
   if (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 1 )
   {
     //Serial.print("sto in wait ");
     //Serial.println(RunningProgramCurrentLine);
     CheckForUdpData();
+    webSocket.loop();
   }
 
 
@@ -1251,7 +1498,7 @@ void CheckForUdpData()
       UdpBranchLine = - UdpBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
     }
   }
-  //// 
+  ////
   if (Serial.available() > 0)
   {
     delay(50); // insure that the data can be received
@@ -1279,7 +1526,7 @@ void CheckForUdpData()
         RunningProgramCurrentLine = Serial2BranchLine + 1; // gosub after the SerialBranch label
         Serial2BranchLine = - Serial2BranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
       }
-    }  
+    }
   }
   if (irrecv->decode(&IRresults)) {
     //Serial.println(IRresults.value, HEX);
@@ -1291,7 +1538,19 @@ void CheckForUdpData()
       return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
       WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
       RunningProgramCurrentLine = IRBranchLine + 1; // gosub after the IRBranch label
-      IRBranchLine = - IRBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command    
+      IRBranchLine = - IRBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+    }
+  }
+  if (TimerCBtime > 0)
+  {
+    if (millis() > (timerLastActiveTime + TimerCBtime) )
+    {
+      timerLastActiveTime = millis();
+      // if the program is in wait, it returns to the previous line to wait again
+      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+      RunningProgramCurrentLine = TimerCBBranchLine + 1; // gosub after the IRBranch label
+      TimerCBBranchLine = - TimerCBBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
     }
   }
 }
@@ -1318,7 +1577,7 @@ String getValueforPrograming(String data, char separator, int index)
 
 String getValue(String data, char separator, int index)
 {
-  data = String(data + "           ");
+  data = String(data + String(separator)+ String(separator));
   int maxIndex = data.length() - 1;
   int j = 0;
   byte WaitingForQuote;

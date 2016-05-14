@@ -204,8 +204,13 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
       ret.replace("\n","");
       ret.replace("\r","");      
       ret.trim();
-      if ( (ret[0] == '[') && (ret[ret.length()-1] == ']') ) // this is a label
-        JumpList.add(ret, program_nb_lines);
+      if (ret[0] == '[') // if starts with '['  // this is a label
+      {
+        // looks for the closing ']'
+        int k = ret.indexOf(']');
+        if (k != -1)
+          JumpList.add(ret.substring(0, k+1), program_nb_lines);
+      }
 
       if ( (ret.startsWith(F("if "))) && (ret.endsWith(F(" then"))) )
         IfBlockList.setIf(program_nb_lines);

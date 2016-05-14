@@ -25,7 +25,7 @@ String RunningProgramGui()
   }
 
 
-  String WebOut = String(MobileFreindlyWidth) + String(F("<form action='input'>"))  + HTMLout + String(F("</form>"));
+  String WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script>"))  + HTMLout;
 
 
   if (BasicDebuggingOn == 1)
@@ -57,14 +57,43 @@ String RunningProgramGui()
 void PrintAndWebOut(String itemToBePrinted)
 {
   Serial.println(itemToBePrinted);
+  webSocket.sendTXT(0, "print~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
-    HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);  
+    HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);
   else
   {
-    HTMLout = String(HTMLout + String(F("<hr> BUFFER TOO BIG! PROGRAM STOPPED")));  
+    HTMLout = String(HTMLout + String(F("<hr> BUFFER TOO BIG! PROGRAM STOPPED")));
     Serial.println(F("BUFFER TOO BIG! PROGRAM STOPPED"));
     RunningProgram = 0;
+  }
+  return;
+}
+
+
+void AddToWebOut(String itemToBePrinted)
+{
+  webSocket.sendTXT(0, "wprint~^`" + itemToBePrinted);
+  itemToBePrinted.replace(' ' , char(160));
+  if (HTMLout.length() < 4000)
+    HTMLout = String(HTMLout + itemToBePrinted);
+  else
+  {
+    HTMLout = String(HTMLout + String(F("<hr> BUFFER TOO BIG! PROGRAM STOPPED")));
+    RunningProgram = 0;
+  }
+  return;
+}
+
+
+void SendAllTheVars()
+{
+  for (int i = 0; i < TotalNumberOfVariables; i++)
+  {
+    if (AllMyVariables[i].getName() == "") break;
+    webSocket.sendTXT(0, "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
+    delay(0);
+    Serial.println(i);
   }
   return;
 }
@@ -179,6 +208,11 @@ byte CheckFOrWebGOTO()
 }
 
 
+
+
+
+
+
 void CheckFOrWebVarInput()
 {
   String bla;
@@ -206,7 +240,154 @@ void CheckFOrWebVarInput()
 String GenerateIDtag(String TempateString)
 {
   LastElimentIdTag = String(millis());
-  TempateString.replace(F("myid"),LastElimentIdTag );
+  TempateString.replace(F("myid"), LastElimentIdTag );
   return TempateString;
+}
+
+
+
+
+String RequestWebSocket(String Request)
+{
+  webSocket.sendTXT(0, Request);
+  WebSockMessage = "";
+  for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
+  {
+    webSocket.loop();
+    delay(0);
+  }
+  return WebSockMessage;
+}
+
+
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght)
+{
+  switch (type)
+  {
+    case WStype_DISCONNECTED:
+      Serial.print(num);
+      Serial.println(" winsock Disconnected!");
+      break;
+    case WStype_CONNECTED: {
+        IPAddress ip = webSocket.remoteIP(num);
+        Serial.print(num);
+        Serial.print(" winsock connected ");
+        Serial.println(ip.toString());
+        // send message to client
+        webSocket.sendTXT(num, "Connected");
+      }
+      break;
+    case WStype_TEXT:
+      if (num != 0) return;  // accept commands only from the client 0
+      if (lenght == 0)
+      {
+        WebSockMessage == "";
+        break;
+      }
+      WebSockMessage = String((char*)payload);
+      if (WebSockMessage == "OK")
+        break;
+      // Serial.print(num);
+      // Serial.print(" get text ");
+      Serial.println(WebSockMessage);
+
+      if (WebSockMessage == F("cmd:stop"))
+      {
+        HaltBasic("");
+        break;
+      }
+      if (WebSockMessage == F("cmd:run"))
+      {
+        String WebOut;
+        RunningProgram = 1;
+        RunningProgramCurrentLine = 0;
+        WaitForTheInterpertersResponse = 0 ;
+        numberButtonInUse = 0;
+        HTMLout = "";
+        TimerWaitTime = 0;
+        TimerCBtime = 0;
+        GraphicsEliments[0][0] = 0;
+        WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
+
+        clear_stacks();
+        server->send(200, "text/html", WebOut);
+        break;
+      }
+      if (WebSockMessage == F("cmd:pause"))
+      {
+        RunningProgram = 0;
+        //WaitForTheInterpertersResponse = 1;
+        break;
+      }
+      if (WebSockMessage == F("cmd:continue"))
+      {
+        RunningProgram = 1;
+        //WaitForTheInterpertersResponse = 0;
+        break;
+      }
+
+
+      if (WebSockMessage.startsWith(F("guievent:")))
+      {
+        Serial.println(WebSockMessage.substring(9));
+        break;
+      }
+      if (WebSockMessage == F("vars"))
+      {
+        SendAllTheVars();
+        break;
+      }
+      if (WebSockMessage.startsWith(F("guicmd:")))
+      {
+        Serial.println(WebSockMessage.substring(7));
+        RunningProgram = 1;
+        WaitForTheInterpertersResponse = 0;
+        RunningProgramCurrentLine = WebSockMessage.substring(7).toInt() - 1;
+        Serial.println("Current line = " + String(RunningProgramCurrentLine));
+        runTillWaitPart2();
+        break;
+      }
+      if (WebSockMessage.startsWith(F("guichange:")))
+      {
+        Serial.println(getValue(WebSockMessage, ':', 1).toInt());
+        Serial.println(getValue(String(WebSockMessage + ":"), ':', 2));
+        AllMyVariables[getValue(WebSockMessage, ':', 1).toInt()].setVar(getValue(WebSockMessage, ':', 2));
+        break;
+      }
+
+
+
+      if (WebSockMessage.startsWith("event:"))
+      {
+        if (WebSockEventBranchLine > 0)
+        {
+          WebSockEventName = WebSockMessage.substring(6);
+          // if the program is in wait, it returns to the previous line to wait again
+          return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+          WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+          RunningProgramCurrentLine = WebSockEventBranchLine + 1; // gosub after the WebSockEventBranch label
+          WebSockEventBranchLine = - WebSockEventBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+        }
+        webSocket.sendTXT(num, "_");
+        break;
+      }
+
+      if (WebSockMessage.startsWith("change:"))
+      {
+        if (WebSockChangeBranchLine > 0)
+        {
+          WebSockChangeName = WebSockMessage.substring(7);
+          // if the program is in wait, it returns to the previous line to wait again
+          return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+          WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+          RunningProgramCurrentLine = WebSockChangeBranchLine + 1; // gosub after the WebSockChangeBranch label
+          WebSockChangeBranchLine = - WebSockChangeBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+        }
+        webSocket.sendTXT(num, "_");
+        break;
+      }
+      break;
+  }
 }
 

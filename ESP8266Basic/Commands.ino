@@ -48,6 +48,7 @@ void HaltBasic(String err_mess)
   RunningProgram = 0;
   WaitForTheInterpertersResponse = 1;
   TimerWaitTime = 0;
+  TimerCBtime = 0;
   PrintAndWebOut(err_mess);
   PrintAndWebOut(String(F("Halted at line ")) + String(RunningProgramCurrentLine));
 }
@@ -468,6 +469,20 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if ( Param0 == F("timercb"))
+  {
+    TimerCBtime = 0;
+    int i;
+    if ((i = JumpList.getPos(Param2)) != -1)
+    {
+      TimerCBBranchLine = i - 1;
+      TimerCBtime = Param1.toInt();
+      return;
+    }
+    PrintAndWebOut(F("timercb line not found!"));
+    return;  
+  }
+  
   if ( Param0 == F("sleep"))
   {
     // this command needs to be checked!
@@ -504,6 +519,22 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if (Param0 == F("websockprint"))
+  {
+    //Serial.println(GetMeThatVar(Param1));
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
+    webSocket.sendTXT(0, evaluate(Param1).c_str());
+    return;
+  }
+
+  if (Param0 == F("webobj"))   // change the property of an object in the webpage
+  {
+    //Serial.println(GetMeThatVar(Param1));
+    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
+    webSocket.sendTXT(0, evaluate(Param1).c_str());
+    return;
+  }
+      
   if (Param0 == F("serial2begin"))  // new command serial2begin baudrate, pin TX, pin RX
   {
     r = ExtractArguments(inData);
@@ -650,7 +681,8 @@ void ExicuteTheCurrentLine()
   {
     Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Param1 = evaluate(Param1);
-    HTMLout += Param1;
+    //HTMLout += Param1;
+    AddToWebOut(Param1);
     //Serial.print(HTMLout);
     return;
   }
@@ -659,9 +691,10 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("image"))
   {
+    
     String tempInfo = GenerateIDtag(normalImage);
     tempInfo.replace(F("name"), GetMeThatVar(Param1));
-    HTMLout += tempInfo;
+    AddToWebOut(tempInfo);
     //Serial.print(HTMLout);
     return;
   }
@@ -669,6 +702,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("javascript"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     String tempInfo = javascript;
     tempInfo.replace(F("name"), GetMeThatVar(Param1));
     HTMLout += tempInfo;
@@ -679,6 +713,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("css"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     String tempInfo = CSSscript;
     tempInfo.replace(F("name"), GetMeThatVar(Param1));
     HTMLout += tempInfo;
@@ -690,6 +725,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("textbox"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     String tempTextBox = GenerateIDtag(TextBox);
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
@@ -701,13 +737,14 @@ void ExicuteTheCurrentLine()
     tempTextBox.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempTextBox.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
-    HTMLout = String(HTMLout + tempTextBox);
+    HTMLout += tempTextBox;
     return;
   }
 
 
   if (Param0 == F("passwordbox"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     String tempTextBox = GenerateIDtag(passwordbox);
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
@@ -719,13 +756,14 @@ void ExicuteTheCurrentLine()
     tempTextBox.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempTextBox.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
-    HTMLout = String(HTMLout + tempTextBox);
+    HTMLout += tempTextBox;
     return;
   }
 
 
   if (Param0 == F("slider"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     String tempSlider = GenerateIDtag(Slider);
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
@@ -739,7 +777,7 @@ void ExicuteTheCurrentLine()
     tempSlider.replace(F("minval"),  GetMeThatVar(Param2));
     tempSlider.replace(F("maxval"),  GetMeThatVar(Param3));
 
-    HTMLout = String(HTMLout + tempSlider);
+    HTMLout += tempSlider;
     return;
   }
 
@@ -748,6 +786,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("dropdown") | Param0 == F("listbox"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     String tempDropDownList = GenerateIDtag(DropDownList);
     String tempDropDownListOpptions  = DropDownListOpptions;
     String TempItems;
@@ -780,7 +819,7 @@ void ExicuteTheCurrentLine()
     if (Param3.toInt() < 1 | Param0 == F("dropdown")) Param3 = "1";
     tempDropDownList.replace(F("theSize"), String(Param3.toInt()));
 
-    HTMLout = String(HTMLout + tempDropDownList);
+    HTMLout += tempDropDownList;
     return;
   }
 
@@ -790,18 +829,12 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("button"))
   {
-    //Serial.println(Param1);
-    //Serial.println(Param2);
-    numberButtonInUse++;
+    NewGuiItemAddedSinceLastWait = 1;
     String tempButton = GenerateIDtag(GOTObutton);
     tempButton.replace(F("gotonotext"),  GetMeThatVar(Param1));
-    //Serial.println(String(String(numberButtonInUse) + " = numberButtonInUse"));
 
-    tempButton.replace(F("gotonobranch"),  String(F("goto")) + String(numberButtonInUse));
-
-    ButtonsInUse[numberButtonInUse] = Param2;
-    //Serial.println(ButtonsInUse[numberButtonInUse]);
-    HTMLout = String(HTMLout + tempButton);
+    tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Param2)));
+    HTMLout += tempButton;
     return;
   }
 
@@ -811,16 +844,12 @@ void ExicuteTheCurrentLine()
   {
     numberButtonInUse++;
     String tempButton = GenerateIDtag(GOTOimagebutton);
-
     if (GetMeThatVar(Param1).startsWith(F("http://")) | GetMeThatVar(Param1).startsWith(F("HTTP://")) )tempButton.replace(F("/file?file="), "");
-
     tempButton.replace(F("gotonotext"),  GetMeThatVar(Param1));
 
-    tempButton.replace(F("gotonobranch"),  String(F("goto")) + String(numberButtonInUse));
+    tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Param2)));
 
-    ButtonsInUse[numberButtonInUse] = Param2;
-    //Serial.println(ButtonsInUse[numberButtonInUse]);
-    HTMLout = String(HTMLout + tempButton);
+    tempButton;
     return;
   }
 
@@ -865,6 +894,7 @@ void ExicuteTheCurrentLine()
     for (int i = 0; i <= 10; i++) {
       ButtonsInUse[i] = "";
     }
+    webSocket.sendTXT(0, "guicls");
     HTMLout = "";
     return;
   }
@@ -883,12 +913,14 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("gcls"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     GraphicsEliments[0][0] = 0;
     return;
   }
 
   if (Param0 == F("line"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     int i;
     GraphicsEliments[0][0] += 1;
     i = GraphicsEliments[0][0];
@@ -903,6 +935,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("circle"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     int i;
     GraphicsEliments[0][0] += 1;
     i = GraphicsEliments[0][0];
@@ -916,6 +949,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("ellipse"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     int i;
     GraphicsEliments[0][0] += 1;
     i = GraphicsEliments[0][0];
@@ -930,6 +964,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("rect"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     int i;
     GraphicsEliments[0][0] += 1;
     i = GraphicsEliments[0][0];
@@ -946,6 +981,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("input"))
   {
+    
     if (Param2 == "")
     {
       SetMeThatVar(Param1, getSerialInput(), PARSER_STRING);
@@ -1044,6 +1080,10 @@ void ExicuteTheCurrentLine()
     SerialBranchLine  = abs(SerialBranchLine);  // restore the serialbranch command
     Serial2BranchLine = abs(Serial2BranchLine); // restore the serial2branch command
     IRBranchLine = abs(IRBranchLine); // restore the IRbranch command
+    TimerCBBranchLine = abs(TimerCBBranchLine); // restore the timercb command
+    WebSockEventBranchLine = abs(WebSockEventBranchLine); // restore the websockevent command
+    WebSockChangeBranchLine = abs(WebSockChangeBranchLine); // restore the websockchange command
+    webSocket.loop();
     return;
   }
 
@@ -1053,6 +1093,7 @@ void ExicuteTheCurrentLine()
     RunningProgram = 0;
     WaitForTheInterpertersResponse = 1;
     TimerWaitTime = 0;
+    TimerCBtime = 0;
     PrintAndWebOut(F("Done..."));
     return;
   }
@@ -1068,6 +1109,7 @@ void ExicuteTheCurrentLine()
     RunningProgramCurrentLine = 0;
     HTMLout = "";
     TimerWaitTime = 0;
+    TimerCBtime = 0;
     return;
   }
 
@@ -1306,6 +1348,33 @@ void ExicuteTheCurrentLine()
     PrintAndWebOut(F("IRBranch line not found!"));
     return;    
   }    
+
+  if (Param0 == F("websockeventbranch"))
+  {
+    WebSockEventBranchLine = 0;
+    int i;
+    if ((i = JumpList.getPos(Param1)) != -1)
+    {
+      WebSockEventBranchLine = i - 1;
+      return;
+    }
+    PrintAndWebOut(F("WebSockEventBranch line not found!"));
+    return;    
+  }    
+
+  if (Param0 == F("websockchangebranch"))
+  {
+    WebSockChangeBranchLine = 0;
+    int i;
+    if ((i = JumpList.getPos(Param1)) != -1)
+    {
+      WebSockChangeBranchLine = i - 1;
+      return;
+    }
+    PrintAndWebOut(F("WebSockChangeBranch line not found!"));
+    return;    
+  }    
+
   ////////////////////////////
   
   /////// NEW mid STUFF //////

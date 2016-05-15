@@ -500,7 +500,7 @@ void ExicuteTheCurrentLine()
   {
     //Serial.println(GetMeThatVar(Param1));
     Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
-    webSocket.sendTXT(0, evaluate(Param1).c_str());
+    WebSocketSend(  evaluate(Param1).c_str());
     return;
   }
 
@@ -508,7 +508,7 @@ void ExicuteTheCurrentLine()
   {
     //Serial.println(GetMeThatVar(Param1));
     Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
-    webSocket.sendTXT(0, evaluate(Param1).c_str());
+    WebSocketSend(  evaluate(Param1).c_str());
     return;
   }
       
@@ -871,7 +871,7 @@ void ExicuteTheCurrentLine()
     for (int i = 0; i <= 10; i++) {
       ButtonsInUse[i] = "";
     }
-    webSocket.sendTXT(0, "guicls");
+    WebSocketSend(  "guicls");
     HTMLout = "";
     return;
   }
@@ -1151,18 +1151,6 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if (Param0 == F("msgget"))
-  {
-    //Serial.println(Param1);
-
-    //Serial.println(Param2);
-    Param1 = GetMeThatVar(Param1);
-    int str_len = Param1.length() + 1;
-    char MgetToTest[str_len];
-    Param1.toCharArray(MgetToTest, str_len);
-    SetMeThatVar(Param2, GetRidOfurlCharacters(server->arg( MgetToTest  )), PARSER_STRING);
-    return;
-  }
 
 
 

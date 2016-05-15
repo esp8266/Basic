@@ -144,6 +144,7 @@ int WebSockEventBranchLine = 0;
 int WebSockChangeBranchLine = 0;
 String WebSockEventName;
 String WebSockChangeName;
+int WebSocketTimeOut[5];
 
 WiFiClient client;
 ESP8266WebServer *server; //server(80);
@@ -322,6 +323,12 @@ function objEvent(e)
 function objChange(e)
 {
   connection.send("guichange:" + e.name +":" + document.getElementById(e.id).value);
+}
+
+var aliveme = setInterval(aliveTimer, 5000);
+function aliveTimer() 
+{
+  connection.send("OK"); 
 }
 )=====";
 
@@ -1418,7 +1425,7 @@ void RunBasicTillWait()
 void runTillWaitPart2()
 {
 
-  if (NewGuiItemAddedSinceLastWait) webSocket.sendTXT(0, "guicls");NewGuiItemAddedSinceLastWait = 0;
+  if (NewGuiItemAddedSinceLastWait) WebSocketSend(  "guicls");NewGuiItemAddedSinceLastWait = 0;
   while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 )
   {
     Serial.println(inData);

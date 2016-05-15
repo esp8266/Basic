@@ -1035,7 +1035,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       else
         tmp = tmp + *args_str[1];
 
-      webSocket.sendTXT(0, tmp.c_str());
+      WebSocketSend(  tmp.c_str());
       return PARSER_TRUE;
     }
     else if ( fname == F("getvar") && num_args == 1 )
@@ -1045,7 +1045,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         return PARSER_FALSE;
       }
       String tmp = "get~^`" + *args_str[0];   // these are special chars the single quote is the reverse one (ascii code 96)
-      webSocket.sendTXT(0, tmp.c_str());
+      WebSocketSend(  tmp.c_str());
       WebSockMessage = "";
       for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
       {
@@ -1066,7 +1066,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         tmp = tmp + FloatToString(args[1]);
       else
         tmp = tmp + *args_str[1];
-      webSocket.sendTXT(0, tmp.c_str());
+      WebSocketSend(  tmp.c_str());
       return PARSER_TRUE;
     }
     else if ( fname == F("log") && num_args >= 1 )
@@ -1077,7 +1077,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       else
         tmp = tmp + *args_str[0];
 
-      webSocket.sendTXT(0, tmp.c_str());
+      WebSocketSend(  tmp.c_str());
       return PARSER_TRUE;
     }
     else if ( fname == F("getevent") && num_args == 0 )

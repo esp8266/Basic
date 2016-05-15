@@ -57,7 +57,7 @@ String RunningProgramGui()
 void PrintAndWebOut(String itemToBePrinted)
 {
   Serial.println(itemToBePrinted);
-  webSocket.sendTXT(0, "print~^`" + itemToBePrinted);
+  WebSocketSend( "print~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);
@@ -73,7 +73,7 @@ void PrintAndWebOut(String itemToBePrinted)
 
 void AddToWebOut(String itemToBePrinted)
 {
-  webSocket.sendTXT(0, "wprint~^`" + itemToBePrinted);
+  WebSocketSend( "wprint~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + itemToBePrinted);
@@ -91,7 +91,7 @@ void SendAllTheVars()
   for (int i = 0; i < TotalNumberOfVariables; i++)
   {
     if (AllMyVariables[i].getName() == "") break;
-    webSocket.sendTXT(0, "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
+    WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
     delay(0);
     Serial.println(i);
   }
@@ -249,7 +249,7 @@ String GenerateIDtag(String TempateString)
 
 String RequestWebSocket(String Request)
 {
-  webSocket.sendTXT(0, Request);
+  WebSocketSend(  Request);
   WebSockMessage = "";
   for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
   {
@@ -258,6 +258,17 @@ String RequestWebSocket(String Request)
   }
   return WebSockMessage;
 }
+
+
+void WebSocketSend(String MessageToSend)
+{
+  for (byte i = 0; i <= 5; i++)
+  {
+    if (WebSocketTimeOut[i] + 60000 >=  millis()) webSocket.sendTXT(i, MessageToSend);
+    delay(0);
+  }
+}
+
 
 
 
@@ -275,21 +286,24 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         Serial.print(" winsock connected ");
         Serial.println(ip.toString());
         // send message to client
-        webSocket.sendTXT(num, "Connected");
+        WebSocketSend( "Connected");
       }
       break;
     case WStype_TEXT:
-      if (num != 0) return;  // accept commands only from the client 0
       if (lenght == 0)
       {
         WebSockMessage == "";
         break;
       }
       WebSockMessage = String((char*)payload);
-      if (WebSockMessage == "OK")
+      if (WebSockMessage == "OK") {
+        WebSocketTimeOut[num] = millis();
         break;
+      }
+
       // Serial.print(num);
       // Serial.print(" get text ");
+
       Serial.println(WebSockMessage);
 
       if (WebSockMessage == F("cmd:stop"))
@@ -369,7 +383,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
           RunningProgramCurrentLine = WebSockEventBranchLine + 1; // gosub after the WebSockEventBranch label
           WebSockEventBranchLine = - WebSockEventBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
         }
-        webSocket.sendTXT(num, "_");
+        WebSocketSend(  "_");
         break;
       }
 
@@ -384,7 +398,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
           RunningProgramCurrentLine = WebSockChangeBranchLine + 1; // gosub after the WebSockChangeBranch label
           WebSockChangeBranchLine = - WebSockChangeBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
         }
-        webSocket.sendTXT(num, "_");
+        WebSocketSend( "_");
         break;
       }
       break;

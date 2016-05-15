@@ -357,30 +357,7 @@ void ExicuteTheCurrentLine()
   }
 
 
-  if ( Param0 == F("po"))
-  {
 
-    valParam2 = VarialbeLookup(Param2).toInt();
-
-    UniversalPinIO("po", VarialbeLookup(Param1), valParam2);
-    return;
-  }
-
-
-  if ( Param0 == F("pwi"))
-  {
-    SetMeThatVar(Param2, String(UniversalPinIO("pwi", VarialbeLookup(Param1), 0)), PARSER_TRUE);
-    return;
-  }
-
-  if ( Param0 == F("pwo"))
-  {
-
-    valParam2 = VarialbeLookup(Param2).toInt();
-
-    UniversalPinIO("pwo", VarialbeLookup(Param1), valParam2);
-    return;
-  }
 
   if ( Param0 == F("pwmfreq"))
   {

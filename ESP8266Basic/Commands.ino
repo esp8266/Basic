@@ -1,7 +1,10 @@
 parser_data pd;
 int num_args;
-PARSER_PREC args[PARSER_MAX_ARGUMENT_COUNT];
+PARSER_PREC args[PARSER_MAX_ARGUMENT_COUNT]; 
 String *args_str[PARSER_MAX_ARGUMENT_COUNT];
+extern String args_var[PARSER_MAX_ARGUMENT_COUNT];
+extern int args_var_pos;
+extern int args_var_level;
 
 void InitCommandParser()
 {
@@ -22,9 +25,13 @@ int ExtractArguments(String &inData)
   pd.str = inData.c_str();
   pd.len = inData.length() + 1; // important the +1 as this permit to touch the '\0'
   pd.error = NULL; // reset the previous error
+  args_var_pos = args_var_pos = 0;
+  for (int i = 0; i < PARSER_MAX_ARGUMENT_COUNT; i++)
+    args_var[i] = "";
   r = parser_read_argument_list( &pd, &num_args, args, args_str);
   if (pd.error != NULL)
     PrintAndWebOut(String(pd.error));
+
   return r;
 }
 
@@ -40,6 +47,7 @@ void clear_stacks()
   return_Stack.clear(); // clear the return stack
   forNextStack.clear(); // clear the for next stack
   doLoopStack.clear(); // clear the do loop stack
+  form1.clear();
 }
 
 void HaltBasic(String err_mess)
@@ -116,7 +124,7 @@ void ExicuteTheCurrentLine()
       String Comparaison = inData.substring(2, inData.length() - 5);  // from the 'if' and 'then' (length - 5 chars ' then')
       Comparaison.trim();
       //Serial.println(Comparaison);
-  
+
       if (evaluate(Comparaison) != "-1") // if expression is false goto else or, if not defined, to endif
       {
         else_pos = IfBlockList.getElse(RunningProgramCurrentLine);
@@ -129,17 +137,17 @@ void ExicuteTheCurrentLine()
         return;
       }
       else    // if the expression is true, continue
-        return;  
+        return;
     }
-    
+
     // works as before when the command is style : if a = b then print a else print d
-    
+
     if (then_pos == -1) // the "then " is not found
     {
       HaltBasic(F("Syntax error in if command"));
       return;
     }
-    
+
     String Comparaison = inData.substring(2, then_pos);
     Comparaison.trim();
     //Serial.println(Comparaison);
@@ -181,37 +189,37 @@ void ExicuteTheCurrentLine()
     // no action
     return;
   }
-  
+
   if (Param0 == F("for"))
   {
     if (forNextStack.setFor(inData, RunningProgramCurrentLine) == false)
       HaltBasic(F("Syntax error in For "));
 
     return;
-    
+
   }
 
 
 
   if (Param0 == F("next"))
   {
-     r = forNextStack.checkNext(inData);
-     if ( r > 0 )
-     {
-        RunningProgramCurrentLine = r;
-        return;
-     }
+    r = forNextStack.checkNext(inData);
+    if ( r > 0 )
+    {
+      RunningProgramCurrentLine = r;
+      return;
+    }
 
-     if (r == 0)
-     {
-       return;
-     }
+    if (r == 0)
+    {
+      return;
+    }
 
-     if ( r == -1)
-     {
-       HaltBasic(F("Next without for "));
-     }
-     
+    if ( r == -1)
+    {
+      HaltBasic(F("Next without for "));
+    }
+
   }
 
 
@@ -223,34 +231,34 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("loop"))
   {
-     r = doLoopStack.checkLoop(inData);
-     if ( r > 0 )
-     {
-        RunningProgramCurrentLine = r;
-        return;
-     }
+    r = doLoopStack.checkLoop(inData);
+    if ( r > 0 )
+    {
+      RunningProgramCurrentLine = r;
+      return;
+    }
 
-     if (r == 0)
-     {
-       return;
-     }
+    if (r == 0)
+    {
+      return;
+    }
 
-     if ( r == -1)
-     {
-       HaltBasic(F("loop without do "));
-       return;
-     }
+    if ( r == -1)
+    {
+      HaltBasic(F("loop without do "));
+      return;
+    }
 
-     if ( r == -2)
-     {
-       HaltBasic(F("loop {until | while} not valid "));
-       return;
-     }
+    if ( r == -2)
+    {
+      HaltBasic(F("loop {until | while} not valid "));
+      return;
+    }
 
-    
+
   }
 
-  
+
   if (Param0 == F("debugon"))
   {
     BasicDebuggingOn = 1;
@@ -457,9 +465,9 @@ void ExicuteTheCurrentLine()
       return;
     }
     PrintAndWebOut(F("timercb line not found!"));
-    return;  
+    return;
   }
-  
+
   if ( Param0 == F("sleep"))
   {
     // this command needs to be checked!
@@ -511,12 +519,15 @@ void ExicuteTheCurrentLine()
     WebSocketSend(  evaluate(Param1).c_str());
     return;
   }
-      
+
   if (Param0 == F("serial2begin"))  // new command serial2begin baudrate, pin TX, pin RX
   {
     r = ExtractArguments(inData);
     if (args[0] <= 0)
-      {  PrintAndWebOut(F("Serial2Begin: baudrate must be > 0"));  return; }
+    {
+      PrintAndWebOut(F("Serial2Begin: baudrate must be > 0"));
+      return;
+    }
     delete swSer; // close eventually the previous instance of the sw serial port
     switch (num_args)
     {
@@ -524,7 +535,7 @@ void ExicuteTheCurrentLine()
         swSer = new SoftwareSerial(12, 2, false, 256);  // pin 12 RX, pin 2 TX, no inverse logic, 256 bytes buffer
         swSer->begin(args[0]);
         break;
-        
+
       case 2:
         swSer = new SoftwareSerial(12, args[1], false, 256);  // pin 12 RX, pin x TX, no inverse logic, 256 bytes buffer
         swSer->begin(args[0]);
@@ -533,11 +544,11 @@ void ExicuteTheCurrentLine()
       case 3:
         swSer = new SoftwareSerial(args[2], args[1], false, 256);  // pin y RX, pin x TX, no inverse logic, 256 bytes buffer
         swSer->begin(args[0]);
-        break;        
+        break;
     }
     return;
   }
-  
+
   if (Param0 == F("serial2end"))
   {
     delete swSer;
@@ -668,7 +679,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("image"))
   {
-    
+
     String tempInfo = GenerateIDtag(normalImage);
     tempInfo.replace(F("name"), GetMeThatVar(Param1));
     AddToWebOut(tempInfo);
@@ -741,20 +752,22 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("slider"))
   {
     NewGuiItemAddedSinceLastWait = 1;
+    r = ExtractArguments(inData);
     String tempSlider = GenerateIDtag(Slider);
-    VarialbeLookup(Param1);
+    VarialbeLookup(args_var[0]);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "", PARSER_TRUE);
-      GetMeThatVar(Param1);
+      SetMeThatVar(args_var[0], "", PARSER_TRUE);
+      GetMeThatVar(args_var[0]);
     }
     tempSlider.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempSlider.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
-    tempSlider.replace(F("minval"),  GetMeThatVar(Param2));
-    tempSlider.replace(F("maxval"),  GetMeThatVar(Param3));
+    tempSlider.replace(F("minval"), FloatToString(args[1]));
+    tempSlider.replace(F("maxval"), FloatToString(args[2]));
 
     HTMLout += tempSlider;
+    DeAllocateArguments();  // don't forget to call this function after each ExtractArguments
     return;
   }
 
@@ -763,32 +776,35 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("dropdown") | Param0 == F("listbox"))
   {
+    r = ExtractArguments(inData);
     NewGuiItemAddedSinceLastWait = 1;
     String tempDropDownList = GenerateIDtag(DropDownList);
     String tempDropDownListOpptions  = DropDownListOpptions;
     String TempItems;
     String TempBla;
 
-    Param1 = GetMeThatVar(Param1);
+
+    Param3 = String(args[2]);
+
 
     for (int i = 0; i <= 20; i++)
     {
       tempDropDownListOpptions  = DropDownListOpptions;
-      TempBla = getValue(String(Param1 + ","), ',', i);
+      TempBla = getValue(String(*args_str[1] + ","), ',', i);
       TempBla.replace(",", "");
-      if (TempBla != "") {
-
+      if (TempBla != "")
+      {
         tempDropDownListOpptions.replace(F("item"),  TempBla);
         TempItems = String( TempItems + tempDropDownListOpptions);
       }
       delay(0);
     }
 
-    Param2 = GetMeThatVar(Param2);
+    VarialbeLookup(args_var[0]);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param2, "", PARSER_STRING);
-      GetMeThatVar(Param2);
+      SetMeThatVar(args_var[0], "", PARSER_STRING);
+      GetMeThatVar(args_var[0]);
     }
 
     tempDropDownList.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
@@ -797,6 +813,7 @@ void ExicuteTheCurrentLine()
     tempDropDownList.replace(F("theSize"), String(Param3.toInt()));
 
     HTMLout += tempDropDownList;
+    DeAllocateArguments();
     return;
   }
 
@@ -806,12 +823,15 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("button"))
   {
+    r = ExtractArguments(inData);
     NewGuiItemAddedSinceLastWait = 1;
     String tempButton = GenerateIDtag(GOTObutton);
-    tempButton.replace(F("gotonotext"),  GetMeThatVar(Param1));
+    tempButton.replace(F("gotonotext"),  *args_str[0]);
 
-    tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Param2)));
+    tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(*args_str[1])));
+    //Serial.println(*args_str[1]);
     HTMLout += tempButton;
+    DeAllocateArguments();
     return;
   }
 
@@ -861,7 +881,7 @@ void ExicuteTheCurrentLine()
 
 
 
-  
+
   //PrintAndWebOut("Just Passed the Wait Command");
 
   if (Param0 == F("cls"))
@@ -958,7 +978,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("input"))
   {
-    
+
     if (Param2 == "")
     {
       SetMeThatVar(Param1, getSerialInput(), PARSER_STRING);
@@ -1001,7 +1021,7 @@ void ExicuteTheCurrentLine()
     SetMeThatVar(Param1, Param2, PARSER_STRING);
     return;
   }
-    
+
   if (Param0 == F("serialflush"))
   {
 
@@ -1022,7 +1042,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("goto"))
   {
     if ((r = JumpList.getPos(Param1)) != -1)
-    {    
+    {
       RunningProgramCurrentLine = r - 1;
       return;
     }
@@ -1035,9 +1055,9 @@ void ExicuteTheCurrentLine()
   {
     if ((r = JumpList.getPos(Param1)) != -1)
     {
-        return_Stack.push(RunningProgramCurrentLine);
-        RunningProgramCurrentLine = r - 1;
-        return;
+      return_Stack.push(RunningProgramCurrentLine);
+      RunningProgramCurrentLine = r - 1;
+      return;
     }
     PrintAndWebOut(String(F("Gosub Label not found:")) + Param1);
     return;
@@ -1058,6 +1078,7 @@ void ExicuteTheCurrentLine()
     Serial2BranchLine = abs(Serial2BranchLine); // restore the serial2branch command
     IRBranchLine = abs(IRBranchLine); // restore the IRbranch command
     TimerCBBranchLine = abs(TimerCBBranchLine); // restore the timercb command
+    TouchBranchLine = abs(TouchBranchLine); // restore the TouchBranch command
     WebSockEventBranchLine = abs(WebSockEventBranchLine); // restore the websockevent command
     WebSockChangeBranchLine = abs(WebSockChangeBranchLine); // restore the websockchange command
     webSocket.loop();
@@ -1103,7 +1124,8 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("ap"))
   {
-    CreateAP(GetMeThatVar(Param1), GetMeThatVar(Param2));
+    //CreateAP(GetMeThatVar(Param1), GetMeThatVar(Param2));
+    CreateAP(GetMeThatVar(Param1), GetMeThatVar(Param2), LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
     return;
   }
 
@@ -1159,7 +1181,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("udpbegin"))  // the command is : udpbegin port
   {
     String ar = inData.substring(Param0.length() + 1);    // starts just after the command
-    int v = evaluate(ar).toInt();        
+    int v = evaluate(ar).toInt();
     udp.begin(v);
 
     return;
@@ -1184,12 +1206,12 @@ void ExicuteTheCurrentLine()
       }
       udp.beginMulticast(WiFi.localIP(), RemoteIP, args[1]);
     }
-     
+
     DeAllocateArguments();
     return;
   }
 
-  
+
   if (Param0 == F("udpwrite"))  // the command is : udpwrite ip_address, port, message
   {
     r = ExtractArguments(inData);
@@ -1242,18 +1264,18 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("udpreply"))  // the command is : udpreply message
   {
     String ar = inData.substring(Param0.length() + 1);    // starts just after the command
-    String rep = evaluate(ar); 
+    String rep = evaluate(ar);
     udp.beginPacket(UdpRemoteIP, UdpRemotePort);
     //    Serial.println(UdpRemoteIP);
     //    Serial.println(UdpRemotePort);
-    
+
     udp.write(rep.c_str());
     udp.endPacket();
     return;
   }
 
-  
-  
+
+
   if (Param0 == F("udpstop"))
   {
     udp.stop();
@@ -1272,7 +1294,7 @@ void ExicuteTheCurrentLine()
     PrintAndWebOut(F("UdpBranch line not found!"));
     //    Serial.print("udpbranch");
     //    Serial.println(UdpBranchLine);
-    return;    
+    return;
   }
 
   if (Param0 == F("serialbranch"))
@@ -1285,7 +1307,7 @@ void ExicuteTheCurrentLine()
       return;
     }
     PrintAndWebOut(F("SerialBranch line not found!"));
-    return;    
+    return;
   }
 
   if (Param0 == F("serial2branch"))
@@ -1298,8 +1320,8 @@ void ExicuteTheCurrentLine()
       return;
     }
     PrintAndWebOut(F("Serial2Branch line not found!"));
-    return;    
-  }  
+    return;
+  }
 
   if (Param0 == F("irbranch"))
   {
@@ -1311,8 +1333,8 @@ void ExicuteTheCurrentLine()
       return;
     }
     PrintAndWebOut(F("IRBranch line not found!"));
-    return;    
-  }    
+    return;
+  }
 
   if (Param0 == F("websockeventbranch"))
   {
@@ -1324,8 +1346,8 @@ void ExicuteTheCurrentLine()
       return;
     }
     PrintAndWebOut(F("WebSockEventBranch line not found!"));
-    return;    
-  }    
+    return;
+  }
 
   if (Param0 == F("websockchangebranch"))
   {
@@ -1337,11 +1359,23 @@ void ExicuteTheCurrentLine()
       return;
     }
     PrintAndWebOut(F("WebSockChangeBranch line not found!"));
-    return;    
-  }    
+    return;
+  }
 
+  if (Param0 == F("touchbranch"))
+  {
+    TouchBranchLine = 0;
+    int i;
+    if ((i = JumpList.getPos(Param1)) != -1)
+    {
+      TouchBranchLine = i - 1;
+      return;
+    }
+    PrintAndWebOut(F("TouchBranch line not found!"));
+    return;
+  }
   ////////////////////////////
-  
+
   /////// NEW mid STUFF //////
   if ( Param0.startsWith(F("mid(")) )
   {
@@ -1367,27 +1401,27 @@ void ExicuteTheCurrentLine()
       return;
     }
     Param1 = inData.substring(4 , i);
-     r = ExtractArguments(Param1);
+    r = ExtractArguments(Param1);
     DeAllocateArguments();
     if ( (num_args != 2) && (num_args != 3) )
     {
       PrintAndWebOut(F("Mid: number of arguments not valid"));
       return;
     }
-     
- 
+
+
     // we need to check if the args are valid
     // first we must extract the variable name
     int com = inData.indexOf(',');
     Param2 = inData.substring(4, com);
     Param2.trim();
-     r = VariablePosition(Param2);
+    r = VariablePosition(Param2);
     if (r == -1)
     {
       PrintAndWebOut(F("Mid: destination variable not defined"));
       return;
     }
-     
+
     Param3 = evaluate(inData.substring( eq + 1 ));
     if (parser_result != PARSER_STRING)
     {
@@ -1427,7 +1461,7 @@ void ExicuteTheCurrentLine()
 
       Param1 = inData.substring(3, r); // array name
       Param1.trim();
-      if (Param1 == "") 
+      if (Param1 == "")
       {
         PrintAndWebOut(F("DIM: the array name is missing"));
         return;
@@ -1435,7 +1469,7 @@ void ExicuteTheCurrentLine()
       Param2 = inData.substring(r + 1 , i); // arguments
       r = ExtractArguments(Param2);
       DeAllocateArguments();
-      if (num_args != 1) 
+      if (num_args != 1)
       {
         PrintAndWebOut(F("DIM: number of arguments must be 1"));
         return;
@@ -1444,7 +1478,7 @@ void ExicuteTheCurrentLine()
       // here we are OK, we can create the array; for the moment array with $ are string, without float
       // we should check before if the same array name exists
       if ((r = Search_Array(Param1)) != -1)
-         basic_arrays[r].remove();
+        basic_arrays[r].remove();
 
       if ( (r = Search_First_Available_Array()) == -1)
       {
@@ -1463,18 +1497,18 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("undim"))
   {
-    // remove an already dimensioned array; maybe the name "undim" should be modified 
+    // remove an already dimensioned array; maybe the name "undim" should be modified
     if ( (r = Search_Array(Param1)) == -1)
     {
       PrintAndWebOut(F("UNDIM: array not defined"));
       return;
     }
-        
+
     basic_arrays[r].remove();
     return;
   }
 
-  
+
   /// NEW array identification //
   if ((r = Param0.indexOf('(')) != -1) // there is a parenthesys in the command; maybe it's an array
   {
@@ -1496,26 +1530,26 @@ void ExicuteTheCurrentLine()
     int eq = inData.indexOf('=', i);
     if (eq != -1) // the '=' is present on the line; so this should be an array init
     {
-        //{  PrintAndWebOut(F("Array: missing = on the line"));  return; }      
+      //{  PrintAndWebOut(F("Array: missing = on the line"));  return; }
       Param1 = Param0.substring(0, r); // array name
       Param1.trim();
       Param2 = inData.substring(r + 1 , i); // arguments
       r = ExtractArguments(Param2);
       DeAllocateArguments();
-      if (num_args != 1) 
+      if (num_args != 1)
       {
         PrintAndWebOut(F("Array: number of arguments must be 1"));
         return;
       }
-  
+
       Param3 = evaluate(inData.substring( eq + 1 ));
-  
+
       if ( (r = Search_Array(Param1)) == -1)
       {
         PrintAndWebOut(F("Array not defined"));
         return;
       }
-  
+
       if (basic_arrays[r].Format == PARSER_STRING) // string format
       {
         basic_arrays[r].setString(args[0], Param3);
@@ -1597,3 +1631,20 @@ void ExicuteTheCurrentLine()
   //WaitForTheInterpertersResponse = 1;
   return;
 }
+
+
+IPAddress StringToIP(String x)
+{
+  IPAddress _IP;
+  // convert it from String to int
+  int st = 0;
+  int en;
+  for (int i = 0; i < 4; i++)
+  {
+    en = x.indexOf('.', st);
+    _IP[i] =  x.substring(st, en).toInt();
+    st = en + 1;
+  }
+  return _IP;
+}
+

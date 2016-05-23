@@ -367,6 +367,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         Serial.println(getValue(WebSockMessage, ':', 1).toInt());
         Serial.println(getValue(String(WebSockMessage + ":"), ':', 2));
         AllMyVariables[getValue(WebSockMessage, ':', 1).toInt()].setVar(getValue(WebSockMessage, ':', 2));
+        WebSocketSend( "var~^`" + String(getValue(WebSockMessage, ':', 1).toInt()) + "~^`" + String(AllMyVariables[getValue(WebSockMessage, ':', 1).toInt()].getVar()));
         break;
       }
 

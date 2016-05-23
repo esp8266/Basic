@@ -19,6 +19,10 @@ using namespace std;
 extern char* _parser_error_msg;
 
 #include "expression_parser_string.h"
+String args_var[PARSER_MAX_ARGUMENT_COUNT];
+String tmp_var;
+int args_var_pos = 0;
+int args_var_level = 0;
 
 int ICACHE_FLASH_ATTR parse_expression( const char *expr, PARSER_PREC *value, String &value_str )
  {
@@ -28,6 +32,10 @@ int ICACHE_FLASH_ATTR parse_expression( const char *expr, PARSER_PREC *value, St
 int ICACHE_FLASH_ATTR parse_expression_with_callbacks( const char *expr, parser_variable_callback variable_cb, parser_function_callback function_cb, void *user_data, PARSER_PREC *value, String &str_value ){
 	int r;
 	parser_data pd;
+	args_var_level = 0;
+	args_var_pos = 0;
+	for (int i=0; i<PARSER_MAX_ARGUMENT_COUNT; i++)
+		args_var[i] = "";
 	parser_data_init( &pd, expr, variable_cb, function_cb, user_data );
 	r = parser_parse( &pd, value, str_value );
 	if( pd.error ){
@@ -248,6 +256,11 @@ int ICACHE_FLASH_ATTR parser_read_argument_list( parser_data *pd, int *num_args,
 		r = parser_read_expr( pd, &args[*num_args], ss );
 		// here we try to characterize each element; we could add another array to store the kind of argument available (Double or String)
 		// but we can simply put a nan when the arg is a String and a '\0' when the arg is a Number
+		if (args_var_level <= 1)
+		{
+			args_var[args_var_pos++] = tmp_var;
+			tmp_var = "";
+		}
  		if (r == PARSER_STRING)
 		{
 			args[*num_args] = sqrt(-1); // nan
@@ -398,6 +411,7 @@ int ICACHE_FLASH_ATTR parser_read_builtin( parser_data *pd, PARSER_PREC *value, 
  				v0 = parser_round( v0 );
  #endif
 		 } else {
+				args_var_level++;
 				r = parser_read_argument_list( pd, &num_args, args, args_str);
 				delay(0);
 				if( pd->function_cb && (r = pd->function_cb( pd->user_data, token, num_args, args, &v1, args_str, &v1_str)) ){
@@ -409,6 +423,7 @@ int ICACHE_FLASH_ATTR parser_read_builtin( parser_data *pd, PARSER_PREC *value, 
 				// delete all allocated String arguments
 				for (int i=0; i<num_args; i++)
 					delete args_str[i];	
+				args_var_level--;
 				// free the allocated memory
 				//free(args);
 			}
@@ -421,6 +436,8 @@ int ICACHE_FLASH_ATTR parser_read_builtin( parser_data *pd, PARSER_PREC *value, 
 			if( pd->variable_cb != NULL && (r = pd->variable_cb( pd->user_data, token, &v1, &v1_str )) ){
 					v0 = v1;
 					str_value = v1_str;
+					if (tmp_var == "")
+						tmp_var = token;  // take the name of the variable to be used for variable lookup
 			} else {
 				parser_error( pd, PSTR("Could not look up value for variable!" ));
 			}

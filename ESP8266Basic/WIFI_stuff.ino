@@ -34,24 +34,27 @@ delay(1000);
   if (NetworkStaticIP != "" & NetworkGateway != "" & NetworkSubnet != "" )
   {
 
-    NetworkStaticIP += ".";
-    NetworkGateway += ".";
-    NetworkSubnet += ".";
-    IPAddress ip(     getValue(NetworkStaticIP, '.', 0).toInt(), getValue(NetworkStaticIP, '.', 1).toInt(), getValue(NetworkStaticIP, '.', 2).toInt(), getValue(NetworkStaticIP, '.', 3).toInt());
-    IPAddress gateway(getValue(NetworkGateway,  '.', 0).toInt(), getValue(NetworkGateway, '.', 1).toInt(), getValue(NetworkGateway, '.', 2).toInt(), getValue(NetworkGateway, '.', 3).toInt());
-    IPAddress subnet( getValue(NetworkSubnet,   '.', 0).toInt(), getValue(NetworkSubnet, '.', 1).toInt(), getValue(NetworkSubnet, '.', 2).toInt(), getValue(NetworkSubnet, '.', 3).toInt());
+    //NetworkStaticIP += ".";
+    //NetworkGateway += ".";
+    //NetworkSubnet += ".";
+    //IPAddress ip(     getValue(NetworkStaticIP, '.', 0).toInt(), getValue(NetworkStaticIP, '.', 1).toInt(), getValue(NetworkStaticIP, '.', 2).toInt(), getValue(NetworkStaticIP, '.', 3).toInt());
+    //IPAddress gateway(getValue(NetworkGateway,  '.', 0).toInt(), getValue(NetworkGateway, '.', 1).toInt(), getValue(NetworkGateway, '.', 2).toInt(), getValue(NetworkGateway, '.', 3).toInt());
+    //IPAddress subnet( getValue(NetworkSubnet,   '.', 0).toInt(), getValue(NetworkSubnet, '.', 1).toInt(), getValue(NetworkSubnet, '.', 2).toInt(), getValue(NetworkSubnet, '.', 3).toInt());
+    IPAddress ip = StringToIP(NetworkStaticIP);
+    IPAddress gateway = StringToIP(NetworkGateway);
+    IPAddress subnet = StringToIP(NetworkSubnet);
     WiFi.config(ip, gateway, subnet);
   }
 
 delay(1000);
 
-  if (WiFi.localIP().toString().endsWith(".0"))
-  {
-    Serial.println(WiFi.localIP());
-    CreateAP("", "");
-    return 0;
-  }
-  else
+//  if (WiFi.localIP().toString().endsWith(".0"))
+//  {
+//    Serial.println(WiFi.localIP());
+//    CreateAP("", "");
+//    return 0;
+//  }
+//  else
   {
     //configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
@@ -71,7 +74,7 @@ delay(1000);
 
 
 
-void CreateAP(String NetworkName, String NetworkPassword)
+void CreateAP(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
   WiFi.mode(WIFI_AP_STA);
   Serial.println(F("Creating WIFI access point"));
@@ -112,6 +115,16 @@ void CreateAP(String NetworkName, String NetworkPassword)
   }
   delay(2000);
 
+  if (NetworkStaticIP != "" & NetworkGateway != "" & NetworkSubnet != "" )
+  {
+    IPAddress ip = StringToIP(NetworkStaticIP);
+    IPAddress gateway = StringToIP(NetworkGateway);
+    IPAddress subnet = StringToIP(NetworkSubnet);
+    WiFi.softAPConfig(ip, gateway, subnet);  // this is the right command to change IP for STA mode
+    Serial.print(F("Station IP:"));
+    Serial.println(WiFi.softAPIP().toString());
+  }
+  
   SaveDataToFile("APname" ,  NetworkName);
   SaveDataToFile("APpass", NetworkPassword);
 }

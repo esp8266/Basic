@@ -111,7 +111,7 @@
 #define ILI9341_GREENYELLOW 0xAFE5      /* 173, 255,  47 */
 #define ILI9341_PINK        0xF81F
 
-//#define ILI9341_USE_DIGITAL_WRITE
+#define ILI9341_USE_DIGITAL_WRITE
 //#define ILI9341_USE_NO_CS
 #ifdef ESP8266
 //not working
@@ -166,7 +166,7 @@ class Adafruit_ILI9341 : public Adafruit_GFX {
    void area_update_start(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
    void area_update_data(uint8_t *data, uint32_t pixel);
    void area_update_end(void);
- private:
+ public:
 
   uint8_t  spiread(void);
 

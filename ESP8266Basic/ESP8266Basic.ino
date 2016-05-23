@@ -82,7 +82,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 2.0.Alpha 25";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 0";
 
 // SPI STUFF
 #include <SPI.h>
@@ -102,9 +102,17 @@ int IRBranchLine = 0;
 //#define TFT_CS 5
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 Adafruit_ILI9341 *tft = NULL; //= Adafruit_ILI9341(TFT_CS, TFT_DC);
+byte TFT_CS_pin, TFT_DC_pin;
+#include "TFT_Objects.h"
+TFT_Form form1(20);
 
-
-
+// touch stuff
+byte Touch_CS_pin;
+int TouchBranchLine = 0;
+int Touch_p = 0;
+unsigned int Touch_millis = 0;
+uint16_t touchX, touchY;
+uint16_t touchX_raw, touchY_raw;
 
 // The Math precision is defined, by default, inside expression_parser_string.h
 // there is a definition PARSER_PREC that can be double or float
@@ -153,7 +161,7 @@ ESP8266WebServer *server; //server(80);
 String HTMLout;
 PROGMEM const char InputFormText[] = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
 PROGMEM const char TextBox[] = R"=====(<input type="text" id="myid" name="variablenumber" value="variablevalue" onchange="objChange(this)">)=====";
-PROGMEM const char passwordbox[] = R"=====( <input type="password" id="myid" name="variablenumber" value="variablevalue">)=====";
+PROGMEM const char passwordbox[] = R"=====( <input type="password" id="myid" name="variablenumber" value="variablevalue" onchange="objChange(this)">)=====";
 PROGMEM const char Slider[] = R"=====( <input type="range" id="myid" name="variablenumber" min="minval" max="maxval" onchange="objChange(this)" value=variablevalue >)=====";
 PROGMEM const char GOTObutton[] =  R"=====(<button id="myid" onclick="cmdClick(this)" name="gotonobranch">gotonotext</button>)=====";
 PROGMEM const char GOTOimagebutton[] =  R"=====(<input type="image" id="myid" src="/file?file=gotonotext" value="gotonotext" name="gotonobranch">)=====";
@@ -185,6 +193,20 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 
 
 PROGMEM const char UploadPage[] = R"=====(
+<script>
+function sortOptions() {
+ list = document.getElementsByName("fileName")[0];
+ var copyOption = new Array();
+ for (var i=0;i<list.options.length;i++)
+   copyOption[i] = {value:list[i].value ,text:list[i].text}; 
+ copyOption.sort(function(a,b) { return a.value > b.value; });
+ for (var i=list.options.length-1;i>-1;i--)
+   list.options[i] = null;
+ for (var i=0;i<copyOption.length;i++)
+   list.options[list.length] = new Option(copyOption[i].text, copyOption[i].value, false, false);
+}
+</script>
+<body onload="sortOptions()">
 <form method='POST' action='/filemng' enctype='multipart/form-data'>
 <input type='file' name='Upload'>
 <input type='submit' value='Upload'>
@@ -490,11 +512,16 @@ Station Mode (Connect to your router):</th></tr>
 <tr><th><p align="right">Name:</p></th><th><input type="text" name="apName" value="*ap name*"></th></tr>
 <tr><th><p align="right">Pass:<br>Must be at least 8 characters</p></th><th><input type="password" name="apPass" value="*ap pass*"></th></tr>
 <tr><th>
+<br><br>IP Address (Station or AP mode):</th></tr>
+<tr><th><p align="right">IP address:</p></th><th><input type="text" name="ipaddress" value="*ipaddress*"></th></tr>
+<tr><th><p align="right">Subnet mask:</p></th><th><input type="text" name="subnetmask" value="*subnetmask*"></th></tr>
+<tr><th><p align="right">Default gateway:</p></th><th><input type="text" name="gateway" value="*gateway*"></th></tr>
+<tr><th><p align="right">Server listening port:</p></th><th><input type="text" name="listenport" value="*listenport*"></th></tr>
+<tr><th>
 <br><br>Log In Key (For Security):</th></tr>
 <tr><th><p align="right">Log In Key:</p></th><th><input type="password" name="LoginKey" value="*LoginKey*"></th></tr>
 <tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
 <tr><th><p align="right">Run default.bas at startup :</p></th><th><input type="checkbox" name="autorun" value="on" **autorun**> Enable<br></th></tr>
-<tr><th><p align="right">Server listening port:</p></th><th><input type="text" name="listenport" value="*listenport*"></th></tr>
 <tr><th><p align="right">OTA URL. Leave blank for default:</p></th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
 <tr><th>
 <input type="submit" value="Save" name="save">
@@ -717,23 +744,22 @@ void setup() {
 
   server->on("/debug", []()
   {
-    String WebOut = DebugPageHTML;
+    String WebOut = ""; // = DebugPageHTML;
 
-    File f = SPIFFS.open(String("/uploads/debug.html"), "r");
+    File f = SPIFFS.open(F("/uploads/debug.html"), "r");
     if (f)
     {
-      //Serial.print("lkjlkjkjlk");
-      //Serial.println(f.available());
-      String ss = f.readString();
-      //Serial.println(ss);
-      WebOut = WebOut + ss;
-      f.close();
+      server->streamFile(f, F("text/html"));
+    }
+    else
+    {
+       WebOut = F("File debug.html not found");
+       server->send(200, "text/html", WebOut);
     }
 
     f.close();
 
 
-    server->send(200, "text/html", WebOut);
   });
 
   server->onFileUpload(handleFileUpdate);
@@ -971,15 +997,15 @@ void setup() {
   //LoadBasicProgramFromFlash("");
 
 
-  if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"), "", "", "") == 0)
+  if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"), LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask")) == 0)
   {
     if (LoadDataFromFile("APname") == "")
     {
-      CreateAP("", "");
+      CreateAP("", "", LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
     }
     else
     {
-      CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"));
+      CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"), LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
     }
   }
 
@@ -1025,6 +1051,9 @@ String SettingsPageHandeler()
   String otaUrl = LoadDataFromFile("otaUrl");
   String autorun = LoadDataFromFile("autorun");
   String listenport = LoadDataFromFile("listenport");
+  String ipaddress = LoadDataFromFile("ipaddress");
+  String subnetmask = LoadDataFromFile("subnetmask");
+  String gateway = LoadDataFromFile("gateway");
 
   // listening port - by default goes to 80 -
   if (listenport.toInt() == 0)
@@ -1076,6 +1105,9 @@ String SettingsPageHandeler()
       ShowMenueBar = GetRidOfurlCharacters(server->arg("showMenueBar"));
       otaUrl       = GetRidOfurlCharacters(server->arg("otaurl"));
       autorun      = GetRidOfurlCharacters(server->arg("autorun"));
+      ipaddress   = GetRidOfurlCharacters(server->arg("ipaddress"));
+      subnetmask   = GetRidOfurlCharacters(server->arg("subnetmask"));
+      gateway   = GetRidOfurlCharacters(server->arg("gateway"));
       listenport   = GetRidOfurlCharacters(server->arg("listenport"));
 
       SaveDataToFile("WIFIname" , staName);
@@ -1086,6 +1118,9 @@ String SettingsPageHandeler()
       SaveDataToFile("ShowMenueBar" , ShowMenueBar);
       SaveDataToFile("otaUrl" , otaUrl);
       SaveDataToFile("autorun" , autorun);
+      SaveDataToFile("ipaddress" , ipaddress);
+      SaveDataToFile("subnetmask" , subnetmask);
+      SaveDataToFile("gateway" , gateway);
       SaveDataToFile("listenport" , listenport);
 
     }
@@ -1104,6 +1139,10 @@ String SettingsPageHandeler()
     WebOut.replace(F("*LoginKey*"), LoginKey);
     WebOut.replace(F("*BasicVersion*"), BasicVersion);
     WebOut.replace(F("*otaurl*"), otaUrl);
+
+    WebOut.replace(F("*ipaddress*"), ipaddress);
+    WebOut.replace(F("*subnetmask*"), subnetmask);
+    WebOut.replace(F("*gateway*"), gateway);    
     WebOut.replace(F("*listenport*"), listenport);
 
     if ( ShowMenueBar == F("off"))
@@ -1131,7 +1170,15 @@ String SettingsPageHandeler()
 
 
 String getContentType(String filename) {
-  if (filename.endsWith(".htm")) return F("text/html");
+  String ret = F("text/plain");
+  if (filename.endsWith(".gz"))
+  {
+    ret = F("application/x-gzip");
+    filename = filename.substring(0, filename.length()-3);
+    Serial.println("getcontenttype " + filename);
+  }
+  
+       if (filename.endsWith(".htm")) return F("text/html");
   else if (filename.endsWith(".html")) return F("text/html");
   else if (filename.endsWith(".htm")) return F("text/html");
   else if (filename.endsWith(".css")) return F("text/css");
@@ -1144,7 +1191,7 @@ String getContentType(String filename) {
   else if (filename.endsWith(".pdf")) return F("application/x-pdf");
   else if (filename.endsWith(".zip")) return F("application/x-zip");
   else if (filename.endsWith(".gz")) return F("application/x-gzip");
-  return "text/plain";
+  return ret;
 }
 
 void StartUpProgramTimer()
@@ -1560,6 +1607,38 @@ void CheckForUdpData()
       TimerCBBranchLine = - TimerCBBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
     }
   }
+  if (TouchBranchLine > 0)
+  {
+    if ( millis() > (Touch_millis + 100) ) 
+    {
+      int raw;
+      int tt = ReadTouchXY(0, &raw);
+      if ((tt != -1) && (Touch_p == -1))
+      {
+//        Serial.print(tt & 0xffff);
+//        Serial.print(":");
+//        Serial.print(tt >> 16);
+//        Serial.print(" ");
+//        Serial.print(raw & 0xffff);
+//        Serial.print(":");
+//        Serial.print(raw >> 16);
+//        Serial.print(" ");
+//        Serial.println(Touch_p);
+        touchX = tt & 0xffff;
+        touchY = tt >> 16;
+        touchY_raw = raw & 0xffff;
+        touchY_raw = raw >> 16;
+        // if the program is in wait, it returns to the previous line to wait again
+        return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+        WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+        RunningProgramCurrentLine = TouchBranchLine + 1; // gosub after the IRBranch label
+        TouchBranchLine = - TouchBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command  
+      }
+      delay(0);
+      Touch_millis = millis();
+      Touch_p = tt;
+    }
+  }  
 }
 
 String getValueforPrograming(String data, char separator, int index)

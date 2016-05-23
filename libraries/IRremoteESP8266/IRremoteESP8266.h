@@ -125,11 +125,13 @@ public:
   void begin();
   void sendWhynter(unsigned long data, int nbits);
   void sendNEC(unsigned long data, int nbits);
+  void sendLG(unsigned long data, int nbits);
   void sendSony(unsigned long data, int nbits);
   // Neither Sanyo nor Mitsubishi send is implemented yet
   //  void sendSanyo(unsigned long data, int nbits);
   //  void sendMitsubishi(unsigned long data, int nbits);
   void sendRaw(unsigned int buf[], int len, int hz);
+  void sendGC(unsigned int buf[], int len);
   void sendRC5(unsigned long data, int nbits);
   void sendRC6(unsigned long data, int nbits);
   void sendDISH(unsigned long data, int nbits);

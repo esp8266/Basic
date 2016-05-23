@@ -18,6 +18,7 @@
  * JVC and Panasonic protocol added by Kristian Lauszus (Thanks to zenwheel and other people at the original blog post)
  * LG added by Darryl Smith (based on the JVC protocol)
  * Whynter A/C ARC-110WD added by Francesco Meschia
+ * Global Cache IR format sender added by Hisham Khalifa (http://www.hishamkhalifa.com)
  *
  * Updated by markszabo (https://github.com/markszabo/IRremoteESP8266) for sending IR code on ESP8266
  * Updated by Sebastien Warin (http://sebastien.warin.fr) for receiving IR code on ESP8266
@@ -108,6 +109,24 @@ void IRsend::sendNEC(unsigned long data, int nbits)
   space(0);
 }
 
+void IRsend::sendLG (unsigned long data, int nbits)
+{
+	enableIROut(38);
+	mark(LG_HDR_MARK);
+	space(LG_HDR_SPACE);
+	mark(LG_BIT_MARK);
+	for (unsigned long mask = 1UL << (nbits - 1); mask; mask >>= 1) {
+		if (data & mask) {
+			space(LG_ONE_SPACE);
+			mark(LG_BIT_MARK);
+		} else {
+			space(LG_ZERO_SPACE);
+			mark(LG_BIT_MARK);
+		}
+	}
+	space(0);
+}
+
 void IRsend::sendWhynter(unsigned long data, int nbits) {
 	enableIROut(38);
 	mark(WHYNTER_ZERO_MARK);
@@ -159,6 +178,31 @@ void IRsend::sendRaw(unsigned int buf[], int len, int hz)
     }
   }
   space(0); // Just to be sure
+}
+
+// Global Cache format w/o emitter ID or request ID. Starts from hertz, 
+// followed by number of times to emit (count),
+// followed by offset for repeats, followed by code as units of periodic time.
+void IRsend::sendGC(unsigned int buf[], int len)
+{
+  int khz = buf[0]/1000; // GC data starts with frequency in Hz.
+  enableIROut(khz); 
+  int periodic_time = 1000/khz;
+  int count = buf[1]; // Max 50 as per GC.
+
+  for (int i = 0; i < count; i++) {
+    int j = i > 0 ? buf[2] + 2 : 3; // Account for offset if we're repeating, otherwise start at index 3.
+    for (; j < len; j++) {
+      int microseconds = buf[j] * periodic_time; // Convert periodic units to microseconds. Minimum is 80 for actual GC units.
+      if (j & 1) {
+        mark(microseconds); // Our codes start at an odd index (not even as with sendRaw).
+      }
+      else {
+        space(microseconds);
+      }
+    }
+  }
+  space(0);
 }
 
 // Note: first bit must be a one (start bit)
@@ -410,7 +454,8 @@ static void ICACHE_FLASH_ATTR gpio_intr(void *arg) {
     static uint32_t start = 0;
     uint32_t now = system_get_time();
 	if (irparams.rcvstate == STATE_IDLE) {
-		irparams.rcvstate = STATE_MARK;	
+		irparams.rcvstate = STATE_MARK;
+		irparams.rawbuf[irparams.rawlen++] = 20;		
 	}
     else if (irparams.rawlen < RAWBUF) {
 		irparams.rawbuf[irparams.rawlen++] = (now - start) / USECPERTICK + 1;
@@ -981,10 +1026,10 @@ long IRrecv::decodeRC6(decode_results *results) {
 long IRrecv::decodePanasonic(decode_results *results) {
     unsigned long long data = 0;
 	int offset = 1;  // Dont skip first space    
-    /*if (!MATCH_MARK(results->rawbuf[offset], PANASONIC_HDR_MARK)) {
+    if (!MATCH_MARK(results->rawbuf[offset], PANASONIC_HDR_MARK)) {
         return ERR;
     }
-    offset++;*/		
+    offset++;		
     if (!MATCH_MARK(results->rawbuf[offset], PANASONIC_HDR_SPACE)) {
         return ERR;
     }
@@ -1109,7 +1154,7 @@ long IRrecv::decodeJVC(decode_results *results) {
 // SAMSUNGs have a repeat only 4 items long
 long IRrecv::decodeSAMSUNG(decode_results *results) {
   long data = 0;
-  int offset = 0;  // Dont skip first space
+  int offset = 1;  // Dont skip first space
   // Initial mark
   if (!MATCH_MARK(results->rawbuf[offset], SAMSUNG_HDR_MARK)) {
     return ERR;

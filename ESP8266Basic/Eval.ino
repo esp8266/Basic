@@ -2,6 +2,7 @@
 #include "expression_parser_string.h"
 
 extern char* _parser_error_msg;
+extern String args_var[PARSER_MAX_ARGUMENT_COUNT];
 
 String evaluate(String expr)
 {
@@ -29,8 +30,10 @@ String evaluate(String expr)
 
 }
 
-
-
+#include "Fonts/FreeSerifBold9pt7b.h"
+#include "Fonts/FreeSerifBold12pt7b.h"
+#include "Fonts/FreeSerifBold18pt7b.h"
+#include "Fonts/FreeSerifBold24pt7b.h"
 
 
 /**
@@ -68,50 +71,17 @@ int variable_callback( void *user_data, const char *name, float *value, String *
   }
   Name.toUpperCase();
   // now look for the constants
-  if (Name == F("D0")) {
-    *value = 16;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D1")) {
-    *value =  5;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D2")) {
-    *value =  4;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D3")) {
-    *value =  0;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D4")) {
-    *value =  2;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D5")) {
-    *value = 14;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D6")) {
-    *value = 12;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D7")) {
-    *value = 13;
-    return PARSER_TRUE;
-  }
-  if (Name == F("D8")) {
-    *value = 13;
-    return PARSER_TRUE;
-  }
-  if (Name == F("RX")) {
-    *value =  3;
-    return PARSER_TRUE;
-  }
-  if (Name == F("TX")) {
-    *value =  1;
-    return PARSER_TRUE;
-  }
+  if (Name == F("D0")) { *value = 16; return PARSER_TRUE;}
+  if (Name == F("D1")) { *value =  5; return PARSER_TRUE;}
+  if (Name == F("D2")) { *value =  4; return PARSER_TRUE;}
+  if (Name == F("D3")) { *value =  0; return PARSER_TRUE;}
+  if (Name == F("D4")) { *value =  2; return PARSER_TRUE;}
+  if (Name == F("D5")) { *value = 14; return PARSER_TRUE;}
+  if (Name == F("D6")) { *value = 12; return PARSER_TRUE;}
+  if (Name == F("D7")) { *value = 13; return PARSER_TRUE;}
+  if (Name == F("D8")) { *value = 13; return PARSER_TRUE;}
+  if (Name == F("RX")) { *value =  3; return PARSER_TRUE;}
+  if (Name == F("TX")) { *value =  1; return PARSER_TRUE;}
 
 
   // failed to find variable, return false
@@ -602,7 +572,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     pixels->show();
     return PARSER_STRING;
   }
-  else if ( fname == F("neostripcolor") | fname == F("neo.stripcolor") && num_args > 0 ) {
+  else if ( fname == F("neostripcolor")| fname == F("neo.stripcolor") && num_args > 0 ) {
     // function neostripcolor(start, end, r, g, b)
     if (pixels == NULL)
     {
@@ -798,7 +768,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     fname = fname.substring(4); // skip the term spi.
     if ( fname == F("setup") && num_args > 0 ) {
       SPI.begin();
-      switch (num_args)
+      switch(num_args)
       {
         case 1:  //spi.setup(speed)
           SPI.beginTransaction( SPISettings(args[0], MSBFIRST, SPI_MODE0));
@@ -927,15 +897,20 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if (fname.startsWith(F("tft.")) )      // block TFT functions; this reduces the number of compares
   {
     fname = fname.substring(4); // skip the term tft.
-    if ( fname == F("init") && num_args >= 2 ) {
+      if ( fname == F("setup") && num_args >= 2 ) {
       // function tft.init(TFT_CS, TFT_DC, Rotation)   init the ILI9341 display; Rotation can be from 0 to 3
       // create the class if not defined
       if (tft == NULL)
+        {
         tft = new Adafruit_ILI9341(args[0], args[1]);
+        }
+        TFT_CS_pin = args[0];
+        TFT_DC_pin = args[1];
       tft->begin();
       if (num_args > 2)
         tft->setRotation(args[2]);
       tft->fillScreen(ILI9341_BLACK);
+        form1.tft = tft;
       return PARSER_TRUE;
     }
     else if ( fname == F("fill") && num_args == 1 ) {
@@ -1001,6 +976,28 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       tft->setTextSize(args[0]);
       return PARSER_TRUE;
     }
+      else if ( fname == F("text.font") && num_args == 1 ) {
+        // function tft.text.size(size) 
+         switch ((int) args[0])
+         {
+            case 0:
+              tft->setFont(NULL);
+              break;
+            case 1:
+              tft->setFont(&FreeSerifBold9pt7b);
+              break;
+            case 2:
+              tft->setFont(&FreeSerifBold12pt7b);
+              break;
+            case 3:
+              tft->setFont(&FreeSerifBold18pt7b);
+              break;
+            case 4:
+              tft->setFont(&FreeSerifBold24pt7b);
+              break;
+         }
+         return PARSER_TRUE;
+      } 
     else if ( fname == F("print") && num_args == 1 ) {
       // function tft.text.size(size)
       if (args_str[0] != NULL)
@@ -1013,6 +1010,241 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         tft->println(*args_str[0]);
       return PARSER_STRING;
     }
+      else if ( fname == F("bmp") && num_args > 0 ) {
+        // function tft.bmp(filename, x, y, backColor)   // by default the color is transparent
+        uint16_t x = 0, y = 0;
+        int backColor = -1;
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.bmp() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (num_args > 2)
+        {
+          x = (uint16_t) args[1];
+          y = (uint16_t) args[2];
+        }
+        if (num_args > 3)
+          backColor = args[3];
+        show_bmp(*args_str[0], x, y, backColor);
+         return PARSER_TRUE;
+      }
+      else if ( fname == F("touch.setup") && num_args == 1 ) {
+        // function tft.touch.setup(CS_pin)   //set the pin used for the Touch CS
+         Touch_CS_pin = args[0];
+         pinMode(Touch_CS_pin, OUTPUT);
+         return PARSER_TRUE;
+      }      
+      else if ( fname == F("touch.calibrate") && num_args == 0 ) {
+        // function tft.calibrate() 
+         //calibrate();
+         return PARSER_TRUE;
+      }
+      else if ( fname == F("touchx") && num_args == 0 ) {
+        // function tft.touchx() 
+         *value = touchX;
+         return PARSER_TRUE;
+      }
+      else if ( fname == F("touchy") && num_args == 0 ) {
+        // function tft.touchy() 
+         *value = touchY;
+         return PARSER_TRUE;
+      }
+      else if ( fname == F("checktouch") && num_args == 0 ) {
+        // function tft.getitem() 
+         *value = form1.checkTouch(touchX, touchY);
+         return PARSER_TRUE;
+      }       
+      else if ( fname == F("obj.button") && num_args >= 5 ) {
+        // function tft.button("text", x,y,width,height, scale, forecolor ,backcolor)
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.button() : The first argument must be a string!")); return PARSER_FALSE; }
+        int obj = form1.add(BUTTON);
+        form1[obj]->x = args[1];
+        form1[obj]->y = args[2];
+        form1[obj]->width = args[3];
+        form1[obj]->height = args[4];
+        if (num_args >= 6)
+          form1[obj]->textsize = args[5];
+        else
+          form1[obj]->textsize = 2;
+        if (num_args >= 7)
+          form1[obj]->forecolor = args[6];
+        else
+          form1[obj]->forecolor = tft->color565(255,255,00);
+        if (num_args >= 8)
+          form1[obj]->backcolor = args[7];
+        else
+          form1[obj]->backcolor = tft->color565(100,100,100);
+        form1[obj]->label = *args_str[0];
+        form1.drawObject(obj);
+        *value = obj;
+        return PARSER_TRUE;
+      }  
+      else if ( fname == F("obj.label") && num_args >= 5 ) {
+        // function tft.label("text", x,y,width,height,scale, forecolor ,backcolor)
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.label() : The first argument must be a string!")); return PARSER_FALSE; }
+        int obj = form1.add(LABEL);
+        form1[obj]->x = args[1];
+        form1[obj]->y = args[2];
+        form1[obj]->width = args[3];
+        form1[obj]->height = args[4];
+        if (num_args >= 6)
+          form1[obj]->textsize = args[5];
+        else
+          form1[obj]->textsize = 2;
+        if (num_args >= 7)
+          form1[obj]->forecolor = args[6];
+        else
+          form1[obj]->forecolor = tft->color565(255,255,00);
+        if (num_args >= 8)
+          form1[obj]->backcolor = args[7];
+        else
+          form1[obj]->backcolor = tft->color565(100,100,100);
+        
+        form1[obj]->label = *args_str[0];
+        form1.drawObject(obj);
+        *value = obj;
+        return PARSER_TRUE;
+      }
+      else if ( fname == F("obj.checkbox") && num_args >= 4 ) {
+        // function tft.checkbox("text", x,y,width,checked, scale, forecolor ,backcolor)
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.checkbox() : The first argument must be a string!")); return PARSER_FALSE; }
+        int obj = form1.add(CHECKBOX);
+        form1[obj]->x = args[1];
+        form1[obj]->y = args[2];
+        form1[obj]->width = args[3];
+        if (num_args >= 5)
+          form1[obj]->checked = args[4];
+        else
+          form1[obj]->checked = false;
+        if (num_args >= 6)
+          form1[obj]->textsize = args[5];
+        else
+          form1[obj]->textsize = 2;
+        if (num_args >= 7)
+          form1[obj]->forecolor = args[6];
+        else
+          form1[obj]->forecolor = tft->color565(255,255,00);
+        if (num_args >= 8)
+          form1[obj]->backcolor = args[7];
+        else
+          form1[obj]->backcolor = tft->color565(100,100,100);
+        
+        form1[obj]->label = *args_str[0];
+        form1.drawObject(obj);
+        *value = obj;
+        return PARSER_TRUE;
+      }
+      else if ( fname == F("obj.radio") && num_args >= 4 ) {
+        // function tft.checkbox("text", x,y,width,checked, scale, forecolor ,backcolor)
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
+        int obj = form1.add(RADIO);
+        form1[obj]->x = args[1];
+        form1[obj]->y = args[2];
+        form1[obj]->width = args[3];
+        if (num_args >= 5)
+          form1[obj]->checked = args[4];
+        else
+          form1[obj]->checked = false;
+        if (num_args >= 6)
+          form1[obj]->textsize = args[5];
+        else
+          form1[obj]->textsize = 2;
+        if (num_args >= 7)
+          form1[obj]->forecolor = args[6];
+        else
+          form1[obj]->forecolor = tft->color565(255,255,00);
+        if (num_args >= 8)
+          form1[obj]->backcolor = args[7];
+        else
+          form1[obj]->backcolor = tft->color565(100,100,100);
+        
+        form1[obj]->label = *args_str[0];
+        form1.drawObject(obj);
+        *value = obj;
+        return PARSER_TRUE;
+      } 
+      else if ( fname == F("obj.toggle") && num_args >= 5 ) {
+        // function tft.toggle("icon_true", "icon_false" x,y, checked, scale, back_color)
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.toggle() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[1] == NULL)  { PrintAndWebOut(F("tft.obj.toggle() : The second argument must be a string!")); return PARSER_FALSE; }
+        int obj = form1.add(TOGGLE);
+        form1[obj]->x = args[2];
+        form1[obj]->y = args[3];
+        form1[obj]->backcolor = args[6];
+        form1[obj]->icon1 = *args_str[0];
+        form1[obj]->icon2 = *args_str[1];
+        if (num_args >= 5)
+          form1[obj]->checked = args[4];
+        else
+          form1[obj]->checked = false;
+        if (num_args >= 6)
+          form1[obj]->scale = args[5];
+        form1.drawObject(obj);
+        *value = obj;
+        return PARSER_TRUE;
+      }  
+      else if ( fname == F("obj.bar") && num_args >= 4 ) {
+        // function tft.bar("text", x,y,width,height, scale, forecolor ,backcolor)
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
+        int obj = form1.add(BAR);
+        form1[obj]->x = args[1];
+        form1[obj]->y = args[2];
+        form1[obj]->width = args[3];
+        if (num_args >= 5)
+          form1[obj]->height = args[4];
+        else
+          form1[obj]->height = 0;
+        if (num_args >= 6)
+          form1[obj]->textsize = args[5];
+        else
+          form1[obj]->textsize = 2;
+        if (num_args >= 7)
+          form1[obj]->forecolor = args[6];
+        else
+          form1[obj]->forecolor = tft->color565(255,255,00);
+        if (num_args >= 8)
+          form1[obj]->backcolor = args[7];
+        else
+          form1[obj]->backcolor = tft->color565(100,100,100);
+        
+        form1[obj]->label = *args_str[0];
+        form1.drawObject(obj);
+        *value = obj;
+        return PARSER_TRUE;
+      }    
+      else if ( fname == F("obj.setlabel") && num_args == 2 ) {
+        // function tft.setlabel(object_id, "label")
+        if (args_str[1] == NULL)  { PrintAndWebOut(F("tft.obj.setLabel() : The second argument must be a string!")); return PARSER_FALSE; }
+        form1.setLabel(args[0], *args_str[1]);
+        return PARSER_TRUE;
+      }
+      else if ( fname == F("obj.setvalue") && num_args == 2 ) {
+        // function tft.setValue(object_id, value_float)
+        form1.setValue(args[0], args[1]);
+        return PARSER_TRUE;
+      }
+      else if ( fname == F("obj.setchecked") && num_args == 2 ) {
+        // function tft.setChecked(object_id, checked)  // checked can be 0(false) or any value for true
+        form1.setChecked(args[0], args[1]);
+        return PARSER_TRUE;
+      } 
+      else if ( fname == F("obj.getlabel") && num_args == 1 ) {
+        // function tft.getLabel(object_id) 
+        *value_str = form1.getLabel(args[0]);
+        return PARSER_STRING;
+      } 
+      else if ( fname == F("obj.getvalue") && num_args == 1 ) {
+        // function tft.getValue(object_id) 
+        *value = form1.getValue(args[0]);
+        return PARSER_TRUE;
+      }   
+      else if ( fname == F("obj.getchecked") && num_args == 1 ) {
+        // function tft.getChecked(object_id)  // checked can be 0(false) or any value for true
+        *value = form1.getChecked(args[0]);
+        return PARSER_TRUE;
+      }   
+      else if ( fname == F("obj.invert") && num_args == 1 ) {
+        // function tft.invertChecked(object_id)  // checked can be 0(false) or any value for true
+        *value = form1.invertChecked(args[0]);
+        return PARSER_TRUE;
+      }
 #ifdef TFT_DEMO
     else if ( fname == F("test") && num_args == 0 ) {
       ILI9341Demo();
@@ -1055,18 +1287,19 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value_str = WebSockMessage;
       return PARSER_STRING;
     }
-    else if ( fname == F("gauge") && num_args == 2 )
+      else if ( fname == F("object") && num_args > 1 ) 
     {
-      if (args_str[0] == NULL)  {
-        PrintAndWebOut(F("debug.gauge() : The first argument must be a string!"));
-        return PARSER_FALSE;
-      }
-      String tmp = "gauge~^`" + *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
-      if (args_str[1] == NULL)
-        tmp = tmp + FloatToString(args[1]);
+        if (args_str[0] == NULL)  { PrintAndWebOut(F("debug.object() : The first argument must be a string!")); return PARSER_FALSE; }
+        String tmp = *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
+        for (int i=1; i<num_args; i++)
+        {
+          if (args_str[i] == NULL)
+            tmp = tmp + FloatToString(args[i]);
       else
-        tmp = tmp + *args_str[1];
-      WebSocketSend(  tmp.c_str());
+            tmp = tmp + *args_str[i];
+          tmp = tmp + "~^`"; 
+        }
+        webSocket.sendTXT(0,tmp.c_str());
       return PARSER_TRUE;
     }
     else if ( fname == F("log") && num_args >= 1 )
@@ -1338,9 +1571,9 @@ unsigned long testLines(uint16_t color) {
   x1 = y1 = 0;
   y2    = h - 1;
   start = micros();
-  for (x2 = 0; x2 < w; x2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
   x2    = w - 1;
-  for (y2 = 0; y2 < h; y2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
   t     = micros() - start; // fillScreen doesn't count against timing
 
   tft->fillScreen(ILI9341_BLACK);
@@ -1349,7 +1582,7 @@ unsigned long testLines(uint16_t color) {
   y1    = 0;
   y2    = h - 1;
   start = micros();
-  for (x2 = 0; x2 < w; x2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
   x2    = 0;
   for (y2 = 0; y2 < h; y2 += 6) tft->drawLine(x1, y1, x2, y2, color);
   t    += micros() - start;
@@ -1360,9 +1593,9 @@ unsigned long testLines(uint16_t color) {
   y1    = h - 1;
   y2    = 0;
   start = micros();
-  for (x2 = 0; x2 < w; x2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
   x2    = w - 1;
-  for (y2 = 0; y2 < h; y2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
   t    += micros() - start;
 
   tft->fillScreen(ILI9341_BLACK);
@@ -1371,9 +1604,9 @@ unsigned long testLines(uint16_t color) {
   y1    = h - 1;
   y2    = 0;
   start = micros();
-  for (x2 = 0; x2 < w; x2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(x2=0; x2<w; x2+=6) tft->drawLine(x1, y1, x2, y2, color);
   x2    = 0;
-  for (y2 = 0; y2 < h; y2 += 6) tft->drawLine(x1, y1, x2, y2, color);
+  for(y2=0; y2<h; y2+=6) tft->drawLine(x1, y1, x2, y2, color);
 
   return micros() - start;
 }
@@ -1384,8 +1617,8 @@ unsigned long testFastLines(uint16_t color1, uint16_t color2) {
 
   tft->fillScreen(ILI9341_BLACK);
   start = micros();
-  for (y = 0; y < h; y += 5) tft->drawFastHLine(0, y, w, color1);
-  for (x = 0; x < w; x += 5) tft->drawFastVLine(x, 0, h, color2);
+  for(y=0; y<h; y+=5) tft->drawFastHLine(0, y, w, color1);
+  for(x=0; x<w; x+=5) tft->drawFastVLine(x, 0, h, color2);
 
   return micros() - start;
 }
@@ -1399,9 +1632,9 @@ unsigned long testRects(uint16_t color) {
   tft->fillScreen(ILI9341_BLACK);
   n     = min(tft->width(), tft->height());
   start = micros();
-  for (i = 2; i < n; i += 6) {
+  for(i=2; i<n; i+=6) {
     i2 = i / 2;
-    tft->drawRect(cx - i2, cy - i2, i, i, color);
+    tft->drawRect(cx-i2, cy-i2, i, i, color);
   }
 
   return micros() - start;
@@ -1415,13 +1648,13 @@ unsigned long testFilledRects(uint16_t color1, uint16_t color2) {
 
   tft->fillScreen(ILI9341_BLACK);
   n = min(tft->width(), tft->height());
-  for (i = n; i > 0; i -= 6) {
+  for(i=n; i>0; i-=6) {
     i2    = i / 2;
     start = micros();
-    tft->fillRect(cx - i2, cy - i2, i, i, color1);
+    tft->fillRect(cx-i2, cy-i2, i, i, color1);
     t    += micros() - start;
     // Outlines are not included in timing results
-    tft->drawRect(cx - i2, cy - i2, i, i, color2);
+    tft->drawRect(cx-i2, cy-i2, i, i, color2);
   }
 
   return t;
@@ -1433,8 +1666,8 @@ unsigned long testFilledCircles(uint8_t radius, uint16_t color) {
 
   tft->fillScreen(ILI9341_BLACK);
   start = micros();
-  for (x = radius; x < w; x += r2) {
-    for (y = radius; y < h; y += r2) {
+  for(x=radius; x<w; x+=r2) {
+    for(y=radius; y<h; y+=r2) {
       tft->fillCircle(x, y, radius, color);
     }
   }
@@ -1451,8 +1684,8 @@ unsigned long testCircles(uint8_t radius, uint16_t color) {
   // Screen is not cleared for this one -- this is
   // intentional and does not affect the reported time.
   start = micros();
-  for (x = 0; x < w; x += r2) {
-    for (y = 0; y < h; y += r2) {
+  for(x=0; x<w; x+=r2) {
+    for(y=0; y<h; y+=r2) {
       tft->drawCircle(x, y, radius, color);
     }
   }
@@ -1468,7 +1701,7 @@ unsigned long testTriangles() {
   tft->fillScreen(ILI9341_BLACK);
   n     = min(cx, cy);
   start = micros();
-  for (i = 0; i < n; i += 5) {
+  for(i=0; i<n; i+=5) {
     tft->drawTriangle(
       cx    , cy - i, // peak
       cx - i, cy + i, // bottom left
@@ -1486,7 +1719,7 @@ unsigned long testFilledTriangles() {
 
   tft->fillScreen(ILI9341_BLACK);
   start = micros();
-  for (i = min(cx, cy); i > 10; i -= 5) {
+  for(i=min(cx,cy); i>10; i-=5) {
     start = micros();
     tft->fillTriangle(cx, cy - i, cx - i, cy + i, cx + i, cy + i,
                       tft->color565(0, i, i));
@@ -1507,9 +1740,9 @@ unsigned long testRoundRects() {
   tft->fillScreen(ILI9341_BLACK);
   w     = min(tft->width(), tft->height());
   start = micros();
-  for (i = 0; i < w; i += 6) {
+  for(i=0; i<w; i+=6) {
     i2 = i / 2;
-    tft->drawRoundRect(cx - i2, cy - i2, i, i, i / 8, tft->color565(i, 0, 0));
+    tft->drawRoundRect(cx-i2, cy-i2, i, i, i/8, tft->color565(i, 0, 0));
   }
 
   return micros() - start;
@@ -1523,11 +1756,387 @@ unsigned long testFilledRoundRects() {
 
   tft->fillScreen(ILI9341_BLACK);
   start = micros();
-  for (i = min(tft->width(), tft->height()); i > 20; i -= 6) {
+  for(i=min(tft->width(), tft->height()); i>20; i-=6) {
     i2 = i / 2;
-    tft->fillRoundRect(cx - i2, cy - i2, i, i, i / 8, tft->color565(0, i, 0));
+    tft->fillRoundRect(cx-i2, cy-i2, i, i, i/8, tft->color565(0, i, 0));
   }
 
   return micros() - start;
 }
 #endif
+
+//////////////////////////////////////////////////////////////////////////
+/*
+typedef struct
+{
+    short   ident __attribute__((aligned(1), packed));
+    long    file_size __attribute__((aligned(1), packed));
+    long    reserved __attribute__((aligned(1), packed));
+    long    offset __attribute__((aligned(1), packed));
+    long    header_size __attribute__((aligned(1), packed));
+    long    width __attribute__((aligned(1), packed));
+    long    height __attribute__((aligned(1), packed));
+    short   planes __attribute__((aligned(1), packed));
+    short   bits_per_pixel __attribute__((aligned(1), packed));
+    long    compression __attribute__((aligned(1), packed));
+    long    image_size __attribute__((aligned(1), packed));
+    long    hor_resolution __attribute__((aligned(1), packed));
+    long    ver_resolution __attribute__((aligned(1), packed));
+    long    palette_colors __attribute__((aligned(1), packed));
+    long    important_colors __attribute__((aligned(1), packed));
+} BMP_Header;
+
+typedef struct
+{
+  unsigned char B,G,R;
+} BMP_Pixel;
+
+typedef struct
+{
+  unsigned char B,G,R,A;
+} BMP_Pixel32;
+*/
+void show_bmp(String filename, uint16_t xi, uint16_t yi, int backColor)
+{
+  int r;
+  int x, y, col;
+  uint8_t rt;
+  BMP_Pixel32  *p32;
+  BMP_Pixel *px;
+  BMP_Header header;
+  char bmp_buff[320 * 4];   // the buffer will contain a full line of 320 pixels
+  
+  File fs_bmp = SPIFFS.open(filename, "r");
+  if (!fs_bmp) {
+      HaltBasic(F("bmp file not found"));
+      return;
+  }
+  r = fs_bmp.readBytes((char*) &header, sizeof(header));
+  delay(0);
+  if (sizeof(header) < header.offset) // align the buffer if the header is greather that 40bytes
+      r = fs_bmp.readBytes((char*) bmp_buff, header.offset - sizeof(header));
+//   Serial.println(header.file_size);
+//   Serial.println(header.width);
+//   Serial.println(header.height);
+//   Serial.println(header.bits_per_pixel);
+  delay(0);
+
+  rt = tft->getRotation();
+  tft->setRotation(rt ^ 0b10);  //reverse top/bottom
+  if (rt & 1)
+  {
+      // landscape
+      xi = 320 - xi - header.width;
+      yi = 240 - yi - header.height;
+  }
+  else
+  {
+      // portrait
+      xi = 240 - xi - header.width;
+      yi = 320 - yi - header.height;
+  }
+  tft->setAddrWindow(xi, yi, xi + header.width - 1, yi + header.height - 1);
+
+  if (header.bits_per_pixel == 32)
+  {
+    for (y=0; y<header.height; y++)
+    {
+        delay(0);
+        r = fs_bmp.readBytes((char*) bmp_buff, header.width * sizeof(BMP_Pixel32));
+        digitalWrite(TFT_CS_pin, LOW);   // TFT CS low
+        for (x=header.width-1; x>=0; x--)
+        {
+            p32 = (BMP_Pixel32 *) &bmp_buff[x * sizeof(BMP_Pixel32)];
+            col = ((p32->R & 0xf8) << 8) |  (( p32->G & 0xfc) << 3) | ((p32->B & 0xf8) >> 3) ;
+  
+            if (p32->A > 40) // means not transparent
+            {
+                if (backColor != -1)
+                  SPI.write16(col, true);
+                else
+                  tft->drawPixel(x + xi, y + yi, col);
+            }
+            else
+            {
+              if (backColor != -1)
+                SPI.write16(backColor, true);  // gets a background color pixel
+              //else
+                   //tft->drawPixel(x + xi, y + yi, 0); // background
+            }
+        }
+        digitalWrite(TFT_CS_pin, HIGH);   // TFT CS High
+    }
+  }
+  else
+  if (header.bits_per_pixel == 16)
+  {
+      for (y=0; y<header.height; y++)
+      {
+          delay(0);
+          r = fs_bmp.readBytes((char*) bmp_buff, header.width * 2);
+          digitalWrite(TFT_CS_pin, LOW);   // TFT CS low
+          //for (x=0; x<header.width; x++)
+          for (x=header.width-1; x>=0; x--)
+          {
+              uint16_t *cc = (uint16_t *) &bmp_buff[x * 2];
+              SPI.write16(*cc, true);
+          }
+          digitalWrite(TFT_CS_pin, HIGH);   // TFT CS High
+      }
+  }   
+  else
+  {
+      for (y=0; y<header.height; y++) // should be 24
+      {
+          delay(0);
+          r = fs_bmp.readBytes((char*) bmp_buff, header.width * sizeof(BMP_Pixel));
+          digitalWrite(TFT_CS_pin, LOW);   // TFT CS low
+          for (x=header.width-1; x>=0; x--)
+          {
+              px = (BMP_Pixel *) &bmp_buff[x * sizeof(BMP_Pixel)];
+              col = ((px->R & 0xf8) << 8) |  (( px->G & 0xfc) << 3) | ((px->B & 0xf8) >> 3) ;
+              //tft->drawPixel(x + xi, y + yi, col);
+               SPI.write16(col, true);
+          }
+          digitalWrite(TFT_CS_pin, HIGH);   // TFT CS High
+      }
+  } 
+  tft->setRotation(rt); 
+  fs_bmp.close(); 
+}
+
+#define AVERAGE 10
+int ReadTouchXY(char change_only, int *raw)
+{
+    unsigned char p[30];
+    unsigned char i,j, k;
+    short mx, my;
+    short mmx[AVERAGE], mmy[AVERAGE];
+    int m_x, m_y;
+    unsigned char rxd1, rxd2, rxd3, rxd4;
+    unsigned short px,py;
+    int pos;
+    static int pos_p = -1;
+    short x,y, xf, yf;
+    const unsigned short    // calibration
+            calx1 = 180,
+            calx2 = 1800,
+            caly1 = 180,
+            caly2 = 1800;
+    SPI.setFrequency(100000);
+    digitalWrite(Touch_CS_pin, LOW);   // touch CS low
+    SPI.transfer(0x9c);      // Sends the control byte
+    //delay(1);
+    for (i=0; i<AVERAGE; i++)
+    {
+        SPI.transfer(0x90);
+        rxd3 = SPI.transfer(0);
+        rxd4 = SPI.transfer(0);
+        mmy[i] = (rxd3<<4)|(rxd4>>4);        
+        //delay(1);
+        SPI.transfer(0xd0);
+        rxd1 = SPI.transfer(0);
+        rxd2 = SPI.transfer(0);
+        mmx[i] = (rxd1<<4)|(rxd2>>4);        
+    }
+    digitalWrite(Touch_CS_pin, HIGH);   // touch CS high
+
+    px = (rxd1<<4)|(rxd2>>4);
+//    Serial.println("px " + String(px));
+    if (px < 0x790)
+    {
+        for (j=0; j<AVERAGE; j++)
+        {
+            mx = mmx[j];
+            k = 1;
+            m_x = mx;
+            for (i=0; i<AVERAGE; i++)
+            {
+                if (abs(mx-mmx[i])<8)
+                {
+                    k++;
+                    m_x += mmx[i];
+                }
+            }
+            if (k>=AVERAGE/2)
+            {
+                px = m_x/k;
+                break;
+            }
+        }
+        if (k<AVERAGE/2)
+        {
+            return (-1);
+        }
+    }
+    else
+       return -1;
+    py = (rxd3<<4)|(rxd4>>4);
+//    Serial.println("py " + String(py));
+    if (py < 0x790)
+    {
+        for (j=0; j<AVERAGE; j++)
+        {
+            my = mmy[j];
+            k = 1;
+            m_y = my;
+            for (i=0; i<AVERAGE; i++)
+            {
+                if (abs(my-mmy[i])<8)
+                {
+                    k++;
+                    m_y += mmy[i];
+                }
+            }
+            if (k>=AVERAGE/2)
+            {
+                py = m_y / k;
+                break;
+            }
+        }
+        if (k<AVERAGE/2)
+        {
+            return (-1);
+        }
+    }
+    else
+       return -1;
+       
+    if ((px == 0) || (py == 0) || (px > 0x780) || (py > 0x780))
+        return -1;
+    else
+    {
+        //printf("raw : x=%d y=%d\n", rxd1, rxd3);
+        x = ((px-calx1)*240) /(calx2-calx1);
+        y = ((caly2-py)*320) /(caly2-caly1);
+
+        switch (tft->getRotation())
+        {
+          case 0:
+            xf = 240 - x;
+            yf = 320 - y;
+            break;
+          case 1:
+            xf = 320 - y;
+            yf = x;
+            break;
+          case 2:
+            xf = x;
+            yf = y;
+            break;
+          case 3:
+            xf = y;
+            yf = 240 - x;
+            break;
+       }
+
+        *raw = py <<16 | px;
+
+        pos = yf<<16 | xf;
+
+        return pos;
+    }
+
+    return (-1);
+
+}
+
+/*
+void show_bmp_old(String filename, uint16_t xi, uint16_t yi)
+{
+  int r;
+  int x, y, col;
+  BMP_Pixel32  *p32;
+  BMP_Pixel *px;
+  BMP_Header header;
+  char bmp_buff[320 * 4];   // the buffer will contain a full line of 320 pixels
+  
+  File fs_bmp = SPIFFS.open(filename, "r");
+  if (!fs_bmp) {
+      //Serial.println("bmp file not found");
+      HaltBasic(F("bmp file not found"));
+      return;
+  }
+  r = fs_bmp.readBytes((char*) &header, sizeof(header));
+  delay(0);
+  if (sizeof(header) < header.offset) // align the buffer if the header is greather that 40bytes
+    r = fs_bmp.readBytes((char*) bmp_buff, header.offset - sizeof(header));
+//   Serial.println(header.file_size);
+//   Serial.println(header.width);
+//   Serial.println(header.height);
+//   Serial.println(header.bits_per_pixel);
+   delay(0);
+
+  if (header.bits_per_pixel == 32)
+  {
+    for (y=header.height-1; y>=0; y--)
+    {
+        r = fs_bmp.readBytes((char*) bmp_buff, header.width * sizeof(BMP_Pixel32));
+        delay(0);
+        for (x=0; x<header.width; x++)
+        {
+            p32 = (BMP_Pixel32 *) &bmp_buff[x * sizeof(BMP_Pixel32)];
+            col = ((p32->R & 0xf8) << 8) |  (( p32->G & 0xfc) << 3) | ((p32->B & 0xf8) >> 3) ;
+  
+            if (p32->A > 40) // means not transparent
+            {
+                tft->drawPixel(x + xi, y + yi, col);
+            }
+            else
+            {
+                //tft->drawPixel(x + xi, y + yi, 0); // background
+            }
+        }
+    }
+  }
+  else
+  {
+      for (y=header.height-1; y>=0; y--)
+      {
+          r = fs_bmp.readBytes((char*) bmp_buff, header.width * sizeof(BMP_Pixel));
+          delay(0);
+          for (x=0; x<header.width; x++)
+          {
+              px = (BMP_Pixel *) &bmp_buff[x * sizeof(BMP_Pixel)];
+              col = ((px->R & 0xf8) << 8) |  (( px->G & 0xfc) << 3) | ((px->B & 0xf8) >> 3) ;
+              tft->drawPixel(x + xi, y + yi, col);
+          }
+      }
+  }  
+  fs_bmp.close(); 
+}
+static void calibratePoint(uint16_t x, uint16_t y, uint16_t &vi, uint16_t &vj) {
+  // Draw cross
+  tft->drawFastHLine(x - 8, y, 16, 0xff);
+  tft->drawFastVLine(x, y - 8, 16, 0xff);
+  
+  while (!touch.isTouching()) {
+    delay(10);
+  }
+  touch.getRaw(vi, vj);
+  // Erase by overwriting with black
+  tft->drawFastHLine(x - 8, y, 16, 0);
+  tft->drawFastVLine(x, y - 8, 16, 0);
+}
+
+void calibrate() {
+  uint16_t x1, y1, x2, y2;
+  uint16_t vi1, vj1, vi2, vj2;
+  touch.begin(tft->getWidth(), tft->getHeight());
+  touch.getCalibrationPoints(x1, y1, x2, y2);
+  calibratePoint(x1, y1, vi1, vj1);
+  delay(1000);
+  calibratePoint(x2, y2, vi2, vj2);
+//  touch.setCalibration(vi1, vj1, vi2, vj2);
+
+//  char buf[80];
+//  snprintf(buf, sizeof(buf), "%d,%d,%d,%d", (int)vi1, (int)vj1, (int)vi2, (int)vj2);
+//  //tft->setFont(ucg_font_helvR14_tr);
+//  tft->setTextColor(0xffff);
+//  tft->setCursor(0, 25);
+//  tft->print("setCalibration params:");
+//  tft->setCursor(0, 50);
+//  tft->print(buf);
+}
+
+*/

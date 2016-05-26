@@ -275,6 +275,7 @@ int ICACHE_FLASH_ATTR parser_read_argument_list( parser_data *pd, int *num_args,
 	
 		// check the next character
 		c = parser_peek( pd );
+		//Serial.println(c);
 		if( c == ')' ){
 			// closing parenthesis, end of argument list, return
 			// and allow calling function to match the character

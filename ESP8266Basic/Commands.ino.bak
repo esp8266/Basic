@@ -1,6 +1,6 @@
 parser_data pd;
 int num_args;
-PARSER_PREC args[PARSER_MAX_ARGUMENT_COUNT];
+PARSER_PREC args[PARSER_MAX_ARGUMENT_COUNT]; 
 String *args_str[PARSER_MAX_ARGUMENT_COUNT];
 extern String args_var[PARSER_MAX_ARGUMENT_COUNT];
 extern int args_var_pos;
@@ -66,7 +66,6 @@ void ExicuteTheCurrentLine()
   int r;
 
   String Param0;
-  inData.trim();
   String Param1;
   String Param2;
   String Param3;
@@ -80,13 +79,11 @@ void ExicuteTheCurrentLine()
   Param4 = getValue(inData, ' ', 4);
   Param5 = getValue(inData, ' ', 5);
 
-
   Param0.toLowerCase();
 
   // Line_For_Eval = inData; /////////////////////////////////////////////////////////////////////////////////////////////////
-  String Params[10]; // max 10 parameters are allowed
 
-  int valParam0 = Param0.toInt();
+  //  int valParam0 = Param0.toInt();
   int valParam1 = Param1.toInt();
   int valParam2 = Param2.toInt();
 
@@ -95,31 +92,17 @@ void ExicuteTheCurrentLine()
   {
     Serial.println(F("Executing line Debug Statement"));
     Serial.println(String(String(RunningProgramCurrentLine) + " " + inData));
-    //    Serial.println(Param0);
-    //    Serial.println(Param1);
-    //    Serial.println(Param2);
-    //    Serial.println(Param3);
-    //    Serial.println(Param4);
-    //    Serial.println(Param5);
+    Serial.println(Param0);
+    Serial.println(Param1);
+    Serial.println(Param2);
+    Serial.println(Param3);
+    Serial.println(Param4);
+    Serial.println(Param5);
   }
 
   Param0.trim();
   if ( Param0 == "") return;
   if (Param0.startsWith("["))  return;
-  if (Param0.startsWith("'"))  return;
-
-  r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
-  if (r != -1)
-  {
-    delay(0);
-    if (r >= 1) Param1 = Params[0];
-    if (r >= 2) Param2 = Params[1];
-    if (r >= 3) Param3 = Params[2];
-    if (r >= 4) Param4 = Params[3];
-    if (r >= 5) Param5 = Params[4];
-  }
-
-
 
   if ( Param0 == F("if"))
   {
@@ -840,25 +823,15 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("button"))
   {
-    //r = ExtractArguments(inData);
+    r = ExtractArguments(inData);
     NewGuiItemAddedSinceLastWait = 1;
-    r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
-    if (r == -1) {
-      HaltBasic(F("Syntax Error!"));
-      return;
-    }
-    if (r != 2) {
-      HaltBasic(F("The arguments must be 2!"));
-      return;
-    }
     String tempButton = GenerateIDtag(GOTObutton);
-    tempButton.replace(F("gotonotext"),  evaluate(Params[0]));
+    tempButton.replace(F("gotonotext"),  *args_str[0]);
 
-    tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Params[1])));
-
-    ButtonsInUse[numberButtonInUse] = Params[1];
-    //Serial.println(ButtonsInUse[numberButtonInUse]);
-    HTMLout = String(HTMLout + tempButton);
+    tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(*args_str[1])));
+    //Serial.println(*args_str[1]);
+    HTMLout += tempButton;
+    DeAllocateArguments();
     return;
   }
 
@@ -1675,49 +1648,3 @@ IPAddress StringToIP(String x)
   return _IP;
 }
 
-int parserotto(String st, String res[10])
-{
-  int i;
-  bool quotes = false;
-  bool vertbars = false;
-  int parenthesys = 0;
-  int positions[10]; // position of the commas for 10 arguments max
-  int j = 0;
-  char c;
-  for (i = 0; i < st.length(); i++)
-  {
-    c = st[i];
-    if ( (c == '"') && (vertbars == false) )
-      quotes = !quotes;
-    if ( (c == '|') && (quotes == false) )
-      vertbars = !vertbars;
-
-    if (c == '(') parenthesys++;
-    if (c == ')') parenthesys--;
-
-    if (c == ',')  // if the comma is found
-    { // if the quotes, vertical bars and parenthesys are closed
-      if ( (quotes == false) && (vertbars == false) && (parenthesys == 0) )
-      {
-        // this is a valid split point
-        positions[j++] = i;
-      }
-    }
-  }
-  positions[j++] = st.length();  // last arguments goes until the end
-  if ( (quotes == false) && (vertbars == false) && (parenthesys == 0) )
-  {
-    int pos_prev = -1;
-    for (i = 0; i < j; i++)
-    {
-      res[i] = st.substring(pos_prev + 1, positions[i]);
-      res[i].trim();
-      pos_prev = positions[i];
-    }
-    return j;
-  }
-  else
-  {
-    return -1;
-  }
-}

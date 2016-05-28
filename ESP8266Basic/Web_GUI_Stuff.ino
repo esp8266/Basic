@@ -41,9 +41,12 @@ String RunningProgramGui()
     delay(0);
     WebOut.replace(String(F("VARS|")) + String(i), AllMyVariables[i].getVar());
   }
-
-
-  WebOut.replace(F("**graphics**"), BasicGraphics());
+  
+  
+  WebOut.replace(F("**graphics**"), F("<iframe src='graphics.htm' style='border:none' name='gra' width='*gwid*' height='*ghei*' scrolling='no'></iframe>"));
+  WebOut.replace(F("*gwid*"),  String(GraphicsEliments[0][1]));
+  WebOut.replace(F("*ghei*"),  String(GraphicsEliments[0][2]));
+  
 
   if (BasicDebuggingOn == 1)
   {

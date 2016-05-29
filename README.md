@@ -3,7 +3,7 @@ Basic Interpreter from scratch especialy for the ESP8266.
 
 http://esp8266basic.com
 
-http://www.esp8266basic.com/language-reference.html
+https://docs.google.com/document/d/1EiYugfu12X2_pmfmu2O19CcLX0ALgLM4r2YxKYyJon8/pub
 
 http://www.esp8266basic.com/flashing-instructions.html
 

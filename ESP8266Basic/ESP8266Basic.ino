@@ -185,7 +185,6 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 <a href="./vars">[ VARS ]</a> 
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>
-<a href="./debug">[ DEBUG ]</a>
 <a href="./settings">[ SETTINGS ]</a>
 <a href="./filemng">[ FILE MANAGER ]</a>
 <hr>)=====";

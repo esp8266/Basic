@@ -28,14 +28,6 @@ String RunningProgramGui()
   String WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script>"))  + HTMLout;
 
 
-  if (BasicDebuggingOn == 1)
-  {
-    Serial.println(F("Web out first"));
-    Serial.println( WebOut);
-    Serial.println(F("HTML out"));
-    Serial.println( HTMLout);
-  }
-
   for (int i = TotalNumberOfVariables - 1; i >= 0; i--)
   {
     delay(0);
@@ -47,11 +39,6 @@ String RunningProgramGui()
   WebOut.replace(F("*gwid*"),  String(GraphicsEliments[0][1]));
   WebOut.replace(F("*ghei*"),  String(GraphicsEliments[0][2]));
   
-
-  if (BasicDebuggingOn == 1)
-  {
-    Serial.println( WebOut);
-  }
   return WebOut;
 }
 

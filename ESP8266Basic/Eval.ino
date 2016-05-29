@@ -130,6 +130,12 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str = UdpRemoteIP.toString() + String(F(":")) + String(UdpRemotePort);
     return PARSER_STRING;
   }
+  else if ( fname == F("io") && num_args > 0 ) {
+    // function json(buffer, key)
+    // set return value
+    *value  =  UniversalPinIO(*args_str[0], String(args[1]),  args[2]);
+    return PARSER_TRUE;
+  }
   else if ( fname == F("millis") && num_args == 0 ) // the function is millis()
   {
     // set return value and return true
@@ -546,12 +552,6 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       PrintAndWebOut(F("JSON() : Both arguments must be a string!"));
       return PARSER_FALSE;
     }
-  }
-  else if ( fname == F("io") && num_args > 0 ) {
-    // function json(buffer, key)
-    // set return value
-    *value  =  UniversalPinIO(*args_str[0], String(args[1]),  args[2]);
-    return PARSER_TRUE;
   }
   else if ( fname == F("neo.setup") && num_args == 1 ) {
     // function neosetup(pin)

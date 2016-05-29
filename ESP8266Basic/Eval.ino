@@ -376,7 +376,9 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("chr") | fname == F("chr$") && num_args == 1 ) {
     // example of the chr(value)
     // set return value
-    *value_str  = String((char) args[0]);
+    *value_str = String(" ");
+    char *p = (char*) value_str->c_str();
+    *p = (char) args[0];
     return PARSER_STRING;
   }
   else if ( fname == F("asc") && num_args == 1 ) {

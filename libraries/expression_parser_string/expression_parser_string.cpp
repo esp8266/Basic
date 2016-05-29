@@ -275,7 +275,6 @@ int ICACHE_FLASH_ATTR parser_read_argument_list( parser_data *pd, int *num_args,
 	
 		// check the next character
 		c = parser_peek( pd );
-		//Serial.println(c);
 		if( c == ')' ){
 			// closing parenthesis, end of argument list, return
 			// and allow calling function to match the character
@@ -712,18 +711,18 @@ int ICACHE_FLASH_ATTR parser_read_expr( parser_data *pd, PARSER_PREC *value, Str
 		else if ( c == '&' )
 			{
 				r0 = r;
-				s0 = str_value;
-				r = parser_read_term( pd, &v1, str_value );
+				//s0 = str_value;
+				r = parser_read_term( pd, &v1, s0 );
 				// if one of the arguments is string, the result will be a string
 				if ((r0 == PARSER_STRING) || (r == PARSER_STRING))
 				{
 					if (r == PARSER_TRUE)
-						str_value = s0 +  FloatToString(v1);
+						str_value = str_value +  FloatToString(v1);
 					else
 						if (r0 == PARSER_TRUE)
-							str_value =  FloatToString(v0) + str_value;
+							str_value =  FloatToString(v0) + s0;
 						else
-							str_value =  s0 + str_value;
+							str_value.concat(s0);
 					r = PARSER_STRING;
 				}
 				else

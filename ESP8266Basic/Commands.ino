@@ -353,7 +353,7 @@ void ExicuteTheCurrentLine()
 
   if ( Param0 == F("interrupt"))
   {
-    UniversalPinIO(evaluate(Param2), evaluate(Param1), 0);
+    UniversalPinIO(Param2, evaluate(Param1), 0);
     return;
   }
 

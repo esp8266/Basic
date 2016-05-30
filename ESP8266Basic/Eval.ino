@@ -606,6 +606,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("temp") && num_args > 0 ) {
     // function temp(sensor #)
     // set return value
+	sensors.requestTemperatures();
     *value  = sensors.getTempCByIndex(args[0]);
     return PARSER_TRUE;
   }

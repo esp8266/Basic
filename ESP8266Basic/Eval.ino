@@ -563,17 +563,59 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     pixels->begin();
     return PARSER_STRING;
   }
-  else if ( fname == F("neo") && num_args > 0 ) {
-    // function neo(led no, r, g, b)
+ else if ( fname == F("neo") && num_args > 0 ) {
+    // function neo(led no, r, g, b ,flag)
+    // if flag == 1 then dont display neopixel, just set it in memory
     if (pixels == NULL)
     {
       pixels = new Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);
       pixels->begin();
     }
     pixels->setPixelColor(args[0], pixels->Color(args[1], args[2], args[3]));
+    if (args[4] != 1)
+    {
     pixels->show();
+    }
     return PARSER_STRING;
   }
+    
+   else if ( fname == F("neo.shift") && num_args > 0 ) {
+    // ****
+    // neoshift(first pixel 0 -511,last pixel 0 to 511 ,direction -1 or +1)
+    // *****
+
+    //test if args[] out of range
+    if (args[0] > args[1] || args[0]>511 || args[1]>511)
+    {
+      PrintAndWebOut(F("Neoshift error"));
+      return PARSER_FALSE;
+    }
+    if (pixels == NULL)
+    {
+      pixels = new Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);
+      pixels->begin();
+    }
+    // move pixels 
+    
+    if (args[2] > 0){
+    //move pixels up one
+    for (int zz = args[1]; zz>= args[0] ; zz--){
+      uint32_t oldp = pixels->getPixelColor(zz);
+      pixels->setPixelColor(zz+1,oldp);
+      delay(0);
+    }
+    }
+    else if (args[2]<0){
+      // move down one
+      for ( int zz = args[0]; zz <= args[1] ; zz++){
+        uint32_t oldp = pixels->getPixelColor(zz);
+      pixels->setPixelColor(zz-1,oldp);
+      delay(0);
+      }
+    }
+    pixels->show();
+    return PARSER_STRING;
+  } 
   else if ( fname == F("neostripcolor")| fname == F("neo.stripcolor") && num_args > 0 ) {
     // function neostripcolor(start, end, r, g, b)
     if (pixels == NULL)

@@ -807,6 +807,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("imagebutton"))
   {
+    NewGuiItemAddedSinceLastWait = 1;
     numberButtonInUse++;
 	Param1 = evaluate(Param1);
     String tempButton = GenerateIDtag(GOTOimagebutton);
@@ -840,6 +841,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("returngui"))
   {
+	WebSocketSend(  "guicls");
     //HTMLout = String(HTMLout + "<hr>" + GetMeThatVar(Param1));
     server->send(200, "text/html", RunningProgramGui());
     server->handleClient();

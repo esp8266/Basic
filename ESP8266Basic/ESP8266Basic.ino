@@ -82,7 +82,11 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 4";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 5";
+
+//wifi mode exclusivity 
+bool wifiApStaModeOn = 0;
+
 
 // SPI STUFF
 #include <SPI.h>

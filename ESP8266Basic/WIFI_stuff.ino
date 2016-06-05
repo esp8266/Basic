@@ -2,7 +2,7 @@
 
 bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
-  WiFi.mode(WIFI_STA);
+  if (wifiApStaModeOn == 0) WiFi.mode(WIFI_STA);
   byte numberOfAtempts = 0;
   int str_len = NetworkName.length() + 1;
   char ssid[str_len];
@@ -76,7 +76,7 @@ delay(1000);
 
 void CreateAP(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
-  WiFi.mode(WIFI_AP);
+  if (wifiApStaModeOn == 0)WiFi.mode(WIFI_AP);
   Serial.println(F("Creating WIFI access point"));
 
 

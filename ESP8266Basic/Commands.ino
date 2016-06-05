@@ -1107,6 +1107,18 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  
+  if (Param0 == F("wifiapsta"))
+  {
+    //WiFi.disconnect();
+	wifiApStaModeOn = 1;
+    WiFi.mode(WIFI_AP_STA);
+    return;
+  }
+  
+  
+  
+
 
 
   if (Param0 == F("setupemail"))

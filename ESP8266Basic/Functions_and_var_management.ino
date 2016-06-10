@@ -42,7 +42,7 @@ void SetMeThatVar(String VariableNameToFind, String NewContents, int format)
     {
         AllMyVariables[i].setVar(NewContents);
         AllMyVariables[i].Format = format;
-        WebSocketSend( "var~^`" + String(getValue(WebSockMessage, ':', 1).toInt()) + "~^`" + String(AllMyVariables[getValue(WebSockMessage, ':', 1).toInt()].getVar()));
+        WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
         return;
     }
   }
@@ -54,7 +54,7 @@ void SetMeThatVar(String VariableNameToFind, String NewContents, int format)
       AllMyVariables[i].setName(VariableNameToFind);
       AllMyVariables[i].setVar(NewContents);
       AllMyVariables[i].Format = format;
-	  WebSocketSend( "var~^`" + String(getValue(WebSockMessage, ':', 1).toInt()) + "~^`" + String(AllMyVariables[getValue(WebSockMessage, ':', 1).toInt()].getVar()));
+	  WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
       return;
     }
   }

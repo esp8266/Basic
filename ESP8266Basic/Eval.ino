@@ -36,6 +36,25 @@ String evaluate(String expr)
 #include "Fonts/FreeSerifBold24pt7b.h"
 
 
+byte LookUpNodeMCUPins(String Name)
+{
+  byte PinReturnValue = Name.toInt();
+  if (Name == F("D0")) PinReturnValue = 16;
+  if (Name == F("D1")) PinReturnValue =  5;
+  if (Name == F("D2")) PinReturnValue =  4;
+  if (Name == F("D3")) PinReturnValue =  0;
+  if (Name == F("D4")) PinReturnValue =  2;
+  if (Name == F("D5")) PinReturnValue = 14;
+  if (Name == F("D6")) PinReturnValue = 12;
+  if (Name == F("D7")) PinReturnValue = 13;
+  if (Name == F("D8")) PinReturnValue = 13;
+  if (Name == F("RX")) PinReturnValue =  3;
+  if (Name == F("TX")) PinReturnValue =  1;
+  return PinReturnValue;
+}
+
+
+
 /**
  @brief user-defined variable callback function. see expression_parser.h for more details.
  @param[in] user_data pointer to any user-defined state data that is required, none in this case

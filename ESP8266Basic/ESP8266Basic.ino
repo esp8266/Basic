@@ -82,7 +82,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 6";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 7";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -572,6 +572,10 @@ PROGMEM const char GraphicsEllipseCode[] =  R"=====(<ellipse cx="*x1*" cy="*y1*"
 
 PROGMEM const char GraphicsRectangleCode[] =  R"=====(<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>)=====";
 
+PROGMEM const char GraphicsTextCode[] =  R"=====(<text x="*x1*" y="*y1*" style="fill:*collor*" transform="rotate(*x2* *x1*,*y1*)">*text*</text>)=====";
+
+
+
 byte numberButtonInUse = 0;
 String ButtonsInUse[20];
 
@@ -619,6 +623,7 @@ String TimerBranch;
 String refreshBranch;
 
 uint16_t GraphicsEliments[100][7];
+String GraphicsText[100];
 
 File fsUploadFile;
 

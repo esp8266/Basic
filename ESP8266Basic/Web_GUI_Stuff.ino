@@ -121,11 +121,19 @@ String BasicGraphics()
       GraphicsEliment = GraphicsRectangleCode;
     }
 
+    if (GraphicsEliments[i][0] == 5) //For rectangle
+    {
+      GraphicsEliment = GraphicsTextCode;
+    }	
+	
+	
+
 
     GraphicsEliment.replace(F("*x1*"),  String(GraphicsEliments[i][1]));
     GraphicsEliment.replace(F("*y1*"),  String(GraphicsEliments[i][2]));
     GraphicsEliment.replace(F("*x2*"),  String(GraphicsEliments[i][3]));
     GraphicsEliment.replace(F("*y2*"),  String(GraphicsEliments[i][4]));
+	GraphicsEliment.replace(F("*text*"),  GraphicsText[i]);
 
     if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*collor*", F("black"));
     if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*collor*", F("Navy"));

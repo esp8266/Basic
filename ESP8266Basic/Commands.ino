@@ -944,6 +944,21 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  
+  if (Param0 == F("text"))
+  {
+    NewGraphicItemAddedSinceLastWait = 1;
+    int i;
+    GraphicsEliments[0][0] += 1;
+    i = GraphicsEliments[0][0];
+    GraphicsEliments[i][0] = 5;
+    GraphicsEliments[i][1] = evaluate(Param1).toInt();
+    GraphicsEliments[i][2] = evaluate(Param2).toInt();
+    GraphicsEliments[i][3] = evaluate(Param4).toInt();
+    GraphicsText[i] = evaluate(Param3);
+    GraphicsEliments[i][5] = evaluate(Param5).toInt();
+    return;
+  }
 
 
   if (Param0 == F("input"))

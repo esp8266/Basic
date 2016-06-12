@@ -82,7 +82,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 7";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 8";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -356,7 +356,7 @@ function objEvent(e)
 }
 function objChange(e)
 {
-  connection.send("guichange:" + e.name +":" + document.getElementById(e.id).value);
+  connection.send("guichange~" + e.name +"~" + document.getElementById(e.id).value);
 }
 
 var aliveme = setInterval(aliveTimer, 5000);

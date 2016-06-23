@@ -47,7 +47,7 @@ byte LookUpNodeMCUPins(String Name)
   if (Name == F("D5")) PinReturnValue = 14;
   if (Name == F("D6")) PinReturnValue = 12;
   if (Name == F("D7")) PinReturnValue = 13;
-  if (Name == F("D8")) PinReturnValue = 13;
+  if (Name == F("D8")) PinReturnValue = 15;
   if (Name == F("RX")) PinReturnValue =  3;
   if (Name == F("TX")) PinReturnValue =  1;
   return PinReturnValue;

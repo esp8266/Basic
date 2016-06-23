@@ -83,7 +83,7 @@ void SendAllTheVars()
     if (AllMyVariables[i].getName() == "") break;
     WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
     delay(0);
-    Serial.println(i);
+    //Serial.println(i);
   }
   return;
 }
@@ -302,7 +302,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       // Serial.print(num);
       // Serial.print(" get text ");
 
-      Serial.println(WebSockMessage);
+      //Serial.println(WebSockMessage);
 
       if (WebSockMessage == F("cmd:stop"))
       {
@@ -342,7 +342,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 
       if (WebSockMessage.startsWith(F("guievent:")))
       {
-        Serial.println(WebSockMessage.substring(9));
+        //Serial.println(WebSockMessage.substring(9));
         break;
       }
       if (WebSockMessage == F("vars"))
@@ -352,18 +352,18 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       }
       if (WebSockMessage.startsWith(F("guicmd:")))
       {
-        Serial.println(WebSockMessage.substring(7));
+        //Serial.println(WebSockMessage.substring(7));
         RunningProgram = 1;
         WaitForTheInterpertersResponse = 0;
         RunningProgramCurrentLine = WebSockMessage.substring(7).toInt() - 1;
-        Serial.println("Current line = " + String(RunningProgramCurrentLine));
+        //Serial.println("Current line = " + String(RunningProgramCurrentLine));
         runTillWaitPart2();
         break;
       }
       if (WebSockMessage.startsWith(F("guichange~")))
       {
-        Serial.println(getValue(WebSockMessage, '~', 1).toInt());
-        Serial.println(getValue(String(WebSockMessage), '~', 2));
+        //Serial.println(getValue(WebSockMessage, '~', 1).toInt());
+        //Serial.println(getValue(String(WebSockMessage), '~', 2));
         AllMyVariables[getValue(WebSockMessage, '~', 1).toInt()].setVar(getValue(WebSockMessage, '~', 2));
         WebSocketSend( "var~^`" + String(getValue(WebSockMessage, '~', 1).toInt()) + "~^`" + String(AllMyVariables[getValue(WebSockMessage, '~', 1).toInt()].getVar()));
         break;

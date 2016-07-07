@@ -411,6 +411,16 @@ void ExicuteTheCurrentLine()
     //TimerBranch = Param2;
     return;
   }
+  if ( Param0 == F("mqttbranch"))
+  { 
+	MQTTBranch = Param1;
+    return;
+  }
+  
+  
+  
+  
+  
 
   if ( Param0 == F("timercb"))
   {
@@ -1077,6 +1087,16 @@ void ExicuteTheCurrentLine()
     WaitForTheInterpertersResponse = 1;
     TimerWaitTime = 0;
     TimerCBtime = 0;
+	
+	MQTTlatestMsg = "";
+	MQTTnewMsgReceived = 0;
+	MQTTActivated = 0;
+	MQTTBranch = "";
+	MQTTSubscribeTopic = "";
+	MQTTPublishTopic = "";
+	MQTTPublishMSG = "";
+	MQTTTimeFromLastCheck = 0;
+	
     PrintAndWebOut(F("Done..."));
     return;
   }

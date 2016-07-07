@@ -57,6 +57,8 @@
 //#include <HttpClient.h>                   // that line needs to be commented for esp8266-2.0.0-rc1
 #include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
+
+
 //LCD Stuff
 #include <LiquidCrystal_SR.h>
 #include <I2CIO.h>
@@ -82,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 8";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 9";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -159,6 +161,23 @@ String WebSockChangeName;
 int WebSocketTimeOut[5];
 
 WiFiClient client;
+//WiFiClient clientb;
+
+//MQTT Stuff
+#include <PubSubClient.h>
+//#include "Adafruit_MQTT.h"
+//#include "Adafruit_MQTT_Client.h"
+PubSubClient MQTTclient(client);
+String MQTTlatestMsg;
+bool MQTTnewMsgReceived ;
+bool MQTTActivated;
+String MQTTBranch;
+String MQTTSubscribeTopic;
+String MQTTPublishTopic;
+String MQTTPublishMSG;
+int MQTTTimeFromLastCheck;
+
+
 ESP8266WebServer *server; //server(80);
 
 //Web Server Variables
@@ -693,6 +712,9 @@ void setup() {
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
   //CheckWaitForRunningCode();
+  
+  MQTTclient.setCallback(MQTTcallback);
+  
 
   server->on("/", []()
   {
@@ -1453,6 +1475,27 @@ void loop()
   delay(0);
   server->handleClient();
   webSocket.loop();
+  
+  if (MQTTActivated)
+  { 
+	  if (!MQTTclient.connected()) {
+	  	MQTTreconnect();
+	  }
+	  MQTTclient.loop();
+	  //Serial.println("Checking mqtt");
+	  //MQTTclient.loop();
+	  if (MQTTnewMsgReceived == 1 & MQTTBranch != "")
+	  {     
+			MQTTnewMsgReceived = 0;
+		    inData = String(" goto " + MQTTBranch + " ");
+			WaitForTheInterpertersResponse = 0;
+			ExicuteTheCurrentLine();
+			runTillWaitPart2();
+	  } 
+  }
+  
+  
+  
 }
 
 
@@ -1462,12 +1505,16 @@ void RunBasicTillWait()
   runTillWaitPart2();
   if (RunningProgramCurrentLine > TotalNumberOfLines)
   {
-    RunningProgram = 0 ;
-    TimerWaitTime = 0;
-    TimerCBtime = 0;
+	inData = String(" end");
+	WaitForTheInterpertersResponse = 0;
+	ExicuteTheCurrentLine();
     return;
   }
 
+
+
+  
+  
   if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
   {
     inData = String(" goto " + TimerBranch + " ");
@@ -1954,3 +2001,60 @@ void serialFlush()
 }
 
 
+void MQTTcallback(char* topic, byte* payload, unsigned int length) 
+{
+	String MQTTNewMSg;
+	//Serial.println("msg received");
+
+  for (int i = 0; i < length; i++) 
+  {
+    MQTTNewMSg = String(MQTTNewMSg + (char)payload[i]);
+	delay(0);
+  }
+
+  if (MQTTNewMSg != MQTTlatestMsg )
+  {
+	MQTTnewMsgReceived  = 1;  
+	MQTTlatestMsg = MQTTNewMSg;
+  }  
+}
+
+
+void MQTTreconnect() {
+  // Loop until we're reconnected
+  byte reconnectAttempts = 0;
+  while (!MQTTclient.connected()) {
+	reconnectAttempts++;
+	if (reconnectAttempts > 3) return;
+    if (MQTTclient.connect("ESP8266Client")) {
+      MQTTclient.subscribe(MQTTSubscribeTopic.c_str());
+	  if (MQTTPublishTopic != "") 
+	  {
+		  bool MQTTSendSucess = 0;
+		  while (!MQTTSendSucess)
+		  {
+			//Serial.print("Atempting to send");
+			Serial.println(MQTTPublishMSG);
+			MQTTSendSucess =  MQTTclient.publish(MQTTPublishTopic.c_str(), MQTTPublishMSG.c_str(),1);
+		    if (MQTTSendSucess) 
+			{
+				MQTTPublishTopic = "";
+				//Serial.println(MQTTSendSucess);
+				return;
+			}
+			if (reconnectAttempts > 10) return;
+			delay(0);
+			reconnectAttempts++;
+		  }
+		  
+		  
+	  }
+	  //MQTTclient.loop();
+      //Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.println(MQTTclient.state());
+      delay(0);
+    }
+  } 
+}

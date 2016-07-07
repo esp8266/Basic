@@ -50,7 +50,9 @@ class Adafruit_MQTT_FONA : public Adafruit_MQTT {
   bool connectServer() {
     char server[40];
     strncpy_P(server, servername, 40);
+#ifdef ADAFRUIT_SLEEPYDOG_H
     Watchdog.reset();
+#endif
 
     // connect to server
     DEBUG_PRINTLN(F("Connecting to TCP"));
@@ -66,10 +68,9 @@ class Adafruit_MQTT_FONA : public Adafruit_MQTT {
     return fona->TCPconnected();
   }
 
-  uint16_t readPacket(uint8_t *buffer, uint8_t maxlen, int16_t timeout,
-                      bool checkForValidPubPacket = false) {
+  uint16_t readPacket(uint8_t *buffer, uint8_t maxlen, int16_t timeout) {
     uint8_t *buffp = buffer;
-    DEBUG_PRINTLN(F("Reading a packet.."));
+    DEBUG_PRINTLN(F("Reading data.."));
 
     if (!fona->TCPconnected()) return 0;
 
@@ -80,9 +81,9 @@ class Adafruit_MQTT_FONA : public Adafruit_MQTT {
     uint16_t avail;
 
     while (fona->TCPconnected() && (timeout >= 0)) {
-      DEBUG_PRINT('.');
+      //DEBUG_PRINT('.');
       while (avail = fona->TCPavailable()) {
-        DEBUG_PRINT('!');
+        //DEBUG_PRINT('!');
 
         if (len + avail > maxlen) {
 	  avail = maxlen - len;
@@ -100,28 +101,19 @@ class Adafruit_MQTT_FONA : public Adafruit_MQTT {
         //DEBUG_PRINTLN((uint8_t)c, HEX);
 
         if (len == maxlen) {  // we read all we want, bail
-          DEBUG_PRINT(F("Read packet:\t"));
+          DEBUG_PRINT(F("Read:\t"));
           DEBUG_PRINTBUFFER(buffer, len);
-    return len;
+	  return len;
         }
-
-        // special case where we just one one publication packet at a time
-        if (checkForValidPubPacket) {
-          if ((buffer[0] == (MQTT_CTRL_PUBLISH << 4)) && (buffer[1] == len-2)) {
-            // oooh a valid publish packet!
-            DEBUG_PRINT(F("Read PUBLISH packet:\t"));
-            DEBUG_PRINTBUFFER(buffer, len);
-            return len;
-          }
-        }
-
       }
+#ifdef ADAFRUIT_SLEEPYDOG_H
       Watchdog.reset();
+#endif
       timeout -= MQTT_FONA_INTERAVAILDELAY;
       timeout -= MQTT_FONA_QUERYDELAY; // this is how long it takes to query the FONA for avail()
       delay(MQTT_FONA_INTERAVAILDELAY);
     }
-
+    
     return len;
   }
 

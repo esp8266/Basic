@@ -459,6 +459,39 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str = *args_str[0];
     return PARSER_STRING;
   }
+  else if ( fname == F("mqtt.setup") && num_args >= 1 ) {
+	int MQTTport = 1883;
+	
+	if (num_args == 2) MQTTport = args[1];
+	
+	//MQTTclient.setServer(String(*args_str[0]).c_str(), MQTTport);
+	MQTTclient.setServer("broker.mqtt-dashboard.com", MQTTport);
+    
+	MQTTActivated = 1;
+	Serial.println(String("Connected to " + String(*args_str[0])));
+    *value_str = *args_str[0];
+    return PARSER_STRING;
+  }
+  else if ( fname == F("mqtt.subscribe") && num_args >= 1 ) {
+    MQTTSubscribeTopic = *args_str[0];
+    //MQTTclient.subscribe(String(*args_str[0]).c_str());
+    *value_str = *args_str[0];
+    return PARSER_STRING;
+  }  
+  else if ( fname == F("mqtt.msg")) {
+    *value_str = MQTTlatestMsg;
+    return PARSER_STRING;
+  }     
+  else if ( fname == F("mqtt.publish")  && num_args >= 1 ) {
+	MQTTPublishTopic = *args_str[0];
+    MQTTPublishMSG = *args_str[1];
+    *value_str = MQTTlatestMsg;
+    return PARSER_STRING;
+  }    
+  
+  
+  
+  
 
   else if ( fname == F("read") && num_args == 1 ) {
     *value_str = LoadDataFromFile(*args_str[0]);

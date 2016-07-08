@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 10";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 11";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -258,7 +258,7 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 <button onclick="ShowTheFileList()">Files List</button>
 <button onclick="SaveTheCode()">Save</button>
 <br>
-<textarea rows="3" style="width:100%" name="code" id="code">*program txt*</textarea><br>
+<textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
     <script>
       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {

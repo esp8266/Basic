@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 9";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 10";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -249,6 +249,8 @@ function sortOptions() {
 
 PROGMEM const char EditorPageHTML[] =  R"=====(
 <script src="editor.js"></script>
+<script src="/file?file=codemirror.js.gz"></script>
+<link rel="stylesheet" href="/file?file=codemirror.css.gz">
 <form action='edit' id="usrform">
 <input type="text" id="FileName" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
@@ -256,8 +258,14 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 <button onclick="ShowTheFileList()">Files List</button>
 <button onclick="SaveTheCode()">Save</button>
 <br>
-<textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
+<textarea rows="3" style="width:100%" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
+    <script>
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        indentUnit: 4
+      });
+    </script>
 )=====";
 
 
@@ -471,18 +479,20 @@ function objChange(e)
 
 PROGMEM const char editCodeJavaScript[] =  R"=====(
 function SaveTheCode() {
+  if (typeof editor != "undefined") {editor.save();}
   var textArea = document.getElementById("code");
   var arrayOfLines = textArea.value.split("\n");
   httpGet("/codein?SaveTheCode=start&FileName="+document.getElementById("FileName").value);
   httpGet("/codein?SaveTheCode=yes");
   block = 0;
+  document.getElementById("Status").value = "";
 for (i = 0; i < arrayOfLines.length; i++) 
 { 
   x = i + 1;
   if (arrayOfLines[i] != "undefined")
   {
     stocca(encodeURIComponent(arrayOfLines[i]));
-    document.getElementById("Status").value = i.toString();
+    
   }
 }
 stocca(">>-save_<<");

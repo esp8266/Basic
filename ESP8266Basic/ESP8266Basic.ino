@@ -249,8 +249,8 @@ function sortOptions() {
 
 PROGMEM const char EditorPageHTML[] =  R"=====(
 <script src="editor.js"></script>
-<script src="/file?file=codemirror.js.gz"></script>
-<link rel="stylesheet" href="/file?file=codemirror.css.gz">
+<script src="https:\\raw.githubusercontent.com\esp8266\Basic\NewWebSockets\CSS\codemirror.js"></script>
+<link rel="stylesheet" href="https:\\raw.githubusercontent.com\esp8266\Basic\NewWebSockets\CSS\codemirror.css">
 <form action='edit' id="usrform">
 <input type="text" id="FileName" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">

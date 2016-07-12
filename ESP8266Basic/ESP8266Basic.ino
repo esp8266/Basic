@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 11";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 12";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -191,10 +191,11 @@ PROGMEM const char GOTOimagebutton[] =  R"=====(<input type="image" onclick="cmd
 PROGMEM const char normalImage[] =  R"=====(<img src="/file?file=name">)=====";
 PROGMEM const char javascript[] =  R"=====(<script src="/file?file=name"></script>)=====";
 PROGMEM const char CSSscript[] =  R"=====(<link rel="stylesheet" type="text/css" href="/file?file=name">)=====";
-PROGMEM const char DropDownList[] =  R"=====(<select name="variablenumber" id="myid" onchange="objChange(this)" size="theSize">options</select>
-<script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
+PROGMEM const char CSSid[] =  R"=====(<style>#myid {*style*}</style>)=====";
+PROGMEM const char CSSclass[] =  R"=====(<style>myid {*style*}</style>)=====";
+PROGMEM const char DropDownList[] =  R"=====(<select name="variablenumber" id="myid" onchange="objChange(this)" size="theSize">options</select><script>document.getElementsByName("variablenumber")[0].value = "VARS|variablenumber";</script>)=====";
 PROGMEM const char DropDownListOpptions[] =  R"=====(<option>item</option>)=====";
-
+PROGMEM const char meter[] =  R"=====(<meter id="myid" name="variablenumber" value="variablevalue" min="minval" max="maxval"></meter>)=====";
 
 String LastElimentIdTag;
 

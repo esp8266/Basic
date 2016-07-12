@@ -739,8 +739,54 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if (Param0 == F("meter"))
+  {
+    NewGuiItemAddedSinceLastWait = 1;
+    r = ExtractArguments(inData);
+    String tempMeter = GenerateIDtag(meter);
+    VarialbeLookup(args_var[0]);
+    if (VariableLocated == 0)
+    {
+      SetMeThatVar(args_var[0], "", PARSER_TRUE);
+      GetMeThatVar(args_var[0]);
+    }
+    tempMeter.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
+    tempMeter.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
+    tempMeter.replace(F("minval"), FloatToString(args[1]));
+    tempMeter.replace(F("maxval"), FloatToString(args[2]));
 
+    HTMLout += tempMeter;
+    DeAllocateArguments();  // don't forget to call this function after each ExtractArguments
+    return;
+  }
+
+  if (Param0 == F("cssid"))
+  {
+    NewGuiItemAddedSinceLastWait = 1;
+	Param1 = evaluate(Param1);
+    String tempCSSid = CSSid;
+    tempCSSid.replace(F("myid"),  Param1);
+	Param2 = evaluate(Param2);
+    tempCSSid.replace(F("*style*"),  Param2);
+
+    HTMLout = String(HTMLout + tempCSSid);
+    return;
+  }
+
+  if (Param0 == F("cssclass"))
+  {
+    NewGuiItemAddedSinceLastWait = 1;
+	Param1 = evaluate(Param1);
+    String tempCSSclass = CSSclass;
+    tempCSSclass.replace(F("myid"),  Param1);
+	Param2 = evaluate(Param2);
+    tempCSSclass.replace(F("*style*"),  Param2);
+
+    HTMLout = String(HTMLout + tempCSSclass);
+    return;
+  }
+  
 
   if (Param0 == F("dropdown") | Param0 == F("listbox"))
   {

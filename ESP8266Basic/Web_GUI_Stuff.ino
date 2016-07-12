@@ -25,7 +25,7 @@ String RunningProgramGui()
   }
 
 
-  String WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script>"))  + HTMLout;
+  String WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script><script src='/file?file=widgets.js.gz'></script>"))  + HTMLout;
 
 
   for (int i = TotalNumberOfVariables - 1; i >= 0; i--)
@@ -237,7 +237,7 @@ void CheckFOrWebVarInput()
 
 String GenerateIDtag(String TempateString)
 {
-  LastElimentIdTag = String(millis());
+  LastElimentIdTag = String("I" + String(millis()));
   TempateString.replace(F("myid"), LastElimentIdTag );
   return TempateString;
 }

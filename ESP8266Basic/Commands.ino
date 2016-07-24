@@ -93,14 +93,7 @@ void ExicuteTheCurrentLine()
 
   if (BasicDebuggingOn == 1)
   {
-    Serial.println(F("Executing line Debug Statement"));
-    Serial.println(String(String(RunningProgramCurrentLine) + " " + inData));
-    //    Serial.println(Param0);
-    //    Serial.println(Param1);
-    //    Serial.println(Param2);
-    //    Serial.println(Param3);
-    //    Serial.println(Param4);
-    //    Serial.println(Param5);
+	WebSocketSend( "code~^`" + inData + "~^`" + String(RunningProgramCurrentLine));
   }
 
   Param0.trim();
@@ -130,11 +123,13 @@ void ExicuteTheCurrentLine()
     // we can just define that these words should be surrounded by spaces (" then " " else ")
     //
     int then_pos, else_pos;
+	String TempInData = inData;
+	TempInData.toLowerCase();
 
-    then_pos = inData.indexOf(F(" then "));
-    else_pos = inData.indexOf(F(" else "));
+    then_pos = TempInData.indexOf(F(" then "));
+    else_pos = TempInData.indexOf(F(" else "));
 
-    if (inData.endsWith(F(" then")))
+    if (TempInData.endsWith(F(" then")))
     {
       // this is considered as a IF THEN {ELSE} ENDIF | END IF
 

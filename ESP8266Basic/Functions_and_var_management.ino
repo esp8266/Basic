@@ -42,7 +42,8 @@ void SetMeThatVar(String VariableNameToFind, String NewContents, int format)
     {
         AllMyVariables[i].setVar(NewContents);
         AllMyVariables[i].Format = format;
-        WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
+        WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()) + "~^`" + String(AllMyVariables[i].getName()) );
+		if (BasicDebuggingOn == 1) WebSocketSend( "varname~^`" + String(i) + "~^`" + String(AllMyVariables[i].getName()));
         return;
     }
   }
@@ -55,6 +56,7 @@ void SetMeThatVar(String VariableNameToFind, String NewContents, int format)
       AllMyVariables[i].setVar(NewContents);
       AllMyVariables[i].Format = format;
 	  WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
+	  if (BasicDebuggingOn == 1) WebSocketSend( "varname~^`" + String(i) + "~^`" + String(AllMyVariables[i].getName()));
       return;
     }
   }

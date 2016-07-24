@@ -1403,11 +1403,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     {
       String tmp = "log~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
       if (args_str[0] == NULL)
-        tmp = tmp + FloatToString(args[1]);
+        tmp = tmp + FloatToString(args[0]);
       else
         tmp = tmp + *args_str[0];
 
-      WebSocketSend(  tmp.c_str());
+      WebSocketSend( tmp.c_str());
       return PARSER_TRUE;
     }
     else if ( fname == F("getevent") && num_args == 0 )

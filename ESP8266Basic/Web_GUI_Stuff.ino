@@ -23,10 +23,9 @@ String RunningProgramGui()
     runTillWaitPart2();
     RunBasicTillWait();
   }
-
-
-  String WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script><script src='/file?file=widgets.js.gz'></script>"))  + HTMLout;
-
+ String WebOut;
+ if (BasicDebuggingOn == 1) WebOut = String(MobileFreindlyWidth) + String(DebugPage)  + HTMLout;
+ if (BasicDebuggingOn == 0) WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script><script src='/file?file=widgets.js.gz'></script>"))  + HTMLout;
 
   for (int i = TotalNumberOfVariables - 1; i >= 0; i--)
   {
@@ -88,6 +87,20 @@ void SendAllTheVars()
   return;
 }
 
+
+void SendAllTheVarsForDebug()
+{
+  for (int i = 0; i < TotalNumberOfVariables; i++)
+  {
+    if (AllMyVariables[i].getName() == "") break;
+    WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
+    WebSocketSend( "varname~^`" + String(i) + "~^`" + String(AllMyVariables[i].getName()));
+		
+    delay(0);
+    //Serial.println(i);
+  }
+  return;
+}
 
 
 String BasicGraphics()
@@ -263,9 +276,12 @@ void WebSocketSend(String MessageToSend)
   for (byte i = 0; i <= 5; i++)
   {
     if (WebSocketTimeOut[i] + 60000 >=  millis()) webSocket.sendTXT(i, MessageToSend);
-    delay(0);
+	webSocket.loop();
+    delay(2);
   }
 }
+
+
 
 
 
@@ -275,6 +291,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
   switch (type)
   {
     case WStype_DISCONNECTED:
+	WebSocketTimeOut[num]  = 0;
       Serial.print(num);
       Serial.println(" winsock Disconnected!");
       break;
@@ -298,7 +315,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         WebSocketTimeOut[num] = millis();
         break;
       }
-
       // Serial.print(num);
       // Serial.print(" get text ");
 

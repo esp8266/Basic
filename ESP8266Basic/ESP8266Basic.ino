@@ -33,6 +33,7 @@
 #include <Hash.h>
 #include <WebSockets.h>
 
+
 //#include <ArduinoJson.h>
 #include "spiffs/spiffs.h"
 #include <FS.h>
@@ -84,7 +85,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 12";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 13";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -200,6 +201,24 @@ PROGMEM const char meter[] =  R"=====(<meter id="myid" name="variablenumber" val
 String LastElimentIdTag;
 
 PROGMEM const char MobileFreindlyWidth[] = R"=====(<meta name="viewport" content="width=device-width, initial-scale=1.0">)=====";
+PROGMEM const char DebugPage[] =  R"=====(<script>var dbug = *dbug*;</script><script src='WebSockets.js'></script>
+<div id="fooBar" style="float:left; width:20%;">Vars<hr></div>
+<DIV style="float:left; width:35%;">
+<button id="run" onclick="dcmdClick(this)">Run</button>
+<button id="stop" onclick="dcmdClick(this)">Stop</button>
+<button id="pause" onclick="dcmdClick(this)">Pause</button>
+<button id="continue" onclick="dcmdClick(this)">Continue</button>
+<input type="text" id="connection_status" value="Disconnected">
+<button id="clear" onclick="logClear()">Clear</button>
+<textarea rows="20" style="width:100%" id="log">log</textarea>
+<br><input type="text" id="lno" value="line no"><br><input type="text" id="lcode" value="Code">
+</DIV>
+<div id="app" style="float:left; width:45%;">
+</div>
+)=====";
+
+
+
 
 byte WaitForTheInterpertersResponse = 1;
 
@@ -272,211 +291,164 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 
 
 PROGMEM const char WebSocketsJS[] =  R"=====(
-connection = new WebSocket('ws://'+location.hostname+':81/', ['arduino']);
-connection.onopen = function () {
-  //connection.send('websocket connected!'); 
-  document.getElementById("connection_status").value = "Connected";
-};
-connection.onclose = function () {
-  document.getElementById("connection_status").value = "Disconnected";
-};
-connection.onerror = function (error) {
-  document.getElementById("connection_status").value = error;
-};
-connection.onmessage = function (e) {
-  //connection.send('OK'); 
-  //alert(e);
-  var res = e.data.split("~^`");
-  if (res[0].toLowerCase() == "var")
-  {
-    var obj = document.getElementById(res[1]);
-    document.getElementsByName(res[1])[0].value = res[2];
-    document.getElementsByName(res[1])[1].value = res[2];
-    document.getElementsByName(res[1])[2].value = res[2];
-    document.getElementsByName(res[1])[3].value = res[2];
-    document.getElementsByName(res[1])[4].value = res[2];
-    document.getElementsByName(res[1])[5].value = res[2];
-    connection.send("OK");
-    return; 
-  }  
-  if (res[0].toLowerCase() == "print")
-  {
-    //alert(e);
-    var bla  = document.body.innerHTML;
-    document.open();
-    document.write(bla +'<hr>'+ res[1]);
-    document.close();
+start('ws://' + location.hostname + ':81/');
 
-    connection.send("vars");
-    return; 
-  }  
-  if (res[0].toLowerCase() == "gupdate")
-  {
-    document.getElementsByName('gra')[0].contentWindow.location.reload();
-    return; 
-  } 
-  
-  
-  
-  
-  if (res[0].toLowerCase() == "guicls")
-  {
-    //alert(e);
-    var bla  = document.body.innerHTML;
-    document.open();
-    document.write('');
-    document.close();
-    location.reload();
-    return; 
-  } 
-  if (res[0].toLowerCase() == "wprint")
-  {
-    var bla  = document.body.innerHTML;
-    document.open();
-    document.write(bla + res[1]);
-    document.close();
+function start(websocketServerLocation) {
+    connection = new WebSocket(websocketServerLocation);
+    connection.onopen = function() {
+        //connection.send('websocket connected!'); 
+        document.getElementById("connection_status").value = "Connected";
+    };
+    connection.onclose = function() {
+        //try to reconnect in 5 seconds
+        document.getElementById("connection_status").value = "Disconnected";
+        setTimeout(function() {
+            start(websocketServerLocation)
+        }, 1000);
+    };
 
-    connection.send("vars");
-    return; 
-  } 
-  else if (res[0].toLowerCase() == "get")
-  {
-    var obj = document.getElementById(res[1]);
-    if (obj == null)
-    {
-      connection.send("unknown object");
-      return; 
-    }
-    connection.send(obj.value);
-    return;
-  }
-  else if (res[0].toLowerCase() == "log")
-  {
-    connection.send('OK');
-    var log = document.getElementById("log");
-    log.value = log.value + "\n" + res[1];
-    log.selectionStart = log.selectionEnd = log.value.length;
-    return;
-  }
-  else if (res[0].toLowerCase() == "gauge")
-  {
-    connection.send('OK');
-    Gauge.Collection.get( res[1] ).setValue( res[2] );
-    return;
-  }
-  else
-  {
-    // default 
-    connection.send("KO");
-  }
-};
-function cmdClick(e)
-{
-  connection.send("guicmd:" + e.name);
+    connection.onmessage = function(e) {
+        //connection.send('OK'); 
+        //alert(e);
+        var res = e.data.split("~^`");
+        if (res[0].toLowerCase() == "var") {
+            connection.send("OK");
+            for (i = 0; i < document.getElementsByName(res[1]).length; i++) {
+                document.getElementsByName(res[1])[i].value = res[2];
+            }
+
+            return;
+        }
+        if (res[0].toLowerCase() == "varname") {
+            connection.send("OK");
+            document.getElementsByName("var" + res[1].toString())[0].value = res[2];
+            return;
+        }
+        if (res[0].toLowerCase() == "code") {
+            connection.send("OK");
+            document.getElementById("lcode").value = res[1];
+			document.getElementById("lno").value = res[2];
+            return;
+        }
+
+
+        if (res[0].toLowerCase() == "print") {
+            //alert(e);
+            var bla = document.body.innerHTML;
+            document.open();
+            document.write(bla + '<hr>' + res[1]);
+            document.close();
+
+            connection.send("vars");
+            return;
+        }
+        if (res[0].toLowerCase() == "gupdate") {
+            document.getElementsByName('gra')[0].contentWindow.location.reload();
+            return;
+        }
+
+
+
+
+        if (res[0].toLowerCase() == "guicls") {
+            //alert(e);
+            var bla = document.body.innerHTML;
+            document.open();
+            document.write('');
+            document.close();
+            location.reload();
+            return;
+        }
+        if (res[0].toLowerCase() == "wprint") {
+            var bla = document.body.innerHTML;
+            document.open();
+            document.write(bla + res[1]);
+            document.close();
+
+            connection.send("vars");
+            return;
+        } else if (res[0].toLowerCase() == "get") {
+            var obj = document.getElementById(res[1]);
+            if (obj == null) {
+                connection.send("unknown object");
+                return;
+            }
+            connection.send(obj.value);
+            return;
+        } else if (res[0].toLowerCase() == "log") {
+            connection.send('OK');
+            var log = document.getElementById("log");
+            log.value = "\n" + res[1] + log.value;
+            log.selectionStart = log.selectionEnd = log.value.length;
+            return;
+        } else if (res[0].toLowerCase() == "gauge") {
+            connection.send('OK');
+            Gauge.Collection.get(res[1]).setValue(res[2]);
+            return;
+        } else {
+            // default 
+            connection.send("KO");
+        }
+    };
 }
-function logClear()
-{
-  document.getElementById("log").value = "";
+
+function dcmdClick(e) {
+    connection.send("cmd:" + e.id);
 }
-function objEvent(e)
-{
-  connection.send("guievent:" + e.name +":" + document.getElementById(e.id).value);
+
+function cmdClick(e) {
+    connection.send("guicmd:" + e.name);
 }
-function objChange(e)
-{
-  connection.send("guichange~" + e.name +"~" + document.getElementById(e.id).value);
+
+function logClear() {
+    document.getElementById("log").value = "";
+}
+
+function objEvent(e) {
+    connection.send("guievent:" + e.name + ":" + document.getElementById(e.id).value);
+}
+
+function objChange(e) {
+    connection.send("guichange~" + e.name + "~" + document.getElementById(e.id).value);
 }
 
 var aliveme = setInterval(aliveTimer, 5000);
-function aliveTimer() 
-{
-  connection.send("OK"); 
-}
-)=====";
 
-
-
-
-PROGMEM const char DebugPageHTML[] =  R"=====(
-<button id="run" onclick="cmdClick(this)">Run</button>
-<button id="stop" onclick="cmdClick(this)">Stop</button>
-<button id="pause" onclick="cmdClick(this)">Pause</button>
-<button id="continue" onclick="cmdClick(this)">Continue</button>
-<input type="text" id="connection_status" value="Disconnected">
-<button id="clear" onclick="logClear()">Clear</button>
-<textarea rows="20" style="width:100%" id="log">log</textarea>
-<br>
-<script>
-connection = new WebSocket('ws://'+location.hostname+':81/', ['arduino']);
-connection.onopen = function () {
-  //connection.send('websocket connected!'); 
-  document.getElementById("connection_status").value = "Connected";
-};
-connection.onclose = function () {
-  document.getElementById("connection_status").value = "Disconnected";
-};
-connection.onerror = function (error) {
-  document.getElementById("connection_status").value = error;
-};
-connection.onmessage = function (e) {
-  //connection.send('OK'); 
-  var res = e.data.split("~^`");
-  if (res[0].toLowerCase() == "set")
-  {
-    var obj = document.getElementById(res[1]);
-    document.getElementById(res[1]).value = res[2];
+function aliveTimer() {
     connection.send("OK");
-    return; 
-  }  
-  else if (res[0].toLowerCase() == "get")
-  {
-    var obj = document.getElementById(res[1]);
-    if (obj == null)
-    {
-      connection.send("unknown object");
-      return; 
+}
+
+window.onload = function makeVarList() {
+    for (xxx = 0; xxx < 51; xxx++) {
+        add(xxx.toString(), "");
     }
-    connection.send(obj.value);
-    return;
-  }
-  else if (res[0].toLowerCase() == "log")
-  {
-    connection.send('OK');
-    var log = document.getElementById("log");
-    log.value = log.value + "\n" + res[1];
-    log.selectionStart = log.selectionEnd = log.value.length;
-    return;
-  }
-  else if (res[0].toLowerCase() == "gauge")
-  {
-    connection.send('OK');
-    Gauge.Collection.get( res[1] ).setValue( res[2] );
-    return;
-  }
-  else
-  {
-    // default 
-    connection.send("KO");
-  }
-};
-function cmdClick(e)
-{
-  connection.send("cmd:" + e.id);
 }
-function logClear()
-{
-  document.getElementById("log").value = "";
+
+//Create text boxes for variables
+function add(itemName, itemValue) {
+
+    var element = document.createElement("input");
+    element.setAttribute("type", "text");
+    element.setAttribute("value", itemValue);
+    element.setAttribute("name", "var" + itemName);
+    element.setAttribute("style", "width:50%");
+
+    var element1 = document.createElement("input");
+    element1.setAttribute("type", "text");
+    element1.setAttribute("value", itemValue);
+    element1.setAttribute("name", itemName);
+    element1.setAttribute("style", "width:50%");
+
+
+    document.getElementById("fooBar").appendChild(element);
+    document.getElementById("fooBar").appendChild(element1);
 }
-function objEvent(e)
-{
-  connection.send("event:" + e.id);
-}
-function objChange(e)
-{
-  connection.send("change:" + e.id);
-}
-</script>
 )=====";
+
+
+
+
+
 
 PROGMEM const char editCodeJavaScript[] =  R"=====(
 function SaveTheCode() {
@@ -720,12 +692,13 @@ void setup() {
   server = new ESP8266WebServer(listenport.toInt());
 
   //Serial.setDebugOutput(true);
+  
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
   //CheckWaitForRunningCode();
   
   MQTTclient.setCallback(MQTTcallback);
-  
+
 
   server->on("/", []()
   {
@@ -1513,6 +1486,7 @@ void loop()
 
 void RunBasicTillWait()
 {
+  webSocket.loop();
   runTillWaitPart2();
   if (RunningProgramCurrentLine > TotalNumberOfLines)
   {

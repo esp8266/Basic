@@ -697,6 +697,34 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     pixels->show();
     return PARSER_STRING;
   }
+  else if (fname == F("neo.hex") && num_args > 0){
+  // NEO HEX       (string of pixel info,first pixel,string start ie 0,1,2 will be multiplied by 3,pcount number pixels,percentage brightness 0-100)
+  // pixels are 3 hex digits ie FFF will be white 000 will be black (coded as RGB)
+    int hexlen ; //= args_str[0]->length();
+    hexlen = args[3];
+    int r,g,b;
+    int zpix; // calculated pixel value
+    String hz = "";
+    for (int npix = 0;npix < hexlen;npix ++){
+      zpix = (npix + args[2]) *3;
+    hz = args_str[0]->substring(zpix,zpix+1);
+    r = strtol(hz.c_str(),0,16);
+    r = (r<<4) *args[4] /100;
+        hz = args_str[0]->substring(zpix+1,zpix+2);
+    g = strtol(hz.c_str(),0,16);
+    g = (g<<4) * args[4] /100;
+        hz = args_str[0]->substring(zpix+2,zpix+3);
+    b = strtol(hz.c_str(),0,16);
+    b = (b<<4) * args[4] /100;
+     pixels->setPixelColor(npix + args[1], pixels->Color(r, g, b));
+    //pixels->setPixelColor(LedNo, pixels->Color(r, g, b));
+    }
+    pixels ->show();
+  return PARSER_TRUE;
+  }
+  
+  
+  
   else if ( fname == F("temp") && num_args > 0 ) {
     // function temp(sensor #)
     // set return value
@@ -1013,6 +1041,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     else if ( fname == F("fill") && num_args == 1 ) {
       // function tft.fill(color)   fill the screen with the color (565)
       tft->fillScreen(args[0]);
+      return PARSER_TRUE;
+    }
+    else if ( fname == F("cls") && num_args == 1 ) {
+      // function tft.fill(color)   fill the screen with the color (565)
+      tft->fillScreen(0);
       return PARSER_TRUE;
     }
     else if ( fname == F("rgb") && num_args == 3 ) {

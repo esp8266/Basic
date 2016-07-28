@@ -85,7 +85,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 13";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 14";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -235,20 +235,6 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 
 
 PROGMEM const char UploadPage[] = R"=====(
-<script>
-function sortOptions() {
- list = document.getElementsByName("fileName")[0];
- var copyOption = new Array();
- for (var i=0;i<list.options.length;i++)
-   copyOption[i] = {value:list[i].value ,text:list[i].text}; 
- copyOption.sort(function(a,b) { return a.value > b.value; });
- for (var i=list.options.length-1;i>-1;i--)
-   list.options[i] = null;
- for (var i=0;i<copyOption.length;i++)
-   list.options[list.length] = new Option(copyOption[i].text, copyOption[i].value, false, false);
-}
-</script>
-<body onload="sortOptions()">
 <form method='POST' action='/filemng' enctype='multipart/form-data'>
 <input type='file' name='Upload'>
 <input type='submit' value='Upload'>
@@ -261,6 +247,27 @@ function sortOptions() {
 </form>
 
 <select name="fileName" size="25" form="filelist">*table*</select>
+<script>
+function call() {
+    var x = document.getElementsByName("fileName")[0];
+    var optionVal = new Array();
+    for (i = 0; i < x.length; i++) {
+        optionVal.push(x.options[i].text);
+    }
+    for (i = x.length; i >= 0; i--) {
+        x.remove(i);
+    }
+    optionVal.sort();
+    for (var i = 0; i < optionVal.length; i++) {
+        var opt = optionVal[i];
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = opt;
+        x.appendChild(el);
+    }
+}
+</script>
+<body onload="call()">
 )=====";
 
 
@@ -695,6 +702,7 @@ void setup() {
   
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
+  PrintAndWebOut("Device MAC: " + WiFi.softAPmacAddress());
   //CheckWaitForRunningCode();
   
   MQTTclient.setCallback(MQTTcallback);

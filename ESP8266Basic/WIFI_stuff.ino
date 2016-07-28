@@ -87,7 +87,7 @@ void CreateAP(String NetworkName, String NetworkPassword, String NetworkStaticIP
 
     if (NetworkName == "")
     {
-      NetworkName = "ESP";
+      NetworkName = "ESP" + WiFi.softAPmacAddress();;
       NetworkPassword = "";
     }
   }

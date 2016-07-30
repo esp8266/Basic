@@ -204,6 +204,7 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
       ret.replace("\n","");
       ret.replace("\r","");      
       ret.trim();
+	  ret.toLowerCase();
       if (ret[0] == '[') // if starts with '['  // this is a label
       {
         // looks for the closing ']'

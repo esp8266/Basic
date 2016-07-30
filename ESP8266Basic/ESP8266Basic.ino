@@ -85,7 +85,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 14";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 15";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -160,6 +160,7 @@ int WebSockChangeBranchLine = 0;
 String WebSockEventName;
 String WebSockChangeName;
 int WebSocketTimeOut[5];
+int delaytime;
 
 WiFiClient client;
 //WiFiClient clientb;
@@ -307,11 +308,10 @@ function start(websocketServerLocation) {
         document.getElementById("connection_status").value = "Connected";
     };
     connection.onclose = function() {
-        //try to reconnect in 5 seconds
-        document.getElementById("connection_status").value = "Disconnected";
         setTimeout(function() {
             start(websocketServerLocation)
         }, 1000);
+		document.getElementById("connection_status").value = "Disconnected";
     };
 
     connection.onmessage = function(e) {
@@ -1495,6 +1495,7 @@ void loop()
 void RunBasicTillWait()
 {
   webSocket.loop();
+  if (delaytime > millis() & delaytime != 0) {return;} else {delaytime = 0;}
   runTillWaitPart2();
   if (RunningProgramCurrentLine > TotalNumberOfLines)
   {
@@ -1542,7 +1543,7 @@ void runTillWaitPart2()
 
   if (NewGuiItemAddedSinceLastWait) WebSocketSend(  "guicls");NewGuiItemAddedSinceLastWait = 0;
   if (NewGraphicItemAddedSinceLastWait) WebSocketSend("gupdate");NewGraphicItemAddedSinceLastWait = 0;
-  while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 )
+  while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 && delaytime == 0)
   {
     //Serial.println(inData);
 

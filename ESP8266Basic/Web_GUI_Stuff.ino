@@ -45,6 +45,7 @@ String RunningProgramGui()
 
 void PrintAndWebOut(String itemToBePrinted)
 {
+  delay(0);
   Serial.println(itemToBePrinted);
   WebSocketSend( "print~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
@@ -62,6 +63,7 @@ void PrintAndWebOut(String itemToBePrinted)
 
 void AddToWebOut(String itemToBePrinted)
 {
+  delay(0);
   WebSocketSend( "wprint~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)

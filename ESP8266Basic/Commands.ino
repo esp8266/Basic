@@ -377,33 +377,15 @@ void ExicuteTheCurrentLine()
   {
     // this is an example of extraction using the ExtractArgument function just for one parameter
     // the best way, with a single parameter, is to use directly the eval command
-    r = ExtractArguments(inData);
-    //valParam1 = GetMeThatVar(Param1).toInt();
-    delay(args[0]);
-    DeAllocateArguments();  // don't forget to call this function after each ExtractArguments
+	delaytime = evaluate(Param1).toInt() + millis();
     return;
   }
 
   if ( Param0 == F("timer"))
   {
-    // this is another way to separate the arguments
-    // we can state that the label name is separated from the 1st argument by a ',';
-    // we can so find the ',' from the end of the string and take the argument space trimmed for the label name
-    // the 1st argument will be so the text between this ',' and the end of the command
-    Param1 = inData.substring(inData.indexOf(' ') + 1);    // starts just after the command
-    r = Param1.lastIndexOf(',');
-    if (r == -1)
-    {
-      PrintAndWebOut(F("Syntax Error; Label or argument missing"));
-      return;
-    }
-    Param2 = Param1.substring(r + 1);
-    Param2.trim();
-    Param1 = Param1.substring(0, r);
+
     TimerWaitTime = evaluate(Param1).toInt();
     TimerBranch = Param2;
-    //TimerWaitTime = GetMeThatVar(Param1).toInt();
-    //TimerBranch = Param2;
     return;
   }
   if ( Param0 == F("mqttbranch"))
@@ -1137,6 +1119,7 @@ void ExicuteTheCurrentLine()
 	MQTTPublishTopic = "";
 	MQTTPublishMSG = "";
 	MQTTTimeFromLastCheck = 0;
+	refreshBranch = "";
 	
     PrintAndWebOut(F("Done..."));
     return;

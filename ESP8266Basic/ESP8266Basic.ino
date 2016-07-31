@@ -85,7 +85,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 16";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 17";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -449,6 +449,19 @@ function add(itemName, itemValue) {
 
     document.getElementById("fooBar").appendChild(element);
     document.getElementById("fooBar").appendChild(element1);
+}
+
+
+function removeSpecials(str) {
+    var lower = str.toLowerCase();
+    var upper = str.toUpperCase();
+
+    var res = "";
+    for(var i=0; i<lower.length; ++i) {
+        if(lower[i] != upper[i] || lower[i].trim() === '')
+            res += str[i];
+    }
+    return res;
 }
 )=====";
 

@@ -65,7 +65,7 @@ void AddToWebOut(String itemToBePrinted)
 {
   delay(0);
   WebSocketSend( "wprint~^`" + itemToBePrinted);
-  itemToBePrinted.replace(' ' , char(160));
+  //itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + itemToBePrinted);
   else
@@ -267,7 +267,7 @@ String RequestWebSocket(String Request)
   for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
   {
     webSocket.loop();
-    delay(0);
+    delay(100);
   }
   return WebSockMessage;
 }
@@ -278,8 +278,11 @@ void WebSocketSend(String MessageToSend)
   for (byte i = 0; i <= 5; i++)
   {
     if (WebSocketTimeOut[i] + 60000 >=  millis()) webSocket.sendTXT(i, MessageToSend);
-	webSocket.loop();
-    delay(2);
+	delaytime = 50 + millis();
+      webSocket.loop();
+
+	
+    
   }
 }
 

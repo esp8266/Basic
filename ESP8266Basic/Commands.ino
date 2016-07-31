@@ -425,10 +425,8 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("print"))
   {
-    // this is an example of extraction using directly the evaluate function taking into account all the text after the command (so after the ' ' )
-    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
-    //PrintAndWebOut(GetMeThatVar(Param1));
-    PrintAndWebOut(evaluate(Param1));
+    Param1 = evaluate(Param1);
+    AddToWebOut(Param1);
     return;
   }
 
@@ -612,11 +610,8 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("wprint") | Param0 == F("html"))
   {
-    Param1 = inData.substring(Param0.length() + 1);    // starts just after the command
     Param1 = evaluate(Param1);
-    //HTMLout += Param1;
     AddToWebOut(Param1);
-    //Serial.print(HTMLout);
     return;
   }
 

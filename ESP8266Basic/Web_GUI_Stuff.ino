@@ -10,6 +10,7 @@ String RunningProgramGui()
     WaitForTheInterpertersResponse = 0;
     RunningProgram == 1;
     RunBasicTillWait();
+	//Serial.println("Problem here 1");
     WaitForTheInterpertersResponse = 1;
   }
 
@@ -216,8 +217,8 @@ byte CheckFOrWebGOTO()
     }
 
   }
-
-  WaitForTheInterpertersResponse = 1;
+	//Serial.println("problem here 2");
+  //WaitForTheInterpertersResponse = 1;
 }
 
 
@@ -277,9 +278,12 @@ void WebSocketSend(String MessageToSend)
 {
   for (byte i = 0; i <= 5; i++)
   {
-    if (WebSocketTimeOut[i] + 60000 >=  millis()) webSocket.sendTXT(i, MessageToSend);
+    if (WebSocketTimeOut[i] + 60000 >=  millis())
+	{
+	 webSocket.sendTXT(i, MessageToSend);
 	delaytime = 50 + millis();
       webSocket.loop();
+	}
 
 	
     
@@ -350,6 +354,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       if (WebSockMessage == F("cmd:pause"))
       {
         RunningProgram = 0;
+		//Serial.println("problem here 3");
         //WaitForTheInterpertersResponse = 1;
         break;
       }

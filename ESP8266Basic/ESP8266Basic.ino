@@ -85,7 +85,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 17";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 18";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -1478,7 +1478,7 @@ void loop()
 
   RunBasicTillWait();
   delay(0);
-  server->handleClient();
+  if (delaytime == 0)server->handleClient();
   webSocket.loop();
   
   if (MQTTActivated)
@@ -1553,9 +1553,13 @@ void RunBasicTillWait()
 
 void runTillWaitPart2()
 {
-
+  
   if (NewGuiItemAddedSinceLastWait) WebSocketSend(  "guicls");NewGuiItemAddedSinceLastWait = 0;
   if (NewGraphicItemAddedSinceLastWait) WebSocketSend("gupdate");NewGraphicItemAddedSinceLastWait = 0;
+
+  //Serial.println("Delay time" + String(delaytime));
+  //Serial.println("CUrent Line" + String(RunningProgramCurrentLine));
+  //Serial.println("Wait = " + String(WaitForTheInterpertersResponse));
   while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 && delaytime == 0)
   {
     //Serial.println(inData);

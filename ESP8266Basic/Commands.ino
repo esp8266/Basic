@@ -64,7 +64,7 @@ void HaltBasic(String err_mess)
 void ExicuteTheCurrentLine()
 {
   int r;
-
+  //Serial.println(RunningProgramCurrentLine);
   String Param0;
   inData.trim();
   String Param1;

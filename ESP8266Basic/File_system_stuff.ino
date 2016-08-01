@@ -176,6 +176,7 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
   IfBlockList.clear();
   
   String ret;
+  String ret1;
   int i = 0;
   program_nb_lines = 0;
   //SPIFFS.begin();
@@ -204,13 +205,14 @@ void LoadBasicProgramFromFlash(String fileNameForRead)
       ret.replace("\n","");
       ret.replace("\r","");      
       ret.trim();
+	  ret1 = ret;
 	  ret.toLowerCase();
-      if (ret[0] == '[') // if starts with '['  // this is a label
+      if (ret1[0] == '[') // if starts with '['  // this is a label
       {
         // looks for the closing ']'
-        int k = ret.indexOf(']');
+        int k = ret1.indexOf(']');
         if (k != -1)
-          JumpList.add(ret.substring(0, k+1), program_nb_lines);
+          JumpList.add(ret1.substring(0, k+1), program_nb_lines);
       }
 
       if ( (ret.startsWith(F("if "))) && (ret.endsWith(F(" then"))) )

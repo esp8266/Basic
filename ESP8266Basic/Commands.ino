@@ -426,7 +426,7 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("print"))
   {
     Param1 = evaluate(Param1);
-    AddToWebOut(Param1);
+    PrintAndWebOut(Param1);
     return;
   }
 
@@ -822,12 +822,18 @@ void ExicuteTheCurrentLine()
     }
     String tempButton = GenerateIDtag(GOTObutton);
     tempButton.replace(F("gotonotext"),  evaluate(Params[0]));
-
+	
+	
     tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Params[1])));
 
     ButtonsInUse[numberButtonInUse] = Params[1];
     //Serial.println(ButtonsInUse[numberButtonInUse]);
     HTMLout = String(HTMLout + tempButton);
+    if ((r = JumpList.getPos(Param2)) != -1)
+    {
+      return;
+    }
+    PrintAndWebOut(String(F("Button goto Label not found:")) + Param2);
     return;
   }
 
@@ -845,7 +851,14 @@ void ExicuteTheCurrentLine()
     tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Param2)));
 
     HTMLout = String(HTMLout + tempButton);
+    if ((r = JumpList.getPos(Param2)) != -1)
+    {
+      return;
+    }
+    PrintAndWebOut(String(F("Button goto Label not found:")) + Param2);
     return;
+	
+	
   }
 
 

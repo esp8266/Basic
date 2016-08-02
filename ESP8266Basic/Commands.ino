@@ -386,6 +386,7 @@ void ExicuteTheCurrentLine()
 
     TimerWaitTime = evaluate(Param1).toInt();
     TimerBranch = Param2;
+	timerLastActiveTime = millis() ;
     return;
   }
   if ( Param0 == F("mqttbranch"))

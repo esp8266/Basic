@@ -537,6 +537,48 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value_str =  String(WiFi.localIP().toString());
     return PARSER_STRING;
   }
+  else if ( fname == F("wifi.connect") && num_args >= 0 ) {
+    // function wifi.connect(ap name, ap pass, ip, gateway, subnet)
+    // set return value
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) && (args_str[3] != NULL) && (args_str[4] != NULL) ) 
+	{
+		*value =  ConnectToTheWIFI(*args_str[0],*args_str[1],*args_str[2],*args_str[3],*args_str[4] );
+		return PARSER_TRUE;
+	}	
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) ) 
+	{
+		*value =  ConnectToTheWIFI(*args_str[0],*args_str[1], "", "", "");
+        return PARSER_TRUE;
+	}
+	if ( (args_str[0] != NULL)) 
+	{
+		*value =  ConnectToTheWIFI(*args_str[0],"", "", "", "");
+        return PARSER_TRUE;
+	}
+	*value =  ConnectToTheWIFI("","", "", "", "");
+	return PARSER_TRUE;
+  }  
+  else if ( fname == F("wifi.ap") && num_args >= 0 ) {
+    // function wifi.ap(ap name, ap pass, ip, gateway, subnet)
+    // set return value
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) && (args_str[3] != NULL) && (args_str[4] != NULL) ) 
+	{
+		*value =  CreateAP(*args_str[0],*args_str[1],*args_str[2],*args_str[3],*args_str[4] );
+		return PARSER_TRUE;
+	}	
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) ) 
+	{
+		*value =  CreateAP(*args_str[0],*args_str[1], "", "", "");
+        return PARSER_TRUE;
+	}
+	if ( (args_str[0] != NULL) ) 
+	{
+		*value =  CreateAP(*args_str[0],"", "", "", "");
+        return PARSER_TRUE;
+	}
+	*value =  CreateAP("","", "", "", "");
+	return PARSER_TRUE;	
+  }  
   else if ( fname == F("wget") && num_args > 0 ) {
     // function wget(url) or wget (url, port)
     // set return value
@@ -1046,6 +1088,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     else if ( fname == F("cls") && num_args == 1 ) {
       // function tft.fill(color)   fill the screen with the color (565)
       tft->fillScreen(0);
+	  form1.clear();
       return PARSER_TRUE;
     }
     else if ( fname == F("rgb") && num_args == 3 ) {

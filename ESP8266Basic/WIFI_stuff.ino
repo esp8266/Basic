@@ -1,5 +1,8 @@
 //wifi code here
 
+
+
+
 bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String NetworkStaticIP, String NetworkGateway, String NetworkSubnet)
 {
   // Serial.println(NetworkName);

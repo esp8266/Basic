@@ -23,9 +23,9 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
 
-//Onewire tempture sensor code conntributed by Rotohammer.
+//Onewire temperature sensor code contributed by Rotohammer.
 
-//Signnifigant speed improvements submited by cicciocb
+//Significant speed improvements submitted by cicciocb
 //Uploading of bas files improvement added by cicciocb
 //JSON parsing routine added by cicciocb
 
@@ -55,7 +55,6 @@
 //#include <WiFiClientSecure.h>
 #include "ESP8266httpUpdate.h"
 #include <time.h>
-//#include <HttpClient.h>                   // that line needs to be commented for esp8266-2.0.0-rc1
 #include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
 
@@ -85,10 +84,12 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 20";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 21";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
+//WIFI SCANN STUFF
+int numberOfWifiScanResults;
 
 
 // SPI STUFF
@@ -183,6 +184,7 @@ int MQTTTimeFromLastCheck;
 ESP8266WebServer *server; //server(80);
 
 //Web Server Variables
+bool WebGuiOff = 0;
 String HTMLout;
 PROGMEM const char InputFormText[] = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
 PROGMEM const char TextBox[] = R"=====(<input type="text" id="myid" name="variablenumber" value="variablevalue" onchange="objChange(this)">)=====";

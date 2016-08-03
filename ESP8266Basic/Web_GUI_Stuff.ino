@@ -1,5 +1,11 @@
 String RunningProgramGui()
 {
+	if (WebGuiOff == 1)
+	{
+		HTMLout = "";
+		return "GUI OFF";
+	}
+
 
   //PrintAndWebOut(WebArgumentsReceivedInput );
 
@@ -43,6 +49,11 @@ String RunningProgramGui()
 }
 
 
+void SendErrorMsg(String BasicErrorMsg)
+{
+PrintAndWebOut(	String(F("Error at line ")) + String(RunningProgramCurrentLine) + String(F(": ")) + BasicErrorMsg);
+}
+
 
 void PrintAndWebOut(String itemToBePrinted)
 {
@@ -50,6 +61,7 @@ void PrintAndWebOut(String itemToBePrinted)
   Serial.println(itemToBePrinted);
   WebSocketSend( "print~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
+  if ( WebGuiOff == 1 ){HTMLout = "";return;}
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);
   else
@@ -65,6 +77,7 @@ void PrintAndWebOut(String itemToBePrinted)
 void AddToWebOut(String itemToBePrinted)
 {
   delay(0);
+  if ( WebGuiOff == 1 ){HTMLout = "";return;}
   WebSocketSend( "wprint~^`" + itemToBePrinted);
   //itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
@@ -276,18 +289,16 @@ String RequestWebSocket(String Request)
 
 void WebSocketSend(String MessageToSend)
 {
-  for (byte i = 0; i <= 5; i++)
-  {
-    if (WebSocketTimeOut[i] + 60000 >=  millis())
+	if ( WebGuiOff == 1 )return;
+	for (byte i = 0; i <= 5; i++)
 	{
-	 webSocket.sendTXT(i, MessageToSend);
-	delaytime = 50 + millis();
-      webSocket.loop();
+		if (WebSocketTimeOut[i] + 60000 >=  millis())
+		{
+		 webSocket.sendTXT(i, MessageToSend);
+		 delaytime = 35 + millis();
+		  webSocket.loop();
+		}
 	}
-
-	
-    
-  }
 }
 
 

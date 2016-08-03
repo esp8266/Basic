@@ -30,7 +30,7 @@ int ExtractArguments(String &inData)
     args_var[i] = "";
   r = parser_read_argument_list( &pd, &num_args, args, args_str);
   if (pd.error != NULL)
-    PrintAndWebOut(String(pd.error));
+    SendErrorMsg(String(pd.error));
 
   return r;
 }
@@ -57,8 +57,8 @@ void HaltBasic(String err_mess)
   WaitForTheInterpertersResponse = 1;
   TimerWaitTime = 0;
   TimerCBtime = 0;
-  PrintAndWebOut(err_mess);
-  PrintAndWebOut(String(F("Halted at line ")) + String(RunningProgramCurrentLine));
+  SendErrorMsg(err_mess);
+  SendErrorMsg(F("Halted "));
 }
 
 void ExicuteTheCurrentLine()
@@ -288,6 +288,18 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if (Param0 == F("guioff"))
+  {
+    WebGuiOff = 1;
+    return;
+  }
+
+  if (Param0 == F("guion"))
+  {
+    WebGuiOff = 0;
+    return;
+  }
+  
 
   if (Param0 == F("run"))
   {
@@ -394,12 +406,6 @@ void ExicuteTheCurrentLine()
 	MQTTBranch = Param1;
     return;
   }
-  
-  
-  
-  
-  
-
   if ( Param0 == F("timercb"))
   {
     TimerCBtime = 0;
@@ -410,7 +416,7 @@ void ExicuteTheCurrentLine()
       TimerCBtime = evaluate(Param1).toInt();
       return;
     }
-    PrintAndWebOut(F("timercb line not found!"));
+    SendErrorMsg(F("timercb line not found!"));
     return;
   }
 
@@ -469,7 +475,7 @@ void ExicuteTheCurrentLine()
     r = ExtractArguments(inData);
     if (args[0] <= 0)
     {
-      PrintAndWebOut(F("Serial2Begin: baudrate must be > 0"));
+      SendErrorMsg(F("Serial2Begin: baudrate must be > 0"));
       return;
     }
     delete swSer; // close eventually the previous instance of the sw serial port
@@ -834,7 +840,7 @@ void ExicuteTheCurrentLine()
     {
       return;
     }
-    PrintAndWebOut(String(F("Button goto Label not found:")) + Param2);
+    SendErrorMsg(String(F("Button goto Label not found:")) + Param2);
     return;
   }
 
@@ -856,7 +862,7 @@ void ExicuteTheCurrentLine()
     {
       return;
     }
-    PrintAndWebOut(String(F("Button goto Label not found:")) + Param2);
+    SendErrorMsg(String(F("Button goto Label not found:")) + Param2);
     return;
 	
 	
@@ -890,12 +896,6 @@ void ExicuteTheCurrentLine()
     WaitForTheInterpertersResponse = 0;
     return;
   }
-
-
-
-
-  //PrintAndWebOut("Just Passed the Wait Command");
-
   if (Param0 == F("cls"))
   {
     numberButtonInUse = 0;
@@ -1015,7 +1015,6 @@ void ExicuteTheCurrentLine()
       Serial.print(evaluate(Param1));
       SetMeThatVar(Param2, getSerialInput(), PARSER_STRING);
     }
-    //PrintAndWebOut("");
     return;
   }
 
@@ -1023,7 +1022,6 @@ void ExicuteTheCurrentLine()
   {
     Param2 = "";
     delay(10);
-    //Serial.println("serialinput passage");
     while (Serial.available() > 0)
     {
       char received = Serial.read();
@@ -1073,7 +1071,7 @@ void ExicuteTheCurrentLine()
       RunningProgramCurrentLine = r - 1;
       return;
     }
-    PrintAndWebOut(String(F("Goto Label not found:")) + Param1);
+    SendErrorMsg(String(F("Goto Label not found:")) + Param1);
     return;
   }
 
@@ -1086,7 +1084,7 @@ void ExicuteTheCurrentLine()
       RunningProgramCurrentLine = r - 1;
       return;
     }
-    PrintAndWebOut(String(F("Gosub Label not found:")) + Param1);
+   SendErrorMsg(String(F("Gosub Label not found:")) + Param1);
     return;
   }
 
@@ -1115,6 +1113,12 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("end"))
   {
     clear_stacks();
+	WebGuiOff = 0;
+	IRBranchLine = 0;
+	TouchBranchLine = 0;
+	WebSockEventBranchLine = 0;
+	
+	
     RunningProgram = 0;
     WaitForTheInterpertersResponse = 1;
     TimerWaitTime = 0;
@@ -1213,6 +1217,13 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("msgbranch"))
   {
+	if ((r = JumpList.getPos(Param1)) != -1)
+    {
+      RunningProgramCurrentLine = r - 1;
+      return;
+    }
+    SendErrorMsg(String(F("MSGBRANCH Label not found:")) + Param1);
+    return;
     msgbranch = Param1;
     return;
   }
@@ -1342,9 +1353,9 @@ void ExicuteTheCurrentLine()
       UdpBranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("UdpBranch line not found!"));
-    //    Serial.print("udpbranch");
-    //    Serial.println(UdpBranchLine);
+    SendErrorMsg(F("UdpBranch line not found!"));
+
+	
     return;
   }
 
@@ -1357,7 +1368,7 @@ void ExicuteTheCurrentLine()
       SerialBranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("SerialBranch line not found!"));
+    SendErrorMsg(F("SerialBranch line not found!"));
     return;
   }
 
@@ -1370,7 +1381,7 @@ void ExicuteTheCurrentLine()
       Serial2BranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("Serial2Branch line not found!"));
+    SendErrorMsg(F("Serial2Branch line not found!"));
     return;
   }
 
@@ -1383,7 +1394,7 @@ void ExicuteTheCurrentLine()
       IRBranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("IRBranch line not found!"));
+    SendErrorMsg(F("IRBranch line not found!"));
     return;
   }
 
@@ -1396,7 +1407,7 @@ void ExicuteTheCurrentLine()
       WebSockEventBranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("WebSockEventBranch line not found!"));
+    SendErrorMsg(F("WebSockEventBranch line not found!"));
     return;
   }
 
@@ -1409,7 +1420,7 @@ void ExicuteTheCurrentLine()
       WebSockChangeBranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("WebSockChangeBranch line not found!"));
+    SendErrorMsg(F("WebSockChangeBranch line not found!"));
     return;
   }
 
@@ -1422,7 +1433,7 @@ void ExicuteTheCurrentLine()
       TouchBranchLine = i - 1;
       return;
     }
-    PrintAndWebOut(F("TouchBranch line not found!"));
+    SendErrorMsg(F("TouchBranch line not found!"));
     return;
   }
   ////////////////////////////
@@ -1441,14 +1452,14 @@ void ExicuteTheCurrentLine()
     }
     if (num_par != 0)  // no closing parenthesys ->Error
     {
-      PrintAndWebOut(F("Mid: missing closing parenthesys"));
+      SendErrorMsg(F("Mid: missing closing parenthesis"));
       return;
     }
     // check if the '=' follow
     int eq = inData.indexOf('=', i);
     if (eq == -1) // missing = on the line
     {
-      PrintAndWebOut(F("Mid: missing = on the line"));
+      SendErrorMsg(F("Mid: missing = on the line"));
       return;
     }
     Param1 = inData.substring(4 , i);
@@ -1456,7 +1467,7 @@ void ExicuteTheCurrentLine()
     DeAllocateArguments();
     if ( (num_args != 2) && (num_args != 3) )
     {
-      PrintAndWebOut(F("Mid: number of arguments not valid"));
+      SendErrorMsg(F("Mid: number of arguments not valid"));
       return;
     }
 
@@ -1469,14 +1480,14 @@ void ExicuteTheCurrentLine()
     r = VariablePosition(Param2);
     if (r == -1)
     {
-      PrintAndWebOut(F("Mid: destination variable not defined"));
+      SendErrorMsg(F("Mid: destination variable not defined"));
       return;
     }
 
     Param3 = evaluate(inData.substring( eq + 1 ));
     if (parser_result != PARSER_STRING)
     {
-      PrintAndWebOut(F("Mid: set value must be string"));
+      SendErrorMsg(F("Mid: set value must be string"));
       return;
     }
 
@@ -1506,7 +1517,7 @@ void ExicuteTheCurrentLine()
       }
       if (num_par != 0)  // no closing parenthesys ->Error
       {
-        PrintAndWebOut(F("DIM: missing closing parenthesys"));
+        SendErrorMsg(F("DIM: missing closing parenthesys"));
         return;
       }
 
@@ -1514,7 +1525,7 @@ void ExicuteTheCurrentLine()
       Param1.trim();
       if (Param1 == "")
       {
-        PrintAndWebOut(F("DIM: the array name is missing"));
+        SendErrorMsg(F("DIM: the array name is missing"));
         return;
       }
       Param2 = inData.substring(r + 1 , i); // arguments
@@ -1522,7 +1533,7 @@ void ExicuteTheCurrentLine()
       DeAllocateArguments();
       if (num_args != 1)
       {
-        PrintAndWebOut(F("DIM: number of arguments must be 1"));
+        SendErrorMsg(F("DIM: number of arguments must be 1"));
         return;
       }
 
@@ -1533,7 +1544,7 @@ void ExicuteTheCurrentLine()
 
       if ( (r = Search_First_Available_Array()) == -1)
       {
-        PrintAndWebOut(F("DIM: no more array space available"));
+        SendErrorMsg(F("DIM: no more array space available"));
         return;
       }
 
@@ -1551,7 +1562,7 @@ void ExicuteTheCurrentLine()
     // remove an already dimensioned array; maybe the name "undim" should be modified
     if ( (r = Search_Array(Param1)) == -1)
     {
-      PrintAndWebOut(F("UNDIM: array not defined"));
+      SendErrorMsg(F("UNDIM: array not defined"));
       return;
     }
 
@@ -1574,7 +1585,7 @@ void ExicuteTheCurrentLine()
     }
     if (num_par != 0)  // no closing parenthesys ->Error
     {
-      PrintAndWebOut(F("Array: missing closing parenthesys"));
+      SendErrorMsg(F("Array: missing closing parenthesis"));
       return;
     }
     // check if the '=' follow
@@ -1589,7 +1600,7 @@ void ExicuteTheCurrentLine()
       DeAllocateArguments();
       if (num_args != 1)
       {
-        PrintAndWebOut(F("Array: number of arguments must be 1"));
+        SendErrorMsg(F("Array: number of arguments must be 1"));
         return;
       }
 
@@ -1597,7 +1608,7 @@ void ExicuteTheCurrentLine()
 
       if ( (r = Search_Array(Param1)) == -1)
       {
-        PrintAndWebOut(F("Array not defined"));
+        SendErrorMsg(F("Array not defined"));
         return;
       }
 

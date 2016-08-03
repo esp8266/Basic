@@ -20,7 +20,7 @@ String evaluate(String expr)
   parser_result = parse_expression_with_callbacks( expr.c_str(), variable_callback, function_callback, NULL, &numeric_value, string_value  );
   if (_parser_error_msg != NULL)
   {
-    PrintAndWebOut(String(_parser_error_msg));
+    SendErrorMsg(String(_parser_error_msg));
     return F("error");
   }
   if (parser_result == PARSER_STRING)
@@ -226,7 +226,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("MID() : The first argument must be a string!"));
+      SendErrorMsg(F("MID() : The first argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -239,7 +239,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("MID() : The first argument must be a string!"));
+      SendErrorMsg(F("MID() : The first argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -252,7 +252,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("RIGHT() : The first argument must be a string!"));
+      SendErrorMsg(F("RIGHT() : The first argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -265,7 +265,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("LEFT() : The first argument must be a string!"));
+      SendErrorMsg(F("LEFT() : The first argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -275,7 +275,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     char bla;
     if ( (args_str[0] == NULL) || ( (num_args == 3) && (args_str[2] == NULL)) )
     {
-      PrintAndWebOut(F("WORD() : The first and 3rd argument must be string!"));
+      SendErrorMsg(F("WORD() : The first and 3rd argument must be string!"));
       return PARSER_FALSE;
     }
     if (num_args == 2) bla = ' ';
@@ -293,7 +293,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
     else {
-      PrintAndWebOut(F("LEN() : The argument must be a string!"));
+      SendErrorMsg(F("LEN() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -307,7 +307,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("UPPER() : The argument must be a string!"));
+      SendErrorMsg(F("UPPER() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -321,7 +321,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("LOWER() : The argument must be a string!"));
+      SendErrorMsg(F("LOWER() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -339,7 +339,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("msgget() : The argument must be a string!"));
+      SendErrorMsg(F("msgget() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -363,7 +363,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
     else {
-      PrintAndWebOut(F("INSTR() : Both arguments must be a string!"));
+      SendErrorMsg(F("INSTR() : Both arguments must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -409,7 +409,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
     else {
-      PrintAndWebOut(F("ASC() : The argument must be a string!"));
+      SendErrorMsg(F("ASC() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -422,7 +422,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
     else {
-      PrintAndWebOut(F("VAL() : The argument must be a string!"));
+      SendErrorMsg(F("VAL() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -435,7 +435,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
     else {
-      PrintAndWebOut(F("HEXTOINT() : The argument must be a string!"));
+      SendErrorMsg(F("HEXTOINT() : The argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -449,7 +449,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("REPLACE() : All the arguments must be a string!"));
+      SendErrorMsg(F("REPLACE() : All the arguments must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -513,18 +513,21 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("wifi.scan") && num_args == 0 ) {
     // function wifi.scan() -> no arguments
     // set return value
-    *value = WiFi.scanNetworks() + 1;
+	numberOfWifiScanResults = WiFi.scanNetworks() ;
+    *value = numberOfWifiScanResults;
     return PARSER_TRUE;
   }
   else if ( fname == F("wifi.ssid") && num_args == 1 ) {
     // function wifi.ssid(number)
     // set return value
+	if (numberOfWifiScanResults < args[0])return PARSER_STRING;
     *value_str =  String(WiFi.SSID(args[0] - 1));
     return PARSER_STRING;
   }
   else if ( fname == F("wifi.rssi") && num_args == 1 ) {
     // function wifi.rssi(number)
     // set return value
+	if (numberOfWifiScanResults < args[0])return PARSER_STRING;
     *value_str =  String(WiFi.RSSI(args[0] - 1));
     return PARSER_STRING;
   }
@@ -589,7 +592,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("WGET() : The first arguments must be a string!"));
+      SendErrorMsg(F("WGET() : The first arguments must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -603,7 +606,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("SENDTS() : All the arguments must be a string!"));
+      SendErrorMsg(F("SENDTS() : All the arguments must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -619,7 +622,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("READTS() : All the arguments must be a string!"));
+      SendErrorMsg(F("READTS() : All the arguments must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -632,7 +635,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("ReadOpenWeather() : The first argument must be a string!"));
+      SendErrorMsg(F("ReadOpenWeather() : The first argument must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -645,7 +648,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      PrintAndWebOut(F("JSON() : Both arguments must be a string!"));
+      SendErrorMsg(F("JSON() : Both arguments must be a string!"));
       return PARSER_FALSE;
     }
   }
@@ -681,7 +684,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     //test if args[] out of range
     if (args[0] > args[1] || args[0]>511 || args[1]>511)
     {
-      PrintAndWebOut(F("Neoshift error"));
+      SendErrorMsg(F("Neoshift error"));
       return PARSER_FALSE;
     }
     if (pixels == NULL)
@@ -969,7 +972,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
     else if ( fname == F("hex") && num_args == 2 ) { // let a$ = spi.hex(value_string, length) -> send and receive a buffer of 'length' bytes; each byte is a 2 char hex string
       if (args_str[0] == NULL)  {
-        PrintAndWebOut(F("spi.hex() : First argument must be a string!"));
+        SendErrorMsg(F("spi.hex() : First argument must be a string!"));
         return PARSER_FALSE;
       }
       String ret;
@@ -991,7 +994,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   }
   else if ( fname == F("eval") && num_args == 1) {
     if (args_str[0] == NULL)  {
-      PrintAndWebOut(F("eval() : The argument must be a string!"));
+      SendErrorMsg(F("eval() : The argument must be a string!"));
       return PARSER_FALSE;
     }
     evaluate(*args_str[0]);
@@ -1014,7 +1017,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     else if ( fname == F("send.nec") && num_args == 2 ) {
       // function ir.send.nec(code, len)   send a NEC code with the first argument and the lenght on the 2nd
       if (args_str[0] == NULL)  {
-        PrintAndWebOut(F("ir.send.nec() : The first argument must be a string!"));
+        SendErrorMsg(F("ir.send.nec() : The first argument must be a string!"));
         return PARSER_FALSE;
       }
       irsend->sendNEC(HexToLongInt(*args_str[0]), (int) args[1]);
@@ -1023,7 +1026,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     else if ( fname == F("send.sony") && num_args == 2 ) {
       // function ir.send.nec(code, len)   send a SONY code with the first argument and the lenght on the 2nd
       if (args_str[0] == NULL)  {
-        PrintAndWebOut(F("ir.send.sony() : The first argument must be a string!"));
+        SendErrorMsg(F("ir.send.sony() : The first argument must be a string!"));
         return PARSER_FALSE;
       }
       irsend->sendSony(HexToLongInt(*args_str[0]), (int) args[1]);
@@ -1187,7 +1190,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         // function tft.bmp(filename, x, y, backColor)   // by default the color is transparent
         uint16_t x = 0, y = 0;
         int backColor = -1;
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.bmp() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.bmp() : The first argument must be a string!")); return PARSER_FALSE; }
         if (num_args > 2)
         {
           x = (uint16_t) args[1];
@@ -1226,7 +1229,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }       
       else if ( fname == F("obj.button") && num_args >= 5 ) {
         // function tft.button("text", x,y,width,height, scale, forecolor ,backcolor)
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.button() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.button() : The first argument must be a string!")); return PARSER_FALSE; }
         int obj = form1.add(BUTTON);
         form1[obj]->x = args[1];
         form1[obj]->y = args[2];
@@ -1251,7 +1254,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }  
       else if ( fname == F("obj.label") && num_args >= 5 ) {
         // function tft.label("text", x,y,width,height,scale, forecolor ,backcolor)
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.label() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.label() : The first argument must be a string!")); return PARSER_FALSE; }
         int obj = form1.add(LABEL);
         form1[obj]->x = args[1];
         form1[obj]->y = args[2];
@@ -1277,7 +1280,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }
       else if ( fname == F("obj.checkbox") && num_args >= 4 ) {
         // function tft.checkbox("text", x,y,width,checked, scale, forecolor ,backcolor)
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.checkbox() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.checkbox() : The first argument must be a string!")); return PARSER_FALSE; }
         int obj = form1.add(CHECKBOX);
         form1[obj]->x = args[1];
         form1[obj]->y = args[2];
@@ -1306,7 +1309,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }
       else if ( fname == F("obj.radio") && num_args >= 4 ) {
         // function tft.checkbox("text", x,y,width,checked, scale, forecolor ,backcolor)
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
         int obj = form1.add(RADIO);
         form1[obj]->x = args[1];
         form1[obj]->y = args[2];
@@ -1335,8 +1338,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       } 
       else if ( fname == F("obj.toggle") && num_args >= 5 ) {
         // function tft.toggle("icon_true", "icon_false" x,y, checked, scale, back_color)
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.toggle() : The first argument must be a string!")); return PARSER_FALSE; }
-        if (args_str[1] == NULL)  { PrintAndWebOut(F("tft.obj.toggle() : The second argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.toggle() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[1] == NULL)  { SendErrorMsg(F("tft.obj.toggle() : The second argument must be a string!")); return PARSER_FALSE; }
         int obj = form1.add(TOGGLE);
         form1[obj]->x = args[2];
         form1[obj]->y = args[3];
@@ -1355,7 +1358,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }  
       else if ( fname == F("obj.bar") && num_args >= 4 ) {
         // function tft.bar("text", x,y,width,height, scale, forecolor ,backcolor)
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
         int obj = form1.add(BAR);
         form1[obj]->x = args[1];
         form1[obj]->y = args[2];
@@ -1384,7 +1387,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }    
       else if ( fname == F("obj.setlabel") && num_args == 2 ) {
         // function tft.setlabel(object_id, "label")
-        if (args_str[1] == NULL)  { PrintAndWebOut(F("tft.obj.setLabel() : The second argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[1] == NULL)  { SendErrorMsg(F("tft.obj.setLabel() : The second argument must be a string!")); return PARSER_FALSE; }
         form1.setLabel(args[0], *args_str[1]);
         return PARSER_TRUE;
       }
@@ -1431,7 +1434,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     if ( fname == F("setvar") && num_args >= 2 )
     {
       if (args_str[0] == NULL)  {
-        PrintAndWebOut(F("debug.setvar() : The first argument must be a string!"));
+        SendErrorMsg(F("debug.setvar() : The first argument must be a string!"));
         return PARSER_FALSE;
       }
       String tmp = "set~^`" + *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
@@ -1446,7 +1449,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     else if ( fname == F("getvar") && num_args == 1 )
     {
       if (args_str[0] == NULL)  {
-        PrintAndWebOut(F("debug.getvar() : The argument must be a string!"));
+        SendErrorMsg(F("debug.getvar() : The argument must be a string!"));
         return PARSER_FALSE;
       }
       String tmp = "get~^`" + *args_str[0];   // these are special chars the single quote is the reverse one (ascii code 96)
@@ -1462,7 +1465,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
       else if ( fname == F("object") && num_args > 1 ) 
     {
-        if (args_str[0] == NULL)  { PrintAndWebOut(F("debug.object() : The first argument must be a string!")); return PARSER_FALSE; }
+        if (args_str[0] == NULL)  { SendErrorMsg(F("debug.object() : The first argument must be a string!")); return PARSER_FALSE; }
         String tmp = *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
         for (int i=1; i<num_args; i++)
         {

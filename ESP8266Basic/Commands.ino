@@ -74,11 +74,7 @@ void ExicuteTheCurrentLine()
   String Param5;
   inData.trim();
   Param0 = getValue(inData, ' ', 0);
-  Param1 = getValue(inData, ' ', 1);
-  Param2 = getValue(inData, ' ', 2);
-  Param3 = getValue(inData, ' ', 3);
-  Param4 = getValue(inData, ' ', 4);
-  Param5 = getValue(inData, ' ', 5);
+
 
 
   Param0.toLowerCase();
@@ -290,7 +286,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("guioff"))
   {
-    WebGuiOff = 1;
+    WebGuiOff = 2;
     return;
   }
 
@@ -833,7 +829,7 @@ void ExicuteTheCurrentLine()
 	
     tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Params[1])));
 
-    ButtonsInUse[numberButtonInUse] = Params[1];
+    //ButtonsInUse[numberButtonInUse] = Params[1];
     //Serial.println(ButtonsInUse[numberButtonInUse]);
     HTMLout = String(HTMLout + tempButton);
     if ((r = JumpList.getPos(Param2)) != -1)
@@ -900,9 +896,7 @@ void ExicuteTheCurrentLine()
   {
     numberButtonInUse = 0;
 
-    for (int i = 0; i <= 10; i++) {
-      ButtonsInUse[i] = "";
-    }
+
     WebSocketSend(  "guicls");
     HTMLout = "";
     return;
@@ -1219,12 +1213,11 @@ void ExicuteTheCurrentLine()
   {
 	if ((r = JumpList.getPos(Param1)) != -1)
     {
-      RunningProgramCurrentLine = r - 1;
-      return;
+      msgbranch = r - 1;
+	  return;
     }
     SendErrorMsg(String(F("MSGBRANCH Label not found:")) + Param1);
-    return;
-    msgbranch = Param1;
+
     return;
   }
 

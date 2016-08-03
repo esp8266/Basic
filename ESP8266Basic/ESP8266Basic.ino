@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 21";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 23";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -184,7 +184,7 @@ int MQTTTimeFromLastCheck;
 ESP8266WebServer *server; //server(80);
 
 //Web Server Variables
-bool WebGuiOff = 0;
+byte WebGuiOff = 0;
 String HTMLout;
 PROGMEM const char InputFormText[] = R"=====( <input type="text" id="myid" name="input"><input type="submit" value="Submit" name="inputButton"><hr>)=====";
 PROGMEM const char TextBox[] = R"=====(<input type="text" id="myid" name="variablenumber" value="variablevalue" onchange="objChange(this)">)=====";
@@ -306,7 +306,7 @@ start('ws://' + location.hostname + ':81/');
 function start(websocketServerLocation) {
     connection = new WebSocket(websocketServerLocation);
     connection.onopen = function() {
-        //connection.send('websocket connected!'); 
+        connection.send('OK');
         document.getElementById("connection_status").value = "Connected";
     };
     connection.onclose = function() {
@@ -317,8 +317,6 @@ function start(websocketServerLocation) {
     };
 
     connection.onmessage = function(e) {
-        //connection.send('OK'); 
-        //alert(e);
         var res = e.data.split("~^`");
         if (res[0].toLowerCase() == "var") {
             connection.send("OK");
@@ -340,7 +338,6 @@ function start(websocketServerLocation) {
             return;
         }
 
-
         if (res[0].toLowerCase() == "print") {
             //alert(e);
             var bla = document.body.innerHTML;
@@ -355,9 +352,6 @@ function start(websocketServerLocation) {
             document.getElementsByName('gra')[0].contentWindow.location.reload();
             return;
         }
-
-
-
 
         if (res[0].toLowerCase() == "guicls") {
             //alert(e);
@@ -601,13 +595,13 @@ PROGMEM const char GraphicsTextCode[] =  R"=====(<text x="*x1*" y="*y1*" style="
 
 
 byte numberButtonInUse = 0;
-String ButtonsInUse[20];
+//String ButtonsInUse[20];
 
 
 bool NewGuiItemAddedSinceLastWait;
 bool NewGraphicItemAddedSinceLastWait;
 
-String   msgbranch;
+int  msgbranch;
 String   MsgBranchRetrnData;
 
 int UdpBranchLine = 0;
@@ -1014,14 +1008,16 @@ void setup() {
 
     MsgBranchRetrnData = F("No MSG Branch Defined");
 
-    if (msgbranch != "")
+    if (msgbranch != 0)
     {
-      inData = String(" goto " + msgbranch + " ");
-      WaitForTheInterpertersResponse = 0;
-      ExicuteTheCurrentLine();
-      runTillWaitPart2();
+		byte oldWebGuiOff;
+		oldWebGuiOff = WebGuiOff;
+		Serial.println(msgbranch);
+		RunningProgramCurrentLine = msgbranch;
+		WaitForTheInterpertersResponse = 0;
+		runTillWaitPart2();
+		WebGuiOff = oldWebGuiOff;
     }
-
 
     server->send(200, "text/html", MsgBranchRetrnData);
   });

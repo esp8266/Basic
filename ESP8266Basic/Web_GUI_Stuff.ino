@@ -1,25 +1,15 @@
 String RunningProgramGui()
 {
+	if (WebGuiOff == 2)
+	{
+		HTMLout = "";
+		return "GUI OFF";
+	}
 	if (WebGuiOff == 1)
 	{
 		HTMLout = "";
 		return "GUI OFF";
 	}
-
-
-  //PrintAndWebOut(WebArgumentsReceivedInput );
-
-  //Serial.println("Program is running. CHecking for goto statemets");
-  CheckFOrWebVarInput();
-  if (CheckFOrWebGOTO() == 1)
-  {
-    WaitForTheInterpertersResponse = 0;
-    RunningProgram == 1;
-    RunBasicTillWait();
-	//Serial.println("Problem here 1");
-    WaitForTheInterpertersResponse = 1;
-  }
-
 
   if (refreshBranch != "")
   {
@@ -61,7 +51,8 @@ void PrintAndWebOut(String itemToBePrinted)
   Serial.println(itemToBePrinted);
   WebSocketSend( "print~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
-  if ( WebGuiOff == 1 ){HTMLout = "";return;}
+  if ( WebGuiOff == 1 ){return;}
+  if ( WebGuiOff == 2 ){HTMLout = "";return;}
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);
   else
@@ -77,7 +68,8 @@ void PrintAndWebOut(String itemToBePrinted)
 void AddToWebOut(String itemToBePrinted)
 {
   delay(0);
-  if ( WebGuiOff == 1 ){HTMLout = "";return;}
+  if ( WebGuiOff == 1 ){return;}
+  if ( WebGuiOff == 2 ){HTMLout = "";return;}
   WebSocketSend( "wprint~^`" + itemToBePrinted);
   //itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
@@ -186,80 +178,6 @@ String BasicGraphics()
   return BasicGraphicsOut;
 }
 
-
-
-
-
-
-
-
-byte CheckFOrWebGOTO()
-{
-  String bla;
-  byte x = 0;
-
-  for (int i = 0; i <= TotalNumberOfLines - 1; i++)
-  {
-    int str_len = String(i).length() + 1 + 4;
-    char ArgumentToTest[str_len];
-    String(String("goto" + String(i))).toCharArray(ArgumentToTest, str_len);
-    delay(0);
-    bla = server->arg(ArgumentToTest);
-    if (bla.length() > 0)
-    {
-      x = i;
-    }
-  }
-
-  //Serial.println(x);
-  if (x != 0)
-  {
-    for (int i = 0; i <= TotalNumberOfLines - 1; i++) {
-      delay(0);
-
-      String gotoTest = BasicProgram(i);
-      gotoTest.trim();
-
-      if (gotoTest == ButtonsInUse[x] | String(gotoTest + ":") == ButtonsInUse[x])
-      {
-        //Serial.println("This is the line I am going to");
-        //Serial.println(BasicProgram(i));
-        RunningProgramCurrentLine = i - 1;
-        return 1;
-      }
-    }
-
-  }
-	//Serial.println("problem here 2");
-  //WaitForTheInterpertersResponse = 1;
-}
-
-
-
-
-
-
-
-void CheckFOrWebVarInput()
-{
-  String bla;
-
-
-  for (int i = 0; i < TotalNumberOfVariables; i++)
-  {
-    int str_len = String(i).length() + 1;
-    char ArgumentToTest[str_len];
-    String(i).toCharArray(ArgumentToTest, str_len);
-    delay(0);
-    bla = server->arg(ArgumentToTest);
-    if (bla.length() > 0)
-    {
-      bla.replace('+', ' ');
-      AllMyVariables[i].setVar(GetRidOfurlCharacters(bla));
-    }
-  }
-  return;
-}
 
 
 

@@ -6,7 +6,9 @@ String GetMeThatVar(String VariableNameToFind)
 
 String VarialbeLookup(String VariableNameToFind)
 {
+
   VariableLocated = 0;
+  LastVarNumberLookedUp = 0;
   String MyOut = VariableNameToFind;
   for (int i = 0; i < TotalNumberOfVariables; i++)
   {
@@ -16,7 +18,7 @@ String VarialbeLookup(String VariableNameToFind)
       MyOut =  AllMyVariables[i].getVar();
       LastVarNumberLookedUp = i;
       VariableLocated = 1;
-      break;
+      return MyOut;
     }
   }
   return MyOut;

@@ -240,6 +240,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         Serial.println(ip.toString());
         // send message to client
         WebSocketSend( "Connected");
+		SendAllTheVars();
       }
       break;
     case WStype_TEXT:

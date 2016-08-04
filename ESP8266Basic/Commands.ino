@@ -63,6 +63,7 @@ void HaltBasic(String err_mess)
 
 void ExicuteTheCurrentLine()
 {
+	
   int r;
   //Serial.println(RunningProgramCurrentLine);
   String Param0;
@@ -180,6 +181,7 @@ void ExicuteTheCurrentLine()
 		if (r >= 3) Param3 = Params[2];
 		if (r >= 4) Param4 = Params[3];
 		if (r >= 5) Param5 = Params[4];
+		
 	  }
 
     Param0.toLowerCase();
@@ -695,44 +697,45 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("slider"))
   {
     NewGuiItemAddedSinceLastWait = 1;
-    r = ExtractArguments(inData);
     String tempSlider = GenerateIDtag(Slider);
     VarialbeLookup(args_var[0]);
+	
+	VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(args_var[0], "", PARSER_TRUE);
-      GetMeThatVar(args_var[0]);
+      SetMeThatVar(Param1, "", PARSER_STRING);
+      GetMeThatVar(Param1);
     }
     tempSlider.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempSlider.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
-    tempSlider.replace(F("minval"), FloatToString(args[1]));
-    tempSlider.replace(F("maxval"), FloatToString(args[2]));
+    tempSlider.replace(F("minval"), evaluate(Param2));
+    tempSlider.replace(F("maxval"), evaluate(Param3));
 
     HTMLout += tempSlider;
-    DeAllocateArguments();  // don't forget to call this function after each ExtractArguments
+
     return;
   }
 
   if (Param0 == F("meter"))
   {
     NewGuiItemAddedSinceLastWait = 1;
-    r = ExtractArguments(inData);
     String tempMeter = GenerateIDtag(meter);
-    VarialbeLookup(args_var[0]);
+
+	VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(args_var[0], "", PARSER_TRUE);
-      GetMeThatVar(args_var[0]);
+      SetMeThatVar(Param1, "", PARSER_STRING);
+      GetMeThatVar(Param1);
     }
     tempMeter.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempMeter.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
 
-    tempMeter.replace(F("minval"), FloatToString(args[1]));
-    tempMeter.replace(F("maxval"), FloatToString(args[2]));
+    tempMeter.replace(F("minval"), evaluate(Param2));
+    tempMeter.replace(F("maxval"), evaluate(Param3));
 
     HTMLout += tempMeter;
-    DeAllocateArguments();  // don't forget to call this function after each ExtractArguments
+
     return;
   }
 
@@ -789,13 +792,16 @@ void ExicuteTheCurrentLine()
       delay(0);
     }
 
-    VarialbeLookup(args_var[0]);
+	
+	VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(args_var[0], "", PARSER_STRING);
-      GetMeThatVar(args_var[0]);
+      SetMeThatVar(Param1, "", PARSER_STRING);
+      GetMeThatVar(Param1);
     }
+	
 
+	
     tempDropDownList.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
     tempDropDownList.replace(F("options"),  TempItems);
     if (Param3.toInt() < 1 | Param0 == F("dropdown")) Param3 = "1";
@@ -815,6 +821,7 @@ void ExicuteTheCurrentLine()
     //r = ExtractArguments(inData);
     NewGuiItemAddedSinceLastWait = 1;
     r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
+
     if (r == -1) {
       HaltBasic(F("Syntax Error!"));
       return;
@@ -834,9 +841,11 @@ void ExicuteTheCurrentLine()
     HTMLout = String(HTMLout + tempButton);
     if ((r = JumpList.getPos(Param2)) != -1)
     {
+
       return;
     }
     SendErrorMsg(String(F("Button goto Label not found:")) + Param2);
+
     return;
   }
 

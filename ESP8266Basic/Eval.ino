@@ -75,6 +75,7 @@ int variable_callback( void *user_data, const char *name, float *value, String *
 
   String Name = String(name);
   delay(0);
+  LastVarNumberLookedUp = 0;
   for (int i = 0; i < TotalNumberOfVariables; i++)
   {
     if (AllMyVariables[i].getName() == Name)
@@ -1505,7 +1506,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   {
     if ( num_args == 0) // the array is just defined as a name without arguments such as a$()
     {
-      Serial.println(String(F("Array without argument ")) + fname  + String(i));
+      SendErrorMsg(String(F("Array without argument ")) + fname  + String(i));
       return PARSER_FALSE;
     }
     else if ( num_args == 1)

@@ -39,7 +39,7 @@ class basicArray
       }
       else
       {
-        PrintAndWebOut(F("DIM() : format not valid"));
+         SendErrorMsg(F("DIM() : format not valid"));
       }
   } 
 
@@ -55,7 +55,7 @@ class basicArray
   {
     if (ptr.base == NULL) return 0;
     if (index > nbElements)
-      {  PrintAndWebOut(String(SUBSCR_OUT));  return 0; } 
+      {   SendErrorMsg(String(SUBSCR_OUT));  return 0; } 
     return ptr.flo[index];
   }
 
@@ -63,7 +63,7 @@ class basicArray
   {
     if (ptr.base == NULL) return "";
     if (index > nbElements)
-      {  PrintAndWebOut(String(SUBSCR_OUT));  return ""; } 
+      {   SendErrorMsg(String(SUBSCR_OUT));  return ""; } 
     if ( (Format == PARSER_STRING) && (ptr.str[index] != NULL) )
        return *ptr.str[index];
     else
@@ -73,14 +73,14 @@ class basicArray
   void setFloat(int index, float val)
   {
     if (index > nbElements)
-      {  PrintAndWebOut(String(SUBSCR_OUT));  return; } 
+      {   SendErrorMsg(String(SUBSCR_OUT));  return; } 
     ptr.flo[index] = val;
   }    
 
   void setString(int index, String val)
   {
     if (index > nbElements)
-      {  PrintAndWebOut(String(SUBSCR_OUT));  return; } 
+      {   SendErrorMsg(String(SUBSCR_OUT));  return; } 
     if (ptr.str[index] == NULL)
       ptr.str[index] = new String(val);
     else

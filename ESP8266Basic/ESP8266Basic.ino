@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 24";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 25";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -204,7 +204,7 @@ PROGMEM const char meter[] =  R"=====(<meter id="myid" name="variablenumber" val
 String LastElimentIdTag;
 
 PROGMEM const char MobileFreindlyWidth[] = R"=====(<meta name="viewport" content="width=device-width, initial-scale=1.0">)=====";
-PROGMEM const char DebugPage[] =  R"=====(<script>var dbug = *dbug*;</script><script src='WebSockets.js'></script>
+PROGMEM const char DebugPage[] =  R"=====(</script><script src='WebSockets.js'></script>
 <div id="fooBar" style="float:left; width:20%;">Vars<hr></div>
 <DIV style="float:left; width:35%;">
 <button id="run" onclick="dcmdClick(this)">Run</button>
@@ -213,11 +213,11 @@ PROGMEM const char DebugPage[] =  R"=====(<script>var dbug = *dbug*;</script><sc
 <button id="continue" onclick="dcmdClick(this)">Continue</button>
 <input type="text" id="connection_status" value="Disconnected">
 <button id="clear" onclick="logClear()">Clear</button>
-<textarea rows="20" style="width:100%" id="log">log</textarea>
-<br><input type="text" id="lno" value="line no"><br><input type="text" id="lcode" value="Code">
+<br>Line No<input type="text" id="lno" value="line no">
+<br><select id='code' size=35 style="width:100%"></select>
+<textarea rows="20" style="width:100%;height:40%" id="log">log</textarea>
 </DIV>
-<div id="app" style="float:left; width:45%;">
-</div>
+<div id="app" style="float:left; width:40%;">
 )=====";
 
 
@@ -231,6 +231,7 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 <a href="./vars">[ VARS ]</a> 
 <a href="./edit">[ EDIT ]</a>
 <a href="./run">[ RUN ]</a>
+<a href="./debug">[ DEBUG ]</a>
 <a href="./settings">[ SETTINGS ]</a>
 <a href="./filemng">[ FILE MANAGER ]</a>
 <hr>)=====";
@@ -333,18 +334,13 @@ function start(websocketServerLocation) {
         }
         if (res[0].toLowerCase() == "code") {
             connection.send("OK");
-            document.getElementById("lcode").value = res[1];
-			document.getElementById("lno").value = res[2];
+			document.getElementById("lno").value = res[1];
+			document.getElementById('code').value = res[1]-1;
             return;
         }
 
         if (res[0].toLowerCase() == "print") {
-            //alert(e);
-            var bla = document.body.innerHTML;
-            document.open();
-            document.write(bla + '<hr>' + res[1]);
-            document.close();
-
+            AddToBody('<hr>' + res[1]);
             connection.send("vars");
             return;
         }
@@ -363,11 +359,7 @@ function start(websocketServerLocation) {
             return;
         }
         if (res[0].toLowerCase() == "wprint") {
-            var bla = document.body.innerHTML;
-            document.open();
-            document.write(bla + res[1]);
-            document.close();
-
+            AddToBody(res[1]);
             connection.send("vars");
             return;
         } else if (res[0].toLowerCase() == "get") {
@@ -425,7 +417,38 @@ window.onload = function makeVarList() {
     for (xxx = 0; xxx < 51; xxx++) {
         add(xxx.toString(), "");
     }
+	var arrayOfLines = localStorage.getItem("lastcode").split("\n");
+	var sel = document.getElementById('code');
+	for (i = 0; i < arrayOfLines.length; i++) 
+	{ 
+	  x = i + 1;
+	  if (arrayOfLines[i] != "undefined")
+	  {
+		var opt = document.createElement('option');
+		opt.innerHTML = pad('.....',i,true)+ ':    ' + arrayOfLines[i];
+		opt.value = i;
+		sel.appendChild(opt);
+	  }
+	}
 }
+
+
+function pad(pad, str, padLeft) {
+  if (typeof str === 'undefined') 
+    return pad;
+  if (padLeft) {
+    return (pad + str).slice(-pad.length);
+  } else {
+    return (str + pad).substring(0, pad.length);
+  }
+}
+
+
+
+
+
+
+
 
 //Create text boxes for variables
 function add(itemName, itemValue) {
@@ -459,6 +482,23 @@ function removeSpecials(str) {
     }
     return res;
 }
+
+function AddToBody(str){
+if (document.getElementById("app")) 
+	{
+	var bla = document.getElementById('app');
+	bla.innerHTML += str ;}
+else
+	{
+	var bla = document.body.innerHTML;
+	document.open();
+	document.write(bla + res[1]);
+	document.close();	
+	}
+
+}
+
+
 )=====";
 
 
@@ -470,6 +510,7 @@ PROGMEM const char editCodeJavaScript[] =  R"=====(
 function SaveTheCode() {
   if (typeof editor != "undefined") {editor.save();}
   var textArea = document.getElementById("code");
+  localStorage.setItem("lastcode", textArea.value);
   var arrayOfLines = textArea.value.split("\n");
   httpGet("/codein?SaveTheCode=start&FileName="+document.getElementById("FileName").value);
   httpGet("/codein?SaveTheCode=yes");
@@ -768,6 +809,7 @@ void setup() {
 
   server->on("/run", []()
   {
+	BasicDebuggingOn = 0;
     String WebOut;
     RunningProgram = 1;
     RunningProgramCurrentLine = 0;
@@ -783,35 +825,32 @@ void setup() {
     server->send(200, "text/html", WebOut);
   });
 
+  server->on("/debug", []()
+  {
+	BasicDebuggingOn = 1;
+    String WebOut;
+    RunningProgramCurrentLine = 0;
+    WaitForTheInterpertersResponse = 0 ;
+    numberButtonInUse = 0;
+    HTMLout = "";
+    TimerWaitTime = 0;
+    TimerCBtime = 0;
+    GraphicsEliments[0][0] = 0;
+    WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./" />)=====");
+
+    clear_stacks();
+    server->send(200, "text/html", WebOut);
+
+  });
+  
+  
+  
 
   server->on("/graphics.htm", []()
   {
     server->send(200, "text/html", BasicGraphics());
   });
 
-
-
-
-
-  server->on("/debug", []()
-  {
-    String WebOut = ""; // = DebugPageHTML;
-
-    File f = SPIFFS.open(F("/uploads/debug.html"), "r");
-    if (f)
-    {
-      server->streamFile(f, F("text/html"));
-    }
-    else
-    {
-       WebOut = F("File debug.html not found");
-       server->send(200, "text/html", WebOut);
-    }
-
-    f.close();
-
-
-  });
 
   server->onFileUpload(handleFileUpdate);
 
@@ -823,12 +862,13 @@ void setup() {
 
   server->on("/edit", []()
   {
+	WebGuiOff = 2;
     String WebOut;
     if (CheckIfLoggedIn())
     {
       WebOut = String(LogInPage);
       server->send(200, "text/html", String(AdminBarHTML + WebOut ));
-      return;
+      WebGuiOff = 0;return;
     }
     else
     {
@@ -904,7 +944,7 @@ void setup() {
       server->sendContent(F("0\r\n\r\n"));
       delay(0);
       Serial.println(F("End of Open"));
-
+      WebGuiOff = 0;
     }
 
   });

@@ -21,7 +21,7 @@ String RunningProgramGui()
     RunBasicTillWait();
   }
  String WebOut;
- if (BasicDebuggingOn == 1) WebOut = String(MobileFreindlyWidth) + String(DebugPage)  + HTMLout;
+ if (BasicDebuggingOn == 1) WebOut = String(MobileFreindlyWidth) + String(DebugPage)  + HTMLout + String(F("</div>"));
  if (BasicDebuggingOn == 0) WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script><script src='/file?file=widgets.js.gz'></script>"))  + HTMLout;
 
   for (int i = TotalNumberOfVariables - 1; i >= 0; i--)
@@ -88,6 +88,7 @@ void SendAllTheVars()
   for (int i = 0; i < TotalNumberOfVariables; i++)
   {
     if (AllMyVariables[i].getName() == "") break;
+	if (BasicDebuggingOn == 1)  WebSocketSend( "varname~^`" + String(i) + "~^`" + String(AllMyVariables[i].getName()));
     WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
     delay(0);
     //Serial.println(i);
@@ -96,19 +97,7 @@ void SendAllTheVars()
 }
 
 
-void SendAllTheVarsForDebug()
-{
-  for (int i = 0; i < TotalNumberOfVariables; i++)
-  {
-    if (AllMyVariables[i].getName() == "") break;
-    WebSocketSend( "var~^`" + String(i) + "~^`" + String(AllMyVariables[i].getVar()));
-    WebSocketSend( "varname~^`" + String(i) + "~^`" + String(AllMyVariables[i].getName()));
-		
-    delay(0);
-    //Serial.println(i);
-  }
-  return;
-}
+
 
 
 String BasicGraphics()
@@ -210,7 +199,7 @@ void WebSocketSend(String MessageToSend)
 	if ( WebGuiOff == 1 )return;
 	for (byte i = 0; i <= 5; i++)
 	{
-		if (WebSocketTimeOut[i] + 60000 >=  millis())
+		if (WebSocketTimeOut[i] + 20000 >=  millis())
 		{
 		 webSocket.sendTXT(i, MessageToSend);
 		 delaytime = 35 + millis();
@@ -240,6 +229,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         Serial.println(ip.toString());
         // send message to client
         WebSocketSend( "Connected");
+		if (BasicDebuggingOn == 1) WebSocketSend( "code~^`" + String(RunningProgramCurrentLine));
 		SendAllTheVars();
       }
       break;

@@ -90,7 +90,7 @@ void ExicuteTheCurrentLine()
 
   if (BasicDebuggingOn == 1)
   {
-	WebSocketSend( "code~^`" + inData + "~^`" + String(RunningProgramCurrentLine));
+	WebSocketSend( "code~^`" + String(RunningProgramCurrentLine));
   }
 
   Param0.trim();

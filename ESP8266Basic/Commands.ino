@@ -68,12 +68,13 @@ void ExicuteTheCurrentLine()
   //Serial.println(RunningProgramCurrentLine);
   String Param0;
   inData.trim();
+  inData += "   ";
   String Param1;
   String Param2;
   String Param3;
   String Param4;
   String Param5;
-  inData.trim();
+//  inData.trim();
   Param0 = getValue(inData, ' ', 0);
 
 
@@ -101,14 +102,17 @@ void ExicuteTheCurrentLine()
   r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
   if (r != -1)
   {
-    delay(0);
-    if (r >= 1) Param1 = Params[0];
-    if (r >= 2) Param2 = Params[1];
-    if (r >= 3) Param3 = Params[2];
-    if (r >= 4) Param4 = Params[3];
-    if (r >= 5) Param5 = Params[4];
+	delay(0);
+	if (r >= 1) Param1 = Params[0];else Param1 = "";
+	if (r >= 2) Param2 = Params[1];else Param2 = "";
+	if (r >= 3) Param3 = Params[2];else Param3 = "";
+	if (r >= 4) Param4 = Params[3];else Param4 = "";
+	if (r >= 5) Param5 = Params[4];else Param5 = "";
   }
 
+  
+  
+  
 
 
   if ( Param0 == F("if"))
@@ -176,11 +180,11 @@ void ExicuteTheCurrentLine()
 	  if (r != -1)
 	  {
 		delay(0);
-		if (r >= 1) Param1 = Params[0];
-		if (r >= 2) Param2 = Params[1];
-		if (r >= 3) Param3 = Params[2];
-		if (r >= 4) Param4 = Params[3];
-		if (r >= 5) Param5 = Params[4];
+		if (r >= 1) Param1 = Params[0];else Param1 = "";
+		if (r >= 2) Param2 = Params[1];else Param2 = "";
+		if (r >= 3) Param3 = Params[2];else Param3 = "";
+		if (r >= 4) Param4 = Params[3];else Param4 = "";
+		if (r >= 5) Param5 = Params[4];else Param5 = "";
 		
 	  }
 
@@ -272,8 +276,15 @@ void ExicuteTheCurrentLine()
 
 
   }
+   
+   Serial.println(String(r) + ",Param0=" + Param0 + ",Param1=" + Param1 + ",Param2=" + Param2 + ",Param3=" + Param3 + ",Param4=" + Param4 + ",Param5=" + Param5);
 
-
+  if (Param0 == F("debugbreak"))
+  {
+    if  (BasicDebuggingOn == 1)RunningProgram = 0;
+    return;
+  }
+  
   if (Param0 == F("debugon"))
   {
     BasicDebuggingOn = 1;
@@ -1144,16 +1155,39 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("load"))
   {
+	
 	Param1 =  evaluate(Param1);
     clear_stacks();
     GraphicsEliments[0][0] = 0;
     PrintAndWebOut(String(F("Loading . . . . ")) + Param1);
     ProgramName = Param1;
+	LoadBasicProgramFromFlash( ProgramName);
     numberButtonInUse = 0;
     RunningProgramCurrentLine = 0;
     HTMLout = "";
-    TimerWaitTime = 0;
+	
+	
+    clear_stacks();
+	WebGuiOff = 0;
+	IRBranchLine = 0;
+	TouchBranchLine = 0;
+	WebSockEventBranchLine = 0;
+	TimerWaitTime = 0;
     TimerCBtime = 0;
+	
+	MQTTlatestMsg = "";
+	MQTTnewMsgReceived = 0;
+	MQTTActivated = 0;
+	MQTTBranch = "";
+	MQTTSubscribeTopic = "";
+	MQTTPublishTopic = "";
+	MQTTPublishMSG = "";
+	MQTTTimeFromLastCheck = 0;
+	refreshBranch = "";
+	
+	
+	
+	
     return;
   }
 

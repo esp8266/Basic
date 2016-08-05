@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 25";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 26";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -396,7 +396,8 @@ function cmdClick(e) {
 }
 
 function logClear() {
-    document.getElementById("log").value = "";
+	document.getElementById('app').innerHTML ='';
+    document.getElementById("log").value = '';
 }
 
 function objEvent(e) {
@@ -443,13 +444,6 @@ function pad(pad, str, padLeft) {
   }
 }
 
-
-
-
-
-
-
-
 //Create text boxes for variables
 function add(itemName, itemValue) {
 
@@ -495,7 +489,6 @@ else
 	document.write(bla + res[1]);
 	document.close();	
 	}
-
 }
 
 

@@ -22,7 +22,8 @@ String RunningProgramGui()
   }
  String WebOut;
  if (BasicDebuggingOn == 1) WebOut = String(MobileFreindlyWidth) + String(DebugPage)  + HTMLout + String(F("</div>"));
- if (BasicDebuggingOn == 0) WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script><script src='/file?file=widgets.js.gz'></script>"))  + HTMLout;
+ if (BasicDebuggingOn == 0 & RunningProgram == 1) WebOut = String(MobileFreindlyWidth) + String(F("<script src='WebSockets.js'></script><script src='/file?file=widgets.js.gz'></script>"))  + HTMLout;
+ if (BasicDebuggingOn == 0 & RunningProgram == 0) WebOut = String(MobileFreindlyWidth) +  HTMLout;
 
   for (int i = TotalNumberOfVariables - 1; i >= 0; i--)
   {
@@ -202,7 +203,7 @@ void WebSocketSend(String MessageToSend)
 		if (WebSocketTimeOut[i] + 20000 >=  millis())
 		{
 		 webSocket.sendTXT(i, MessageToSend);
-		 delaytime = 35 + millis();
+		 delaytime = 50 + millis();
 		  webSocket.loop();
 		}
 	}

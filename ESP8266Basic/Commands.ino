@@ -277,7 +277,7 @@ void ExicuteTheCurrentLine()
 
   }
    
-   Serial.println(String(r) + ",Param0=" + Param0 + ",Param1=" + Param1 + ",Param2=" + Param2 + ",Param3=" + Param3 + ",Param4=" + Param4 + ",Param5=" + Param5);
+   //Serial.println(String(r) + ",Param0=" + Param0 + ",Param1=" + Param1 + ",Param2=" + Param2 + ",Param3=" + Param3 + ",Param4=" + Param4 + ",Param5=" + Param5);
 
   if (Param0 == F("debugbreak"))
   {

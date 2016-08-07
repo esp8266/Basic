@@ -68,7 +68,7 @@ void ExicuteTheCurrentLine()
   //Serial.println(RunningProgramCurrentLine);
   String Param0;
   inData.trim();
-  inData += "   ";
+//  inData += "   ";
   String Param1;
   String Param2;
   String Param3;

@@ -383,7 +383,7 @@ class FORNEXT
       return -1;  // next without for error
     }
     f = VarialbeLookup(String(stack[_ptr]._var)).toFloat() + stack[_ptr]._step;
-    SetMeThatVar(String(stack[_ptr]._var), FloatToString(f), PARSER_TRUE);
+
 
     // here we must take care of the step direction
     // if positive or negative, the comparison is different
@@ -404,10 +404,12 @@ class FORNEXT
     {
       // the loop is over
       _ptr--;
+	  //SetMeThatVar(String(stack[_ptr]._var), FloatToString(f), PARSER_TRUE);
       return 0;
     }
     else
     {
+	  SetMeThatVar(String(stack[_ptr]._var), FloatToString(f), PARSER_TRUE);
       return stack[_ptr]._pos;
     }
   }

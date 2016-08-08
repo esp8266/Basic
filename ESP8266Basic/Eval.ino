@@ -345,6 +345,34 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
   }
 
+  else if ( fname == F("serial.read.int") && num_args == 0 ) {
+    if ( Serial.available() )
+    {
+      *value  = Serial.read();
+      return PARSER_TRUE;
+    }
+    else {
+      return PARSER_FALSE;
+    }
+  }
+
+    else if ( fname == F("serial.read.chr") && num_args == 0 ) {
+    if ( Serial.available() )
+    {
+      *value_str  = Serial.read();
+      return PARSER_STRING;
+    }
+    else {
+      return PARSER_FALSE;
+    }
+  }
+
+    else if ( fname == F("serial.available") && num_args == 0 ) {
+
+	*value  =  Serial.available();
+    return PARSER_TRUE;
+  }
+  
 
   else if ( (fname == F("instr") || fname == F("instrrev")) && ( (num_args == 2) || (num_args == 3) ) ) {
     // example of the instr(string, string)

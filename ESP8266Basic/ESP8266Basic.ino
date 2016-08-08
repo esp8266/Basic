@@ -84,7 +84,7 @@ SoftwareSerial *swSer = NULL;
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 29";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 30";
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;
@@ -350,13 +350,15 @@ function start(websocketServerLocation) {
         }
 
         if (res[0].toLowerCase() == "guicls") {
-            //alert(e);
-            var bla = document.body.innerHTML;
-            document.open();
-            document.write('');
-            document.close();
-            location.reload();
-            return;
+			if (document.getElementById("app")) 
+				{
+				var bla = document.getElementById('app');
+				bla.innerHTML = '';
+				}
+			else
+				{
+				document.body.innerHTML = '';
+				}
         }
         if (res[0].toLowerCase() == "wprint") {
             AddToBody(res[1]);
@@ -1263,7 +1265,6 @@ String getContentType(String filename) {
   
        if (filename.endsWith(".htm")) return F("text/html");
   else if (filename.endsWith(".html")) return F("text/html");
-  else if (filename.endsWith(".htm")) return F("text/html");
   else if (filename.endsWith(".css")) return F("text/css");
   else if (filename.endsWith(".js")) return F("application/javascript");
   else if (filename.endsWith(".png")) return F("image/png");

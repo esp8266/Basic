@@ -560,6 +560,13 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value_str =  String(WiFi.RSSI(args[0] - 1));
     return PARSER_STRING;
   }
+  else if ( fname == F("wifi.bssid") && num_args == 1 ) {
+    // function wifi.rssi(number)
+    // set return value
+	if (numberOfWifiScanResults < args[0])return PARSER_STRING;
+    *value_str =  String(WiFi.BSSIDstr(args[0] - 1));
+    return PARSER_STRING;
+  }  
   else if ( fname == F("ip") && num_args == 0 ) {
     // function wifi.scan() -> no arguments
     // set return value

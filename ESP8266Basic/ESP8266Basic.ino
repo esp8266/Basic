@@ -29,6 +29,7 @@
 //Uploading of bas files improvement added by cicciocb
 //JSON parsing routine added by cicciocb
 
+
 #include <WebSocketsServer.h>
 #include <Hash.h>
 #include <WebSockets.h>
@@ -81,10 +82,14 @@ Adafruit_NeoPixel *pixels = NULL;
 #include <SoftwareSerial.h>
 SoftwareSerial *swSer = NULL;
 
+#include "VERSION.h"
+
+
+
 //ThingSpeak Stuff
 
 
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 31";
+
 
 //wifi mode exclusivity 
 bool wifiApStaModeOn = 0;

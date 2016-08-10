@@ -484,7 +484,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   }
 
   else if ( fname == F("write") && num_args == 2 ) {
-    SaveDataToFile(*args_str[0], *args_str[1]);
+	  if (*args_str[1] != NULL)  
+	  {
+		  SaveDataToFile(*args_str[0], *args_str[1]);
+	  }
+	  else
+	  {
+		  SaveDataToFile(*args_str[0], String(args[1]));
+	  }
     *value_str = *args_str[0];
     return PARSER_STRING;
   }

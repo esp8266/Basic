@@ -1564,12 +1564,14 @@ void ExicuteTheCurrentLine()
         SendErrorMsg(F("DIM: the array name is missing"));
         return;
       }
-      Param2 = inData.substring(r + 1 , i); // arguments
-      r = ExtractArguments(Param2);
-      DeAllocateArguments();
-      if (num_args != 1)
+      Param2 = inData.substring(r+1 , i); // arguments
+
+	  Param2 = evaluate(Param2);
+
+	  
+      if (Param2.toInt() < 1)
       {
-        SendErrorMsg(F("DIM: number of arguments must be 1"));
+        SendErrorMsg(F("DIM: number of elements must be greater than 0"));
         return;
       }
 

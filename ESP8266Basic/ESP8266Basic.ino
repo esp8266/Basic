@@ -1050,6 +1050,7 @@ void setup() {
 		byte oldWebGuiOff;
 		oldWebGuiOff = WebGuiOff;
 		Serial.println(msgbranch);
+		WebGuiOff = 1;
 		RunningProgramCurrentLine = msgbranch;
 		WaitForTheInterpertersResponse = 0;
 		runTillWaitPart2();

@@ -7,7 +7,7 @@ String RunningProgramGui()
 	}
 	if (WebGuiOff == 1)
 	{
-		HTMLout = "";
+		//HTMLout = "";
 		return "GUI OFF";
 	}
 
@@ -52,7 +52,7 @@ void PrintAndWebOut(String itemToBePrinted)
   Serial.println(itemToBePrinted);
   WebSocketSend( "print~^`" + itemToBePrinted);
   itemToBePrinted.replace(' ' , char(160));
-  if ( WebGuiOff == 1 ){return;}
+  //if ( WebGuiOff == 1 ){return;}
   if ( WebGuiOff == 2 ){HTMLout = "";return;}
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);
@@ -69,7 +69,7 @@ void PrintAndWebOut(String itemToBePrinted)
 void AddToWebOut(String itemToBePrinted)
 {
   delay(0);
-  if ( WebGuiOff == 1 ){return;}
+  //if ( WebGuiOff == 1 ){return;}
   if ( WebGuiOff == 2 ){HTMLout = "";return;}
   WebSocketSend( "wprint~^`" + itemToBePrinted);
   //itemToBePrinted.replace(' ' , char(160));

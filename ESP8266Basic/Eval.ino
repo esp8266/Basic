@@ -630,6 +630,10 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	*value =  CreateAP("","", "", "", "");
 	return PARSER_TRUE;	
   }  
+  
+  
+  
+  
   else if ( fname == F("wget") && num_args > 0 ) {
     // function wget(url) or wget (url, port)
     // set return value

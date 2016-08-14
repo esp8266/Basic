@@ -669,7 +669,6 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("textbox"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
     String tempTextBox = GenerateIDtag(TextBox);
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
@@ -680,15 +679,14 @@ void ExicuteTheCurrentLine()
 
     tempTextBox.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempTextBox.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
-
-    HTMLout += tempTextBox;
+    AddToWebOut(tempTextBox);
     return;
   }
 
 
   if (Param0 == F("passwordbox"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
+
     String tempTextBox = GenerateIDtag(passwordbox);
     VarialbeLookup(Param1);
     if (VariableLocated == 0)
@@ -699,15 +697,14 @@ void ExicuteTheCurrentLine()
 
     tempTextBox.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
     tempTextBox.replace(F("variablenumber"),  String(LastVarNumberLookedUp));
+    AddToWebOut(tempTextBox);
 
-    HTMLout += tempTextBox;
     return;
   }
 
 
   if (Param0 == F("slider"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
     String tempSlider = GenerateIDtag(Slider);
     VarialbeLookup(args_var[0]);
 	
@@ -723,14 +720,13 @@ void ExicuteTheCurrentLine()
     tempSlider.replace(F("minval"), evaluate(Param2));
     tempSlider.replace(F("maxval"), evaluate(Param3));
 
-    HTMLout += tempSlider;
+    AddToWebOut( tempSlider);
 
     return;
   }
 
   if (Param0 == F("meter"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
     String tempMeter = GenerateIDtag(meter);
 
 	VarialbeLookup(Param1);
@@ -745,34 +741,32 @@ void ExicuteTheCurrentLine()
     tempMeter.replace(F("minval"), evaluate(Param2));
     tempMeter.replace(F("maxval"), evaluate(Param3));
 
-    HTMLout += tempMeter;
-
+    AddToWebOut(tempMeter);
     return;
   }
 
   if (Param0 == F("cssid"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
 	Param1 = evaluate(Param1);
     String tempCSSid = CSSid;
     tempCSSid.replace(F("myid"),  Param1);
 	Param2 = evaluate(Param2);
     tempCSSid.replace(F("*style*"),  Param2);
+    
+	AddToWebOut(tempCSSid);
 
-    HTMLout = String(HTMLout + tempCSSid);
     return;
   }
 
   if (Param0 == F("cssclass"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
 	Param1 = evaluate(Param1);
     String tempCSSclass = CSSclass;
     tempCSSclass.replace(F("myid"),  Param1);
 	Param2 = evaluate(Param2);
     tempCSSclass.replace(F("*style*"),  Param2);
 
-    HTMLout = String(HTMLout + tempCSSclass);
+    AddToWebOut(tempCSSclass);
     return;
   }
   
@@ -780,7 +774,6 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("dropdown") | Param0 == F("listbox"))
   {
     r = ExtractArguments(inData);
-    NewGuiItemAddedSinceLastWait = 1;
     String tempDropDownList = GenerateIDtag(DropDownList);
     String tempDropDownListOpptions  = DropDownListOpptions;
     String TempItems;
@@ -818,7 +811,7 @@ void ExicuteTheCurrentLine()
     if (Param3.toInt() < 1 | Param0 == F("dropdown")) Param3 = "1";
     tempDropDownList.replace(F("theSize"), String(Param3.toInt()));
 
-    HTMLout += tempDropDownList;
+    AddToWebOut(tempDropDownList);
     DeAllocateArguments();
     return;
   }
@@ -830,7 +823,6 @@ void ExicuteTheCurrentLine()
   if (Param0 == F("button"))
   {
     //r = ExtractArguments(inData);
-    NewGuiItemAddedSinceLastWait = 1;
     r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
 
     if (r == -1) {
@@ -849,7 +841,7 @@ void ExicuteTheCurrentLine()
 
     //ButtonsInUse[numberButtonInUse] = Params[1];
     //Serial.println(ButtonsInUse[numberButtonInUse]);
-    HTMLout = String(HTMLout + tempButton);
+    AddToWebOut(tempButton);
     if ((r = JumpList.getPos(Param2)) != -1)
     {
 
@@ -864,7 +856,6 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("imagebutton"))
   {
-    NewGuiItemAddedSinceLastWait = 1;
     numberButtonInUse++;
 	Param1 = evaluate(Param1);
     String tempButton = GenerateIDtag(GOTOimagebutton);
@@ -873,7 +864,7 @@ void ExicuteTheCurrentLine()
 
     tempButton.replace(F("gotonobranch"),  String(JumpList.getPos(Param2)));
 
-    HTMLout = String(HTMLout + tempButton);
+    AddToWebOut(tempButton);
     if ((r = JumpList.getPos(Param2)) != -1)
     {
       return;

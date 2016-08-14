@@ -169,7 +169,7 @@ int WebSocketTimeOut[5];
 int delaytime;
 
 WiFiClient client;
-//WiFiClient clientb;
+WiFiClient clientTelnet;
 
 //MQTT Stuff
 #include <PubSubClient.h>
@@ -750,6 +750,8 @@ void setup() {
   Serial.println(listenport.toInt());
   // create the instance of the web server
   server = new ESP8266WebServer(listenport.toInt());
+  
+  
 
   //Serial.setDebugOutput(true);
   

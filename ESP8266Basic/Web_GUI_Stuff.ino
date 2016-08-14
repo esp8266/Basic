@@ -73,7 +73,7 @@ void AddToWebOut(String itemToBePrinted)
   delay(0);
   //if ( WebGuiOff == 1 ){return;}
   if ( WebGuiOff == 2 ){HTMLout = "";return;}
-  WebSocketSend( "wprint~^`" + itemToBePrinted);
+
   //itemToBePrinted.replace(' ' , char(160));
   if (HTMLout.length() < 4000)
     HTMLout = String(HTMLout + itemToBePrinted);
@@ -82,6 +82,13 @@ void AddToWebOut(String itemToBePrinted)
     HTMLout = String(HTMLout + String(F("<hr> BUFFER TOO BIG! PROGRAM STOPPED")));
     RunningProgram = 0;
   }
+  
+    for (int i = TotalNumberOfVariables - 1; i >= 0; i--)
+  {
+    delay(0);
+    itemToBePrinted.replace(String(F("VARS|")) + String(i), AllMyVariables[i].getVar());
+  }
+    WebSocketSend( "wprint~^`" + itemToBePrinted);
   return;
 }
 

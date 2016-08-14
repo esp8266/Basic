@@ -486,18 +486,22 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("write") && num_args == 2 ) {
 	  delay(0);
 	  *value_str = *args_str[0];
+	  
+	  Serial.println("Done writing data");
+	  if (args_str[1] != NULL)  
+	  {
+		  SaveDataToFile(*args_str[0], *args_str[1]);
+		  return PARSER_STRING;
+	  }
+	  
+	  
 	  if (args[1] != NULL) 
 	  {
 		  SaveDataToFile(*args_str[0], FloatToString(args[1]));
 		  return PARSER_STRING;
 	  }	  
 	  
-	  Serial.println("Done writing data");
-	  if (*args_str[1] != NULL)  
-	  {
-		  SaveDataToFile(*args_str[0], *args_str[1]);
-		  return PARSER_STRING;
-	  }
+
 
   }
   else if ( fname == F("mqtt.setup") && num_args >= 1 ) {
@@ -535,6 +539,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   
 
   else if ( fname == F("read") && num_args == 1 ) {
+	  *value_str = "";
     *value_str = LoadDataFromFile(*args_str[0]);
     return PARSER_STRING;
   }

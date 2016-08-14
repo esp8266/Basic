@@ -21,23 +21,24 @@ void SaveDataToFile(String fileNameForSave, String DataToSave)
 
 String LoadDataFromFile(String fileNameForSave)
 {
-  String WhatIwillReturn;
+  String WhatIwillReturn ="";
   //SPIFFS.begin();
   File f = SPIFFS.open(String("/data/" + fileNameForSave + ".dat"), "r");
   if (!f)
   {
     fileOpenFail = 1;
     //Serial.print("file open failed  :");
-    //Serial.println(fileNameForSave);
+    Serial.println(fileNameForSave);
   }
   else
   {
     fileOpenFail = 0;
     WhatIwillReturn =  f.readStringUntil('\r');
     WhatIwillReturn.replace("\n", "");
-    f.close();
-    return WhatIwillReturn;
+    f.close();  
   }
+  Serial.println(String("Data Read " + WhatIwillReturn));
+  return WhatIwillReturn;
 }
 
 

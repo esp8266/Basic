@@ -218,6 +218,8 @@ PROGMEM const char DebugPage[] =  R"=====(</script><script src='WebSockets.js'><
 <button id="continue" onclick="dcmdClick(this)">Continue</button>
 <input type="text" id="connection_status" value="Disconnected">
 <button id="clear" onclick="logClear()">Clear</button>
+Speed
+<input type="text" id="speed" name="speed" value="*speed*"onchange="objChange(this)">
 <br>Line No<input type="text" id="lno" value="line no">
 <br><select id='code' size=35 style="width:100%"></select>
 <textarea rows="20" style="width:100%;height:40%" id="log">log</textarea>
@@ -313,6 +315,7 @@ function start(websocketServerLocation) {
     connection = new WebSocket(websocketServerLocation);
     connection.onopen = function() {
         connection.send('OK');
+		connection.send("vars");
         document.getElementById("connection_status").value = "Connected";
     };
     connection.onclose = function() {
@@ -340,7 +343,7 @@ function start(websocketServerLocation) {
         if (res[0].toLowerCase() == "code") {
             connection.send("OK");
 			document.getElementById("lno").value = res[1];
-			document.getElementById('code').value = res[1]-1;
+			document.getElementById('code').value = res[1];
             return;
         }
 
@@ -435,8 +438,8 @@ window.onload = function makeVarList() {
 	  if (arrayOfLines[i] != "undefined")
 	  {
 		var opt = document.createElement('option');
-		opt.innerHTML = pad('.....',i,true)+ ':    ' + arrayOfLines[i];
-		opt.value = i;
+		opt.innerHTML = pad('.....',i+1,true)+ ':    ' + arrayOfLines[i];
+		opt.value = i+1;
 		sel.appendChild(opt);
 	  }
 	}
@@ -672,6 +675,7 @@ bool RunningProgram = 1;                                //Will be set to 1 if th
 int RunningProgramCurrentLine = 0;                     //Keeps track of the currently running line of code
 //byte NumberOfReturns;
 bool BasicDebuggingOn;
+int debugDelaySpeed;
 //uint16_t ReturnLocations[254];
 
 int TimerWaitTime;
@@ -1052,7 +1056,7 @@ void setup() {
 		byte oldWebGuiOff;
 		oldWebGuiOff = WebGuiOff;
 		Serial.println(msgbranch);
-		WebGuiOff = 1;
+		//WebGuiOff = 1;
 		RunningProgramCurrentLine = msgbranch;
 		WaitForTheInterpertersResponse = 0;
 		runTillWaitPart2();

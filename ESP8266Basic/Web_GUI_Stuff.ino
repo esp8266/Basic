@@ -35,6 +35,8 @@ String RunningProgramGui()
   WebOut.replace(F("**graphics**"), F("<iframe src='graphics.htm' style='border:none' name='gra' width='*gwid*' height='*ghei*' scrolling='no'></iframe>"));
   WebOut.replace(F("*gwid*"),  String(GraphicsEliments[0][1]));
   WebOut.replace(F("*ghei*"),  String(GraphicsEliments[0][2]));
+  WebOut.replace(F("*speed*"),  String(debugDelaySpeed));
+  
   
   return WebOut;
 }
@@ -232,6 +234,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         WebSocketSend( "Connected");
 		if (BasicDebuggingOn == 1) WebSocketSend( "code~^`" + String(RunningProgramCurrentLine));
 		SendAllTheVars();
+		if (BasicDebuggingOn == 1)  WebSocketSend( "varname~^`speed~^`" + String(debugDelaySpeed));
+
       }
       break;
     case WStype_TEXT:
@@ -311,9 +315,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       {
         //Serial.println(getValue(WebSockMessage, '~', 1).toInt());
         //Serial.println(getValue(String(WebSockMessage), '~', 2));
-        AllMyVariables[getValue(WebSockMessage, '~', 1).toInt()].setVar(getValue(WebSockMessage, '~', 2));
-        WebSocketSend( "var~^`" + String(getValue(WebSockMessage, '~', 1).toInt()) + "~^`" + String(AllMyVariables[getValue(WebSockMessage, '~', 1).toInt()].getVar()));
-        break;
+		if (getValue(WebSockMessage, '~', 1) != F("speed")) 
+		{
+			AllMyVariables[getValue(WebSockMessage, '~', 1).toInt()].setVar(getValue(WebSockMessage, '~', 2));
+			WebSocketSend( "var~^`" + String(getValue(WebSockMessage, '~', 1).toInt()) + "~^`" + String(AllMyVariables[getValue(WebSockMessage, '~', 1).toInt()].getVar()));
+			break;
+		}
+		else  
+		{
+			debugDelaySpeed = getValue(WebSockMessage, '~', 2).toInt();
+			Serial.println("Setting the debugger speed to ");
+			Serial.print(debugDelaySpeed );
+		}
+        
       }
 
 

@@ -92,6 +92,7 @@ void ExicuteTheCurrentLine()
   if (BasicDebuggingOn == 1)
   {
 	WebSocketSend( "code~^`" + String(RunningProgramCurrentLine));
+	delaytime  = debugDelaySpeed + millis();
   }
 
   Param0.trim();
@@ -99,7 +100,7 @@ void ExicuteTheCurrentLine()
   if (Param0.startsWith("["))  return;
   if (Param0.startsWith("'"))  return;
 
-  r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
+  r = parserotto(inData.substring(String(inData + F(" ")).indexOf(' ') + 1), Params);
   if (r != -1)
   {
 	delay(0);
@@ -173,10 +174,9 @@ void ExicuteTheCurrentLine()
       return; // there is no else command
 
     inData.trim();
-    //Serial.println(inData);
-    //Param0 = inData.substring(0, inData.indexOf(' '));    // recover the new command
+
     Param0 = getValue(inData, ' ', 0);// recover the new command
-	  r = parserotto(inData.substring(inData.indexOf(' ') + 1), Params);
+	  r = parserotto(inData.substring(String(inData + F(" ")).indexOf(' ') + 1), Params);
 	  if (r != -1)
 	  {
 		delay(0);

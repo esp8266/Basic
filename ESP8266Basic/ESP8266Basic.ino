@@ -364,6 +364,8 @@ function start(websocketServerLocation) {
 				{
 				document.body.innerHTML = '';
 				}
+			location.reload();
+            return;
         }
         if (res[0].toLowerCase() == "wprint") {
             AddToBody(res[1]);

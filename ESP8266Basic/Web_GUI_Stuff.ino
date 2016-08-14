@@ -189,7 +189,7 @@ String RequestWebSocket(String Request)
   for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
   {
     webSocket.loop();
-    delay(100);
+    //delay(100);
   }
   return WebSockMessage;
 }
@@ -203,7 +203,7 @@ void WebSocketSend(String MessageToSend)
 		if (WebSocketTimeOut[i] + 20000 >=  millis())
 		{
 		 webSocket.sendTXT(i, MessageToSend);
-		 delaytime = 50 + millis();
+		// delaytime = 50 + millis();
 		  webSocket.loop();
 		}
 	}
@@ -304,7 +304,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         WaitForTheInterpertersResponse = 0;
         RunningProgramCurrentLine = WebSockMessage.substring(7).toInt() - 1;
         //Serial.println("Current line = " + String(RunningProgramCurrentLine));
-        runTillWaitPart2();
+        //runTillWaitPart2();
         break;
       }
       if (WebSockMessage.startsWith(F("guichange~")))

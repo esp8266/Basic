@@ -1117,12 +1117,13 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("end"))
   {
+	clientTelnet.stop();
     clear_stacks();
 	WebGuiOff = 0;
 	IRBranchLine = 0;
 	TouchBranchLine = 0;
 	WebSockEventBranchLine = 0;
-	
+	telnetBranch = 0;
 	
     RunningProgram = 0;
     WaitForTheInterpertersResponse = 1;
@@ -1157,12 +1158,13 @@ void ExicuteTheCurrentLine()
     RunningProgramCurrentLine = 0;
     HTMLout = "";
 	
-	
+	clientTelnet.stop();
     clear_stacks();
 	WebGuiOff = 0;
 	IRBranchLine = 0;
 	TouchBranchLine = 0;
 	WebSockEventBranchLine = 0;
+	telnetBranch = 0;
 	TimerWaitTime = 0;
     TimerCBtime = 0;
 	
@@ -1239,6 +1241,20 @@ void ExicuteTheCurrentLine()
   }
 
 
+  
+  if (Param0 == F("telnetbranch"))
+  {
+	if ((r = JumpList.getPos(Param1)) != -1)
+    {
+      telnetBranch = r - 1;
+	  return;
+    }
+    SendErrorMsg(String(F("TELNETBRANCH Label not found:")) + Param1);
+
+    return;
+  }
+  
+  
 
   //Code to handle MSG Branch
 

@@ -146,6 +146,13 @@ DallasTemperature sensors(&oneWire);
 DHT *dht = NULL;
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
+// i2c OLED Display
+
+
+//#include "SSD1306.h" 
+//SSD1306  display(0x3c);
+
+
 
 //PS2Keyboard keyboard;
 
@@ -170,6 +177,7 @@ int delaytime;
 
 WiFiClient client;
 WiFiClient clientTelnet;
+int telnetBranch;
 
 //MQTT Stuff
 #include <PubSubClient.h>
@@ -260,22 +268,22 @@ PROGMEM const char UploadPage[] = R"=====(
 <select name="fileName" size="25" form="filelist">*table*</select>
 <script>
 function call() {
-    var x = document.getElementsByName("fileName")[0];
-    var optionVal = new Array();
-    for (i = 0; i < x.length; i++) {
-        optionVal.push(x.options[i].text);
-    }
-    for (i = x.length; i >= 0; i--) {
-        x.remove(i);
-    }
-    optionVal.sort();
-    for (var i = 0; i < optionVal.length; i++) {
-        var opt = optionVal[i];
-        var el = document.createElement("option");
-        el.textContent = opt;
-        el.value = opt;
-        x.appendChild(el);
-    }
+	var x = document.getElementsByName("fileName")[0];
+	var optionVal = new Array();
+	for (i = 0; i < x.length; i++) {
+		optionVal.push(x.options[i].text);
+	}
+	for (i = x.length; i >= 0; i--) {
+		x.remove(i);
+	}
+	optionVal.sort();
+	for (var i = 0; i < optionVal.length; i++) {
+		var opt = optionVal[i];
+		var el = document.createElement("option");
+		el.textContent = opt;
+		el.value = opt;
+		x.appendChild(el);
+	}
 }
 </script>
 <body onload="call()">
@@ -298,12 +306,11 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 <br>
 <textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
 <input type="text" id="Status" value="">
-    <script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        lineNumbers: true,
-        indentUnit: 4
-      });
-    </script>
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+lineNumbers: true,
+indentUnit: 4});
+</script>
 )=====";
 
 
@@ -312,52 +319,52 @@ PROGMEM const char WebSocketsJS[] =  R"=====(
 start('ws://' + location.hostname + ':81/');
 
 function start(websocketServerLocation) {
-    connection = new WebSocket(websocketServerLocation);
-    connection.onopen = function() {
-        connection.send('OK');
+	connection = new WebSocket(websocketServerLocation);
+	connection.onopen = function() {
+		connection.send('OK');
 		connection.send("vars");
-        document.getElementById("connection_status").value = "Connected";
-    };
-    connection.onclose = function() {
-        setTimeout(function() {
-            start(websocketServerLocation)
-        }, 1000);
+		document.getElementById("connection_status").value = "Connected";
+	};
+	connection.onclose = function() {
+		setTimeout(function() {
+			tart(websocketServerLocation)
+		}, 1000);
 		document.getElementById("connection_status").value = "Disconnected";
-    };
+	};
 
-    connection.onmessage = function(e) {
-        var res = e.data.split("~^`");
-        if (res[0].toLowerCase() == "var") {
-            connection.send("OK");
-            for (i = 0; i < document.getElementsByName(res[1]).length; i++) {
-                document.getElementsByName(res[1])[i].value = res[2];
-            }
+	connection.onmessage = function(e) {
+		var res = e.data.split("~^`");
+		if (res[0].toLowerCase() == "var") {
+			connection.send("OK");
+			for (i = 0; i < document.getElementsByName(res[1]).length; i++) {
+				document.getElementsByName(res[1])[i].value = res[2];
+			}
 
-            return;
-        }
-        if (res[0].toLowerCase() == "varname") {
-            connection.send("OK");
-            document.getElementsByName("var" + res[1].toString())[0].value = res[2];
-            return;
-        }
-        if (res[0].toLowerCase() == "code") {
-            connection.send("OK");
+			return;
+		}
+		if (res[0].toLowerCase() == "varname") {
+			connection.send("OK");
+			document.getElementsByName("var" + res[1].toString())[0].value = res[2];
+			return;
+		}
+		if (res[0].toLowerCase() == "code") {
+			connection.send("OK");
 			document.getElementById("lno").value = res[1];
 			document.getElementById('code').value = res[1];
-            return;
-        }
+			return;
+		}
 
-        if (res[0].toLowerCase() == "print") {
-            AddToBody('<hr>' + res[1]);
-            connection.send("vars");
-            return;
-        }
-        if (res[0].toLowerCase() == "gupdate") {
-            document.getElementsByName('gra')[0].contentWindow.location.reload();
-            return;
-        }
+		if (res[0].toLowerCase() == "print") {
+			AddToBody('<hr>' + res[1]);
+			connection.send("vars");
+			return;
+		}
+		if (res[0].toLowerCase() == "gupdate") {
+			document.getElementsByName('gra')[0].contentWindow.location.reload();
+			return;
+		}
 
-        if (res[0].toLowerCase() == "guicls") {
+		if (res[0].toLowerCase() == "guicls") {
 			if (document.getElementById("app")) 
 				{
 				var bla = document.getElementById('app');
@@ -368,68 +375,68 @@ function start(websocketServerLocation) {
 				document.body.innerHTML = '';
 				}
 			location.reload();
-            return;
-        }
-        if (res[0].toLowerCase() == "wprint") {
-            AddToBody(res[1]);
-            connection.send("vars");
-            return;
-        } else if (res[0].toLowerCase() == "get") {
-            var obj = document.getElementById(res[1]);
-            if (obj == null) {
-                connection.send("unknown object");
-                return;
-            }
-            connection.send(obj.value);
-            return;
-        } else if (res[0].toLowerCase() == "log") {
-            connection.send('OK');
-            var log = document.getElementById("log");
-            log.value = "\n" + res[1] + log.value;
-            log.selectionStart = log.selectionEnd = log.value.length;
-            return;
-        } else if (res[0].toLowerCase() == "gauge") {
-            connection.send('OK');
-            Gauge.Collection.get(res[1]).setValue(res[2]);
-            return;
-        } else {
-            // default 
-            connection.send("KO");
-        }
-    };
+			return;
+		}
+		if (res[0].toLowerCase() == "wprint") {
+			AddToBody(res[1]);
+			connection.send("vars");
+			return;
+		} else if (res[0].toLowerCase() == "get") {
+			var obj = document.getElementById(res[1]);
+			if (obj == null) {
+				connection.send("unknown object");
+				return;
+			}
+			connection.send(obj.value);
+			return;
+		} else if (res[0].toLowerCase() == "log") {
+			connection.send('OK');
+			var log = document.getElementById("log");
+			log.value = "\n" + res[1] + log.value;
+			log.selectionStart = log.selectionEnd = log.value.length;
+			return;
+		} else if (res[0].toLowerCase() == "gauge") {
+			connection.send('OK');
+			Gauge.Collection.get(res[1]).setValue(res[2]);
+			return;
+		} else {
+			// default 
+			connection.send("KO");
+		}
+	};
 }
 
 function dcmdClick(e) {
-    connection.send("cmd:" + e.id);
+	connection.send("cmd:" + e.id);
 }
 
 function cmdClick(e) {
-    connection.send("guicmd:" + e.name);
+	connection.send("guicmd:" + e.name);
 }
 
 function logClear() {
 	document.getElementById('app').innerHTML ='';
-    document.getElementById("log").value = '';
+	document.getElementById("log").value = '';
 }
 
 function objEvent(e) {
-    connection.send("guievent:" + e.name + ":" + document.getElementById(e.id).value);
+	connection.send("guievent:" + e.name + ":" + document.getElementById(e.id).value);
 }
 
 function objChange(e) {
-    connection.send("guichange~" + e.name + "~" + document.getElementById(e.id).value);
+	connection.send("guichange~" + e.name + "~" + document.getElementById(e.id).value);
 }
 
 var aliveme = setInterval(aliveTimer, 5000);
 
 function aliveTimer() {
-    connection.send("OK");
+	connection.send("OK");
 }
 
 window.onload = function makeVarList() {
-    for (xxx = 0; xxx < 51; xxx++) {
-        add(xxx.toString(), "");
-    }
+	for (xxx = 0; xxx < 51; xxx++) {
+		add(xxx.toString(), "");
+	}
 	var arrayOfLines = localStorage.getItem("lastcode").split("\n");
 	var sel = document.getElementById('code');
 	for (i = 0; i < arrayOfLines.length; i++) 
@@ -448,45 +455,45 @@ window.onload = function makeVarList() {
 
 function pad(pad, str, padLeft) {
   if (typeof str === 'undefined') 
-    return pad;
+	return pad;
   if (padLeft) {
-    return (pad + str).slice(-pad.length);
+	return (pad + str).slice(-pad.length);
   } else {
-    return (str + pad).substring(0, pad.length);
+	return (str + pad).substring(0, pad.length);
   }
 }
 
 //Create text boxes for variables
 function add(itemName, itemValue) {
 
-    var element = document.createElement("input");
-    element.setAttribute("type", "text");
-    element.setAttribute("value", itemValue);
-    element.setAttribute("name", "var" + itemName);
-    element.setAttribute("style", "width:50%");
+	var element = document.createElement("input");
+	element.setAttribute("type", "text");
+	element.setAttribute("value", itemValue);
+	element.setAttribute("name", "var" + itemName);
+	element.setAttribute("style", "width:50%");
 
-    var element1 = document.createElement("input");
-    element1.setAttribute("type", "text");
-    element1.setAttribute("value", itemValue);
-    element1.setAttribute("name", itemName);
-    element1.setAttribute("style", "width:50%");
+	var element1 = document.createElement("input");
+	element1.setAttribute("type", "text");
+	element1.setAttribute("value", itemValue);
+	element1.setAttribute("name", itemName);
+	element1.setAttribute("style", "width:50%");
 
 
-    document.getElementById("fooBar").appendChild(element);
-    document.getElementById("fooBar").appendChild(element1);
+	document.getElementById("fooBar").appendChild(element);
+	document.getElementById("fooBar").appendChild(element1);
 }
 
 
 function removeSpecials(str) {
-    var lower = str.toLowerCase();
-    var upper = str.toUpperCase();
+	var lower = str.toLowerCase();
+	var upper = str.toUpperCase();
 
-    var res = "";
-    for(var i=0; i<lower.length; ++i) {
-        if(lower[i] != upper[i] || lower[i].trim() === '')
-            res += str[i];
-    }
-    return res;
+	var res = "";
+	for(var i=0; i<lower.length; ++i) {
+		if(lower[i] != upper[i] || lower[i].trim() === '')
+			res += str[i];
+	}
+	return res;
 }
 
 function AddToBody(str){
@@ -496,11 +503,9 @@ if (document.getElementById("app"))
 	bla.innerHTML += str ;}
 else
 	{
-    document.body.innerHTML +=str;
+	document.body.innerHTML +=str;
 	}
 }
-
-
 )=====";
 
 
@@ -523,8 +528,8 @@ for (i = 0; i < arrayOfLines.length; i++)
   x = i + 1;
   if (arrayOfLines[i] != "undefined")
   {
-    stocca(encodeURIComponent(arrayOfLines[i]));
-    
+	stocca(encodeURIComponent(arrayOfLines[i]));
+	
   }
 }
 stocca(">>-save_<<");
@@ -558,15 +563,15 @@ function ShowTheFileList(){
 }
 function httpGet(theUrl)
 {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+	xmlHttp.send( null );
+	return xmlHttp.responseText;
 }
 function replaceAll(str, find, replace) {
   for (x = 0; x <= 10; x++) 
   {
-    str = str.replace(find, replace);
+	str = str.replace(find, replace);
   }
   return str;
 }
@@ -602,9 +607,7 @@ Station Mode (Connect to your router):</th></tr>
 <input type="submit" value="Update" name="update">
 <input type="submit" value="Restart" name="restart">
 </th></tr>
-</table></form>
-<br>
-)=====";
+</table></form><br>)=====";
 
 
 
@@ -743,7 +746,7 @@ void setup() {
   String listenport = LoadDataFromFile("listenport");
   // listening port - by default goes to 80 -
   if (listenport.toInt() == 0)
-    listenport = F("80");
+	listenport = F("80");
 
   // print the listening port in the console
   Serial.print(F("\nServer listening Port: "));
@@ -765,86 +768,90 @@ void setup() {
 
   server->on("/", []()
   {
-    String WebOut;
-    if (LoadDataFromFile("ShowMenueBar") != "off") WebOut =    AdminBarHTML;
-    WebOut += RunningProgramGui();
-    server->send(200, "text/html", WebOut);
+	String WebOut;
+	if (LoadDataFromFile("ShowMenueBar") != "off") WebOut =    AdminBarHTML;
+	WebOut += RunningProgramGui();
+	server->send(200, "text/html", WebOut);
   });
 
 
   server->on("/settings", []()
   {
 
-    server->send(200, "text/html", SettingsPageHandeler());
+	server->send(200, "text/html", SettingsPageHandeler());
   });
 
 
 
   server->on("/vars", []()
   {
-    String WebOut = AdminBarHTML;
-    String FixSpaces;
-    if ( CheckIfLoggedIn() )
-    {
-      WebOut = LogInPage;
-    }
-    else
-    {
-      WebOut += F("<div style='float: left;'>Variable Dump:");
-      for (int i = 0; i < TotalNumberOfVariables; i++)
-      {
-        FixSpaces = AllMyVariables[i].getVar();
-        FixSpaces.replace(' ' , char(160));
-        if ( AllMyVariables[i].getName() != "") WebOut += String("<hr>" + AllMyVariables[i].getName() + " = " + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") +
-              FixSpaces         + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
-      }
+	String WebOut = AdminBarHTML;
+	String FixSpaces;
+	if ( CheckIfLoggedIn() )
+	{
+	  WebOut = LogInPage;
+	}
+	else
+	{
+	  WebOut += F("<div style='float: left;'>Variable Dump:");
+	  for (int i = 0; i < TotalNumberOfVariables; i++)
+	  {
+		FixSpaces = AllMyVariables[i].getVar();
+		FixSpaces.replace(' ' , char(160));
+		if ( AllMyVariables[i].getName() != "") WebOut += String("<hr>" + AllMyVariables[i].getName() + " = " + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") +
+			  FixSpaces         + (AllMyVariables[i].Format == PARSER_STRING ? "\"" : "") );
+	  }
 
 
-      WebOut += F("<hr></div><div style='float: right;'>Pin Stats");
-      for (byte i = 0; i <= 15; i++)
-      {
-        if ( i < 6 | i > 11) WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
-      }
-      WebOut += "</div>";
-    }
+	  WebOut += F("<hr></div><div style='float: right;'>Pin Stats");
+	  for (byte i = 0; i <= 15; i++)
+	  {
+		if ( i < 6 | i > 11) WebOut += String("<hr>" + String(i) + " = " + PinListOfStatus[i] + "  , " + String(PinListOfStatusValues[i]));
+	  }
+	  WebOut += "</div>";
+	}
 
-    server->send(200, "text/html", WebOut);
+	server->send(200, "text/html", WebOut);
   });
 
 
   server->on("/run", []()
   {
+	clientTelnet.stop();
 	BasicDebuggingOn = 0;
-    String WebOut;
-    RunningProgram = 1;
-    RunningProgramCurrentLine = 0;
-    WaitForTheInterpertersResponse = 0 ;
-    numberButtonInUse = 0;
-    HTMLout = "";
-    TimerWaitTime = 0;
-    TimerCBtime = 0;
-    GraphicsEliments[0][0] = 0;
-    WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
+	telnetBranch = 0;
+	String WebOut;
+	RunningProgram = 1;
+	RunningProgramCurrentLine = 0;
+	WaitForTheInterpertersResponse = 0 ;
+	numberButtonInUse = 0;
+	HTMLout = "";
+	TimerWaitTime = 0;
+	TimerCBtime = 0;
+	GraphicsEliments[0][0] = 0;
+	WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
 
-    clear_stacks();
-    server->send(200, "text/html", WebOut);
+	clear_stacks();
+	server->send(200, "text/html", WebOut);
   });
 
   server->on("/debug", []()
   {
+	clientTelnet.stop();
 	BasicDebuggingOn = 1;
-    String WebOut;
-    RunningProgramCurrentLine = 0;
-    WaitForTheInterpertersResponse = 0 ;
-    numberButtonInUse = 0;
-    HTMLout = "";
-    TimerWaitTime = 0;
-    TimerCBtime = 0;
-    GraphicsEliments[0][0] = 0;
-    WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./" />)=====");
+	telnetBranch = 0;
+	String WebOut;
+	RunningProgramCurrentLine = 0;
+	WaitForTheInterpertersResponse = 0 ;
+	numberButtonInUse = 0;
+	HTMLout = "";
+	TimerWaitTime = 0;
+	TimerCBtime = 0;
+	GraphicsEliments[0][0] = 0;
+	WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./" />)=====");
 
-    clear_stacks();
-    server->send(200, "text/html", WebOut);
+	clear_stacks();
+	server->send(200, "text/html", WebOut);
 
   });
   
@@ -853,7 +860,7 @@ void setup() {
 
   server->on("/graphics.htm", []()
   {
-    server->send(200, "text/html", BasicGraphics());
+	server->send(200, "text/html", BasicGraphics());
   });
 
 
@@ -861,188 +868,188 @@ void setup() {
 
   server->on("/filemng", []()
   {
-    DoSomeFileManagerCode();
+	DoSomeFileManagerCode();
   });
 
 
   server->on("/edit", []()
   {
 	WebGuiOff = 2;
-    String WebOut;
-    if (CheckIfLoggedIn())
-    {
-      WebOut = String(LogInPage);
-      server->send(200, "text/html", String(AdminBarHTML + WebOut ));
-      WebGuiOff = 0;return;
-    }
-    else
-    {
-      String CRLF = F("\r\n");
-      WaitForTheInterpertersResponse = 1;
+	String WebOut;
+	if (CheckIfLoggedIn())
+	{
+	  WebOut = String(LogInPage);
+	  server->send(200, "text/html", String(AdminBarHTML + WebOut ));
+	  WebGuiOff = 0;return;
+	}
+	else
+	{
+	  String CRLF = F("\r\n");
+	  WaitForTheInterpertersResponse = 1;
 
-      String TextboxProgramBeingEdited;
-      //String ProgramName;
-      //WebOut = String("<form action='input'>" + HTMLout + "</form>");
-      WebOut = String(EditorPageHTML);
+	  String TextboxProgramBeingEdited;
+	  //String ProgramName;
+	  //WebOut = String("<form action='input'>" + HTMLout + "</form>");
+	  WebOut = String(EditorPageHTML);
 
-      if ( server->arg("open") == F("Open") )
-      {
-        // really takes just the name for the new file otherwise it uses the previous one
-        ProgramName = GetRidOfurlCharacters(server->arg("name"));
+	  if ( server->arg("open") == F("Open") )
+	  {
+		// really takes just the name for the new file otherwise it uses the previous one
+		ProgramName = GetRidOfurlCharacters(server->arg("name"));
 
-        ProgramName.trim();
-        if (ProgramName == "")
-        {
-          ProgramName = F("/default.bas");
-        }
-        ProgramName  = MakeSureFileNameStartsWithSlash(ProgramName );
-        LoadBasicProgramFromFlash( ProgramName);
-      }
-      // the goal here is to replace the server send function by an equivalent that
-      // permit to handle big buffers; this is acheived using the "chunked transfer"
-      WebOut = String(EditorPageHTML);
-      WebOut = WebOut.substring(0, WebOut.indexOf(F("*program txt*")) );
-      WebOut.replace(F("*program name*"), ProgramName);
+		ProgramName.trim();
+		if (ProgramName == "")
+		{
+		  ProgramName = F("/default.bas");
+		}
+		ProgramName  = MakeSureFileNameStartsWithSlash(ProgramName );
+		LoadBasicProgramFromFlash( ProgramName);
+	  }
+	  // the goal here is to replace the server send function by an equivalent that
+	  // permit to handle big buffers; this is acheived using the "chunked transfer"
+	  WebOut = String(EditorPageHTML);
+	  WebOut = WebOut.substring(0, WebOut.indexOf(F("*program txt*")) );
+	  WebOut.replace(F("*program name*"), ProgramName);
 
-      server->sendContent(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\nTransfer-Encoding: chunked\r\nAccess-Control-Allow-Origin: *\r\n\r\n"));
-      delay(0);
-      Serial.println(F("start sending"));
-      // each "chunk" is composed of :
-      // the size of the block (in hex) terminated by \r\n
-      server->sendContent(String(String(AdminBarHTML).length(), 16) + CRLF);
-      // the block terminated by \r\n
-      server->sendContent(String(AdminBarHTML) + CRLF);
-      /////// end of first chunk ///////////
-      delay(0);
-      server->sendContent(String(WebOut.length(), 16) + CRLF);
-      server->sendContent(WebOut + CRLF);
-      delay(0);
-      int iii;
-      int i;
-      fileOpenFail = 0;
-      TextboxProgramBeingEdited = BasicProgram(1);
-      for (i = 2; (i < program_nb_lines); i++)
-      {
-        TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
+	  server->sendContent(F("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:close\r\nTransfer-Encoding: chunked\r\nAccess-Control-Allow-Origin: *\r\n\r\n"));
+	  delay(0);
+	  Serial.println(F("start sending"));
+	  // each "chunk" is composed of :
+	  // the size of the block (in hex) terminated by \r\n
+	  server->sendContent(String(String(AdminBarHTML).length(), 16) + CRLF);
+	  // the block terminated by \r\n
+	  server->sendContent(String(AdminBarHTML) + CRLF);
+	  /////// end of first chunk ///////////
+	  delay(0);
+	  server->sendContent(String(WebOut.length(), 16) + CRLF);
+	  server->sendContent(WebOut + CRLF);
+	  delay(0);
+	  int iii;
+	  int i;
+	  fileOpenFail = 0;
+	  TextboxProgramBeingEdited = BasicProgram(1);
+	  for (i = 2; (i < program_nb_lines); i++)
+	  {
+		TextboxProgramBeingEdited = TextboxProgramBeingEdited + "\n" + BasicProgram(i);
 
-        if (TextboxProgramBeingEdited.length() > 2048)
-        {
-          server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
-          server->sendContent(TextboxProgramBeingEdited + CRLF);
-          TextboxProgramBeingEdited = "";
-          delay(0);
-        }
-      }
-      if (TextboxProgramBeingEdited.length() > 0)
-      {
-        server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
-        server->sendContent(TextboxProgramBeingEdited + CRLF);
-        delay(0);
-      }
+		if (TextboxProgramBeingEdited.length() > 2048)
+		{
+		  server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
+		  server->sendContent(TextboxProgramBeingEdited + CRLF);
+		  TextboxProgramBeingEdited = "";
+		  delay(0);
+		}
+	  }
+	  if (TextboxProgramBeingEdited.length() > 0)
+	  {
+		server->sendContent(String(TextboxProgramBeingEdited.length(), 16) + CRLF);
+		server->sendContent(TextboxProgramBeingEdited + CRLF);
+		delay(0);
+	  }
 
-      WebOut = String(EditorPageHTML);
-      WebOut = WebOut.substring(WebOut.indexOf(F("</textarea>")));
-      server->sendContent(String(WebOut.length(), 16) + CRLF);
-      server->sendContent(WebOut + CRLF);
-      // end of transmission
-      server->sendContent(F("0\r\n\r\n"));
-      server->sendContent(F("0\r\n\r\n"));
-      delay(0);
-      Serial.println(F("End of Open"));
-      WebGuiOff = 0;
-    }
+	  WebOut = String(EditorPageHTML);
+	  WebOut = WebOut.substring(WebOut.indexOf(F("</textarea>")));
+	  server->sendContent(String(WebOut.length(), 16) + CRLF);
+	  server->sendContent(WebOut + CRLF);
+	  // end of transmission
+	  server->sendContent(F("0\r\n\r\n"));
+	  server->sendContent(F("0\r\n\r\n"));
+	  delay(0);
+	  Serial.println(F("End of Open"));
+	  WebGuiOff = 0;
+	}
 
   });
 
 
 
   server->on("/editor.js", []() {
-    server->send(200, "text/html", editCodeJavaScript);
+	server->send(200, "text/html", editCodeJavaScript);
   });
 
 
 
   server->on("/WebSockets.js", []() {
-    server->send(200, "text/html", WebSocketsJS);
+	server->send(200, "text/html", WebSocketsJS);
   });
 
 
   server->on("/filelist", []()
   {
-    String ret = "";
-    String fn;
-    Dir dir = SPIFFS.openDir(String(F("/") ));
-    while (dir.next())
-    {
-      fn = dir.fileName();
-      if (fn.indexOf(F(".bas")) != -1)
-        ret +=  fn + "\n";
-      delay(0);
-    }
+	String ret = "";
+	String fn;
+	Dir dir = SPIFFS.openDir(String(F("/") ));
+	while (dir.next())
+	{
+	  fn = dir.fileName();
+	  if (fn.indexOf(F(".bas")) != -1)
+		ret +=  fn + "\n";
+	  delay(0);
+	}
 
 
-    server->send(200, "text/html", ret);
+	server->send(200, "text/html", ret);
   });
 
   server->on("/codein", []() {
-    //    ProgramName.trim();
-    //    if (ProgramName == "")
-    //    {
-    //      ProgramName = F("/default.bas");
-    //    }
+	//    ProgramName.trim();
+	//    if (ProgramName == "")
+	//    {
+	//      ProgramName = F("/default.bas");
+	//    }
 
-    if (server->arg("SaveTheCode") == F("start"))
-    {
-      inData = "end";
-      ExicuteTheCurrentLine();
-      Serial.println(F("start save"));
-      ProgramName = GetRidOfurlCharacters(server->arg("FileName"));
-      if (ProgramName == "")
-        ProgramName = F("/default.bas");
-      ProgramName.trim();
-      if (ProgramName[0] != '/')
-        ProgramName = "/" + ProgramName;
-      OpenToWriteOnFlash( ProgramName );
-    }
+	if (server->arg("SaveTheCode") == F("start"))
+	{
+	  inData = "end";
+	  ExicuteTheCurrentLine();
+	  Serial.println(F("start save"));
+	  ProgramName = GetRidOfurlCharacters(server->arg("FileName"));
+	  if (ProgramName == "")
+		ProgramName = F("/default.bas");
+	  ProgramName.trim();
+	  if (ProgramName[0] != '/')
+		ProgramName = "/" + ProgramName;
+	  OpenToWriteOnFlash( ProgramName );
+	}
 
-    if (server->arg("SaveTheCode") != F("yes") & server->arg("SaveTheCode") != F("start") & server->arg("SaveTheCode") != F("end"))
-    {
-      String LineNoForWebEditorIn;
-      LineNoForWebEditorIn = server->arg("line");
-      int y = LineNoForWebEditorIn.toInt();
-      delay(0);
-      //Serial.println(server->arg("code"));
-      Serial.println(ProgramName + F("/") + String(y));
-      //BasicProgramWriteLine(y, GetRidOfurlCharacters(server->arg("code")));
-      WriteBasicLineOnFlash(GetRidOfurlCharacters(server->arg("code")));
-      delay(0);
-      noOfLinesForEdit = y;
+	if (server->arg("SaveTheCode") != F("yes") & server->arg("SaveTheCode") != F("start") & server->arg("SaveTheCode") != F("end"))
+	{
+	  String LineNoForWebEditorIn;
+	  LineNoForWebEditorIn = server->arg("line");
+	  int y = LineNoForWebEditorIn.toInt();
+	  delay(0);
+	  //Serial.println(server->arg("code"));
+	  Serial.println(ProgramName + F("/") + String(y));
+	  //BasicProgramWriteLine(y, GetRidOfurlCharacters(server->arg("code")));
+	  WriteBasicLineOnFlash(GetRidOfurlCharacters(server->arg("code")));
+	  delay(0);
+	  noOfLinesForEdit = y;
 
-    }
+	}
 
-    if (server->arg("SaveTheCode") == F("end"))
-    {
-      // terminate the save
-      Serial.println(F("end of save!!"));
-      CloseWriteOnFlash();
-      LoadBasicProgramFromFlash( ProgramName );
-    }
+	if (server->arg("SaveTheCode") == F("end"))
+	{
+	  // terminate the save
+	  Serial.println(F("end of save!!"));
+	  CloseWriteOnFlash();
+	  LoadBasicProgramFromFlash( ProgramName );
+	}
 
-    if (server->arg("SaveTheCode") == F("yes"))
-    {
+	if (server->arg("SaveTheCode") == F("yes"))
+	{
 
-      //      String directoryToDeleteFilesFrom;
-      //      directoryToDeleteFilesFrom = String(F(" /data/") + ProgramName;
-      //      Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
-      //
-      //      while (dir1.next())
-      //      {
-      //        delay(0);
-      //        File f = dir1.openFile("r");
-      //        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
-      //      }
-    }
-    server->send(200, "text/html", F("good"));
+	  //      String directoryToDeleteFilesFrom;
+	  //      directoryToDeleteFilesFrom = String(F(" /data/") + ProgramName;
+	  //      Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
+	  //
+	  //      while (dir1.next())
+	  //      {
+	  //        delay(0);
+	  //        File f = dir1.openFile("r");
+	  //        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
+	  //      }
+	}
+	server->send(200, "text/html", F("good"));
   });
 
 
@@ -1051,10 +1058,10 @@ void setup() {
 
   server->on("/msg", []() {
 
-    MsgBranchRetrnData = F("No MSG Branch Defined");
+	MsgBranchRetrnData = F("No MSG Branch Defined");
 
-    if (msgbranch != 0)
-    {
+	if (msgbranch != 0)
+	{
 		byte oldWebGuiOff;
 		oldWebGuiOff = WebGuiOff;
 		Serial.println(msgbranch);
@@ -1063,9 +1070,9 @@ void setup() {
 		WaitForTheInterpertersResponse = 0;
 		runTillWaitPart2();
 		WebGuiOff = oldWebGuiOff;
-    }
+	}
 
-    server->send(200, "text/html", MsgBranchRetrnData);
+	server->send(200, "text/html", MsgBranchRetrnData);
   });
 
 
@@ -1073,24 +1080,24 @@ void setup() {
 
 
   server->on("/input", []() {
-    server->send(200, "text/html", RunningProgramGui());
+	server->send(200, "text/html", RunningProgramGui());
   });
 
   server->onNotFound ( []() {
-    String fileNameToServeUp;
-    fileNameToServeUp = GetRidOfurlCharacters(server->arg("file"));
-    File mySuperFile = SPIFFS.open(String(F("/uploads/")) + fileNameToServeUp, "r");
-    if (mySuperFile)
-    {
-      server->streamFile(mySuperFile, getContentType(fileNameToServeUp));
-      //server->send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
+	String fileNameToServeUp;
+	fileNameToServeUp = GetRidOfurlCharacters(server->arg("file"));
+	File mySuperFile = SPIFFS.open(String(F("/uploads/")) + fileNameToServeUp, "r");
+	if (mySuperFile)
+	{
+	  server->streamFile(mySuperFile, getContentType(fileNameToServeUp));
+	  //server->send(200, getContentType(fileNameToServeUp), mySuperFile.readString());
 
-    }
-    else
-    {
-      server->send(200, "text/html", RunningProgramGui());
-    }
-    mySuperFile.close();
+	}
+	else
+	{
+	  server->send(200, "text/html", RunningProgramGui());
+	}
+	mySuperFile.close();
   });
 
   //LoadBasicProgramFromFlash("");
@@ -1098,14 +1105,14 @@ void setup() {
 
   if (  ConnectToTheWIFI(LoadDataFromFile("WIFIname"), LoadDataFromFile("WIFIpass"), LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask")) == 0)
   {
-    if (LoadDataFromFile("APname") == "")
-    {
-      CreateAP("", "", LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
-    }
-    else
-    {
-      CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"), LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
-    }
+	if (LoadDataFromFile("APname") == "")
+	{
+	  CreateAP("", "", LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
+	}
+	else
+	{
+	  CreateAP(LoadDataFromFile("APname"), LoadDataFromFile("APpass"), LoadDataFromFile("ipaddress"), LoadDataFromFile("gateway"), LoadDataFromFile("subnetmask"));
+	}
   }
 
 
@@ -1113,7 +1120,10 @@ void setup() {
 
   //  keyboard.begin(14, 12); //For PS2 keyboard input
 
-  StartUp_OLED();
+StartUp_OLED();
+  
+//  display.init();
+//  display.setFont(ArialMT_Plain_10);
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
   sensors.begin();
 
@@ -1135,7 +1145,7 @@ String SettingsPageHandeler()
 {
   if ( server->arg("key") == LoadDataFromFile("LoginKey"))
   {
-    LoggedIn = millis();
+	LoggedIn = millis();
   }
 
 
@@ -1156,111 +1166,111 @@ String SettingsPageHandeler()
 
   // listening port - by default goes to 80 -
   if (listenport.toInt() == 0)
-    listenport = F("80");
+	listenport = F("80");
 
   //Serial.print("Loading Settings Files");
 
   if (millis() > LoggedIn + 600000 || LoggedIn == 0 )
   {
-    WebOut = LogInPage;
+	WebOut = LogInPage;
   }
   else
   {
 
-    if ( server->arg("restart") == F("Restart") ) ESP.restart();
+	if ( server->arg("restart") == F("Restart") ) ESP.restart();
 
 
-    if ( server->arg("update") == F("Update") )
-    {
+	if ( server->arg("update") == F("Update") )
+	{
 
-      //        Serial.println(BasicOTAupgrade());
-      if (LoadDataFromFile("otaUrl") == "")
-      {
-        t_httpUpdate_return  ret = ESPhttpUpdate.update(F("esp8266basic.smbisoft.com"), 80, F("/4M/ESP8266Basic.cpp.bin"));
-        if (ret == HTTP_UPDATE_FAILED ) Serial.println(F("Update failed"));
-      }
-      else
-      {
-        String URLtoGet = LoadDataFromFile("otaUrl");
-        String ServerToConnectTo;
-        String PageToGet;
-        ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
-        PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
-        t_httpUpdate_return  ret = ESPhttpUpdate.update(ServerToConnectTo, 80, PageToGet);
-        if (ret == HTTP_UPDATE_FAILED ) Serial.println(F("Update failed"));
-      }
-      //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
+	  //        Serial.println(BasicOTAupgrade());
+	  if (LoadDataFromFile("otaUrl") == "")
+	  {
+		t_httpUpdate_return  ret = ESPhttpUpdate.update(F("esp8266basic.smbisoft.com"), 80, F("/4M/ESP8266Basic.cpp.bin"));
+		if (ret == HTTP_UPDATE_FAILED ) Serial.println(F("Update failed"));
+	  }
+	  else
+	  {
+		String URLtoGet = LoadDataFromFile("otaUrl");
+		String ServerToConnectTo;
+		String PageToGet;
+		ServerToConnectTo = URLtoGet.substring(0, URLtoGet.indexOf("/"));
+		PageToGet = URLtoGet.substring(URLtoGet.indexOf("/"));
+		t_httpUpdate_return  ret = ESPhttpUpdate.update(ServerToConnectTo, 80, PageToGet);
+		if (ret == HTTP_UPDATE_FAILED ) Serial.println(F("Update failed"));
+	  }
+	  //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
 
-    }
+	}
 
 
-    if ( server->arg("save") == F("Save") )
-    {
-      staName      = GetRidOfurlCharacters(server->arg("staName"));
-      staPass      = GetRidOfurlCharacters(server->arg("staPass"));
-      apName       = GetRidOfurlCharacters(server->arg("apName"));
-      apPass       = GetRidOfurlCharacters(server->arg("apPass"));
-      LoginKey     = GetRidOfurlCharacters(server->arg("LoginKey"));
-      ShowMenueBar = GetRidOfurlCharacters(server->arg("showMenueBar"));
-      otaUrl       = GetRidOfurlCharacters(server->arg("otaurl"));
-      autorun      = GetRidOfurlCharacters(server->arg("autorun"));
-      ipaddress   = GetRidOfurlCharacters(server->arg("ipaddress"));
-      subnetmask   = GetRidOfurlCharacters(server->arg("subnetmask"));
-      gateway   = GetRidOfurlCharacters(server->arg("gateway"));
-      listenport   = GetRidOfurlCharacters(server->arg("listenport"));
+	if ( server->arg("save") == F("Save") )
+	{
+	  staName      = GetRidOfurlCharacters(server->arg("staName"));
+	  staPass      = GetRidOfurlCharacters(server->arg("staPass"));
+	  apName       = GetRidOfurlCharacters(server->arg("apName"));
+	  apPass       = GetRidOfurlCharacters(server->arg("apPass"));
+	  LoginKey     = GetRidOfurlCharacters(server->arg("LoginKey"));
+	  ShowMenueBar = GetRidOfurlCharacters(server->arg("showMenueBar"));
+	  otaUrl       = GetRidOfurlCharacters(server->arg("otaurl"));
+	  autorun      = GetRidOfurlCharacters(server->arg("autorun"));
+	  ipaddress   = GetRidOfurlCharacters(server->arg("ipaddress"));
+	  subnetmask   = GetRidOfurlCharacters(server->arg("subnetmask"));
+	  gateway   = GetRidOfurlCharacters(server->arg("gateway"));
+	  listenport   = GetRidOfurlCharacters(server->arg("listenport"));
 
-      SaveDataToFile("WIFIname" , staName);
-      SaveDataToFile("WIFIpass" , staPass);
-      SaveDataToFile("APname" , apName);
-      SaveDataToFile("APpass" , apPass);
-      SaveDataToFile("LoginKey" , LoginKey);
-      SaveDataToFile("ShowMenueBar" , ShowMenueBar);
-      SaveDataToFile("otaUrl" , otaUrl);
-      SaveDataToFile("autorun" , autorun);
-      SaveDataToFile("ipaddress" , ipaddress);
-      SaveDataToFile("subnetmask" , subnetmask);
-      SaveDataToFile("gateway" , gateway);
-      SaveDataToFile("listenport" , listenport);
+	  SaveDataToFile("WIFIname" , staName);
+	  SaveDataToFile("WIFIpass" , staPass);
+	  SaveDataToFile("APname" , apName);
+	  SaveDataToFile("APpass" , apPass);
+	  SaveDataToFile("LoginKey" , LoginKey);
+	  SaveDataToFile("ShowMenueBar" , ShowMenueBar);
+	  SaveDataToFile("otaUrl" , otaUrl);
+	  SaveDataToFile("autorun" , autorun);
+	  SaveDataToFile("ipaddress" , ipaddress);
+	  SaveDataToFile("subnetmask" , subnetmask);
+	  SaveDataToFile("gateway" , gateway);
+	  SaveDataToFile("listenport" , listenport);
 
-    }
+	}
 
-    if ( server->arg("format") == F("Format") )
-    {
-      // BasicFileOpened.close();
-      Serial.println(F("Formating "));
-      Serial.print(SPIFFS.format());
-    }
+	if ( server->arg("format") == F("Format") )
+	{
+	  // BasicFileOpened.close();
+	  Serial.println(F("Formating "));
+	  Serial.print(SPIFFS.format());
+	}
 
-    WebOut.replace(F("*sta name*"), staName);
-    WebOut.replace(F("*sta pass*"), staPass);
-    WebOut.replace(F("*ap name*"),  apName);
-    WebOut.replace(F("*ap pass*"),  apPass);
-    WebOut.replace(F("*LoginKey*"), LoginKey);
-    WebOut.replace(F("*BasicVersion*"), BasicVersion);
-    WebOut.replace(F("*otaurl*"), otaUrl);
+	WebOut.replace(F("*sta name*"), staName);
+	WebOut.replace(F("*sta pass*"), staPass);
+	WebOut.replace(F("*ap name*"),  apName);
+	WebOut.replace(F("*ap pass*"),  apPass);
+	WebOut.replace(F("*LoginKey*"), LoginKey);
+	WebOut.replace(F("*BasicVersion*"), BasicVersion);
+	WebOut.replace(F("*otaurl*"), otaUrl);
 
-    WebOut.replace(F("*ipaddress*"), ipaddress);
-    WebOut.replace(F("*subnetmask*"), subnetmask);
-    WebOut.replace(F("*gateway*"), gateway);    
-    WebOut.replace(F("*listenport*"), listenport);
+	WebOut.replace(F("*ipaddress*"), ipaddress);
+	WebOut.replace(F("*subnetmask*"), subnetmask);
+	WebOut.replace(F("*gateway*"), gateway);    
+	WebOut.replace(F("*listenport*"), listenport);
 
-    if ( ShowMenueBar == F("off"))
-    {
-      WebOut.replace(F("**checked**"), F("checked"));
-    }
-    else
-    {
-      WebOut.replace(F("**checked**"), "");
-    }
+	if ( ShowMenueBar == F("off"))
+	{
+	  WebOut.replace(F("**checked**"), F("checked"));
+	}
+	else
+	{
+	  WebOut.replace(F("**checked**"), "");
+	}
 
-    if ( autorun == F("on"))
-    {
-      WebOut.replace(F("**autorun**"), F("checked"));
-    }
-    else
-    {
-      WebOut.replace(F("**autorun**"), "");
-    }
+	if ( autorun == F("on"))
+	{
+	  WebOut.replace(F("**autorun**"), F("checked"));
+	}
+	else
+	{
+	  WebOut.replace(F("**autorun**"), "");
+	}
 
   }
   return WebOut;
@@ -1272,12 +1282,12 @@ String getContentType(String filename) {
   String ret = F("text/plain");
   if (filename.endsWith(".gz"))
   {
-    ret = F("application/x-gzip");
-    filename = filename.substring(0, filename.length()-3);
-    Serial.println("getcontenttype " + filename);
+	ret = F("application/x-gzip");
+	filename = filename.substring(0, filename.length()-3);
+	Serial.println("getcontenttype " + filename);
   }
   
-       if (filename.endsWith(".htm")) return F("text/html");
+	   if (filename.endsWith(".htm")) return F("text/html");
   else if (filename.endsWith(".html")) return F("text/html");
   else if (filename.endsWith(".css")) return F("text/css");
   else if (filename.endsWith(".js")) return F("application/javascript");
@@ -1297,14 +1307,14 @@ void StartUpProgramTimer()
   pinMode(0, INPUT_PULLUP);  // set GPIO0 to input with pullup; so if float should read 1, 0 on ground
   while  (millis() < 30000)
   {
-    delay(0);
-    //Serial.println(millis());
-    server->handleClient();
-    if (WaitForTheInterpertersResponse == 0) return;
+	delay(0);
+	//Serial.println(millis());
+	server->handleClient();
+	if (WaitForTheInterpertersResponse == 0) return;
 
-    // MOD cicciocb April 2016
-    // if the pin GPIO0 is taken to GND, the program will not start
-    if (digitalRead(0) == 0)  return; // if the pin GPIO0 is at GND , stop the autorun
+	// MOD cicciocb April 2016
+	// if the pin GPIO0 is taken to GND, the program will not start
+	if (digitalRead(0) == 0)  return; // if the pin GPIO0 is at GND , stop the autorun
   }
   if (LoadDataFromFile("autorun") != "on")  return; // if the autorun option is disabled, returns
   Serial.println(F("Starting Default Program"));
@@ -1327,61 +1337,61 @@ void DoSomeFileManagerCode()
 
   if (CheckIfLoggedIn())
   {
-    WholeUploadPage = LogInPage;
+	WholeUploadPage = LogInPage;
   }
   else
   {
-    if (server->arg("Delete") != "")
-    {
-      String FIleNameForDelete = server->arg("fileName");
-      FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
-      Serial.println(FIleNameForDelete);
-      Serial.println(SPIFFS.remove(FIleNameForDelete));
-      //Serial.println(SPIFFS.remove("uploads/settings.png"));
-    }
+	if (server->arg("Delete") != "")
+	{
+	  String FIleNameForDelete = server->arg("fileName");
+	  FIleNameForDelete = GetRidOfurlCharacters(FIleNameForDelete);
+	  Serial.println(FIleNameForDelete);
+	  Serial.println(SPIFFS.remove(FIleNameForDelete));
+	  //Serial.println(SPIFFS.remove("uploads/settings.png"));
+	}
 
-    Dir dir = SPIFFS.openDir(String(F("/") ));
-    while (dir.next()) {
-      FileListForPage += String(F("<option>")) + dir.fileName() + String(F("</option>"));
-      delay(0);
-    }
+	Dir dir = SPIFFS.openDir(String(F("/") ));
+	while (dir.next()) {
+	  FileListForPage += String(F("<option>")) + dir.fileName() + String(F("</option>"));
+	  delay(0);
+	}
 
-    WholeUploadPage.replace("*table*", FileListForPage);
+	WholeUploadPage.replace("*table*", FileListForPage);
 
-    if (server->arg("View") != "")
-    {
-      String FileNameToView = server->arg("fileName");
-      FileNameToView = GetRidOfurlCharacters(FileNameToView);
-      FileNameToView.replace("/uploads/", "");
-      WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====");
-      WholeUploadPage.replace("item", FileNameToView);
-    }
+	if (server->arg("View") != "")
+	{
+	  String FileNameToView = server->arg("fileName");
+	  FileNameToView = GetRidOfurlCharacters(FileNameToView);
+	  FileNameToView.replace("/uploads/", "");
+	  WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./file?file=item" />)=====");
+	  WholeUploadPage.replace("item", FileNameToView);
+	}
 
 
-    if (server->arg("Edit") != "")
-    {
-      String FileNameToView = server->arg("fileName");
-      FileNameToView = GetRidOfurlCharacters(FileNameToView);
-      //FileNameToView.replace("/uploads/", "");
-      WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="1; url=./edit?name=item&open=Open" />)=====");
-      WholeUploadPage.replace("item", FileNameToView);
-    }
+	if (server->arg("Edit") != "")
+	{
+	  String FileNameToView = server->arg("fileName");
+	  FileNameToView = GetRidOfurlCharacters(FileNameToView);
+	  //FileNameToView.replace("/uploads/", "");
+	  WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="1; url=./edit?name=item&open=Open" />)=====");
+	  WholeUploadPage.replace("item", FileNameToView);
+	}
 
-    if (server->arg("Rename") != "")
-    {
-      String FileNameToView = server->arg("fileName");
-      FileNameToView = GetRidOfurlCharacters(FileNameToView);
-      String newfileName = server->arg("newfileName");
-      newfileName  = GetRidOfurlCharacters(newfileName );
-      WholeUploadPage = F(R"=====(<form id="filelist">Old Name<br><input type="text" name="fileName" value="*item name*"><br>New Name<br><input type="text" name="newfileName" value="*item name*"><input type="submit" value="NewName" name="Rename"></form>)=====");
-      WholeUploadPage.replace("*item name*", FileNameToView);
-      if (newfileName != "" )
-      {
-        newfileName = MakeSureFileNameStartsWithSlash(newfileName);
-        WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./filemng" />)=====");
-        SPIFFS.rename(FileNameToView , newfileName);
-      }
-    }
+	if (server->arg("Rename") != "")
+	{
+	  String FileNameToView = server->arg("fileName");
+	  FileNameToView = GetRidOfurlCharacters(FileNameToView);
+	  String newfileName = server->arg("newfileName");
+	  newfileName  = GetRidOfurlCharacters(newfileName );
+	  WholeUploadPage = F(R"=====(<form id="filelist">Old Name<br><input type="text" name="fileName" value="*item name*"><br>New Name<br><input type="text" name="newfileName" value="*item name*"><input type="submit" value="NewName" name="Rename"></form>)=====");
+	  WholeUploadPage.replace("*item name*", FileNameToView);
+	  if (newfileName != "" )
+	  {
+		newfileName = MakeSureFileNameStartsWithSlash(newfileName);
+		WholeUploadPage = F(R"=====(  <meta http-equiv="refresh" content="0; url=./filemng" />)=====");
+		SPIFFS.rename(FileNameToView , newfileName);
+	  }
+	}
 
 
   }
@@ -1395,18 +1405,18 @@ void handleFileUpdate()
   //if (server->uri() != "/edit") return;
   HTTPUpload& upload = server->upload();
   if (upload.status == UPLOAD_FILE_START) {
-    String filename = upload.filename;
-    //DBG_OUTPUT_PORT.print("Upload Name: "); DBG_OUTPUT_PORT.println(filename);
-    fsUploadFile = SPIFFS.open(String("/uploads/" + filename), "w");
-    filename = String();
+	String filename = upload.filename;
+	//DBG_OUTPUT_PORT.print("Upload Name: "); DBG_OUTPUT_PORT.println(filename);
+	fsUploadFile = SPIFFS.open(String("/uploads/" + filename), "w");
+	filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
-    //DBG_OUTPUT_PORT.print("Upload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
-    if (fsUploadFile)
-      fsUploadFile.write(upload.buf, upload.currentSize);
+	//DBG_OUTPUT_PORT.print("Upload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
+	if (fsUploadFile)
+	  fsUploadFile.write(upload.buf, upload.currentSize);
   } else if (upload.status == UPLOAD_FILE_END) {
-    if (fsUploadFile)
-      fsUploadFile.close();
-    //DBG_OUTPUT_PORT.print("Upload Size: "); DBG_OUTPUT_PORT.println(upload.totalSize);
+	if (fsUploadFile)
+	  fsUploadFile.close();
+	//DBG_OUTPUT_PORT.print("Upload Size: "); DBG_OUTPUT_PORT.println(upload.totalSize);
   }
 }
 
@@ -1426,20 +1436,20 @@ String  getSerialInput()
   String someInput;
   while (donereceivinginfo == 0)
   {
-    if (serialTimeOutStart + SerialTimeOut < millis() & SerialTimeOut != 0) return someInput;
-    delay(0);
-    while (Serial.available() > 0)
-    {
-      char recieved = Serial.read();
-      // Process message when new line character is recieved
-      if (recieved == '\n')
-      {
-        Serial.println(someInput);
-        donereceivinginfo = 1;
-        return someInput;
-      }
-      someInput += recieved;
-    }
+	if (serialTimeOutStart + SerialTimeOut < millis() & SerialTimeOut != 0) return someInput;
+	delay(0);
+	while (Serial.available() > 0)
+	{
+	  char recieved = Serial.read();
+	  // Process message when new line character is recieved
+	  if (recieved == '\n')
+	  {
+		Serial.println(someInput);
+		donereceivinginfo = 1;
+		return someInput;
+	  }
+	  someInput += recieved;
+	}
   }
 }
 
@@ -1502,7 +1512,7 @@ bool CheckIfLoggedIn()
 {
   if (LoadDataFromFile("LoginKey") != "")
   {
-    if ( millis() > LoggedIn + 600000 || LoggedIn == 0 )     return 1;
+	if ( millis() > LoggedIn + 600000 || LoggedIn == 0 )     return 1;
   }
   return 0;
 }
@@ -1551,45 +1561,56 @@ void loop()
 void RunBasicTillWait()
 {
   webSocket.loop();
-  if (delaytime > millis() & delaytime != 0) {return;} else {delaytime = 0;}
+  if (delaytime > millis() && delaytime != 0) {return;} else {delaytime = 0;}
   runTillWaitPart2();
   if (RunningProgramCurrentLine > TotalNumberOfLines)
   {
 	inData = String(" end");
 	WaitForTheInterpertersResponse = 0;
 	ExicuteTheCurrentLine();
-    return;
+	return;
   }
 
 
 
   
   
-  if (TimerWaitTime + timerLastActiveTime <= millis() &  TimerWaitTime != 0)
+  if (TimerWaitTime + timerLastActiveTime <= millis() &&  TimerWaitTime != 0)
   {
-    inData = String(" goto " + TimerBranch + " ");
-    WaitForTheInterpertersResponse = 0;
-    timerLastActiveTime = millis() ;
-    ExicuteTheCurrentLine();
-    runTillWaitPart2();
+	inData = String(" goto " + TimerBranch + " ");
+	WaitForTheInterpertersResponse = 0;
+	timerLastActiveTime = millis() ;
+	ExicuteTheCurrentLine();
+	runTillWaitPart2();
   }
+  if (telnetBranch != 0 &&  clientTelnet.available())
+  {
+	RunningProgramCurrentLine = telnetBranch;
+	WaitForTheInterpertersResponse = 0;
+	runTillWaitPart2();
+  }
+
+  
+  
+  
+  
   delay(0);
   for (int pinnn = 0; pinnn <= 15 ; pinnn++)
   {
-    delay(0);
-    //Serial.println(pinnn);
-    if ((PinListOfStatus[pinnn] != "po") & ( PinListOfStatus[pinnn] != "pi") & (PinListOfStatus[pinnn] != "pwi") & (PinListOfStatus[pinnn] != "pwo") & (PinListOfStatus[pinnn] != "servo") & ( PinListOfStatus[pinnn] != ""))
-    {
-      //Serial.println("Foud interupt pin");
-      if ( PinListOfStatusValues[pinnn] != UniversalPinIO("pi", String(pinnn), 0))
-      {
-        inData = String(" goto " + PinListOfStatus[pinnn] + " ");
-        WaitForTheInterpertersResponse = 0;
-        //Serial.println(PinListOfStatus[pinnn]);
-        ExicuteTheCurrentLine();
-        runTillWaitPart2();
-      }
-    }
+	delay(0);
+	//Serial.println(pinnn);
+	if ((PinListOfStatus[pinnn] != "po") & ( PinListOfStatus[pinnn] != "pi") & (PinListOfStatus[pinnn] != "pwi") & (PinListOfStatus[pinnn] != "pwo") & (PinListOfStatus[pinnn] != "servo") & ( PinListOfStatus[pinnn] != ""))
+	{
+	  //Serial.println("Foud interupt pin");
+	  if ( PinListOfStatusValues[pinnn] != UniversalPinIO("pi", String(pinnn), 0))
+	  {
+		inData = String(" goto " + PinListOfStatus[pinnn] + " ");
+		WaitForTheInterpertersResponse = 0;
+		//Serial.println(PinListOfStatus[pinnn]);
+		ExicuteTheCurrentLine();
+		runTillWaitPart2();
+	  }
+	}
   }
 }
 
@@ -1605,24 +1626,24 @@ void runTillWaitPart2()
   //Serial.println("Wait = " + String(WaitForTheInterpertersResponse));
   while (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 0 && delaytime == 0)
   {
-    //Serial.println(inData);
+	//Serial.println(inData);
 
-    delay(0);
-    RunningProgramCurrentLine++;
-    inData = BasicProgram(RunningProgramCurrentLine);
-    inData = StripCommentsFromLine(inData);
-    if (fileOpenFail == 1) inData  = "end";
-    ExicuteTheCurrentLine();
-    delay(0);
-    CheckForUdpData();
-    webSocket.loop();
+	delay(0);
+	RunningProgramCurrentLine++;
+	inData = BasicProgram(RunningProgramCurrentLine);
+	inData = StripCommentsFromLine(inData);
+	if (fileOpenFail == 1) inData  = "end";
+	ExicuteTheCurrentLine();
+	delay(0);
+	CheckForUdpData();
+	webSocket.loop();
   }
   if (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 1 )
   {
-    //Serial.print("sto in wait ");
-    //Serial.println(RunningProgramCurrentLine);
-    CheckForUdpData();
-    webSocket.loop();
+	//Serial.print("sto in wait ");
+	//Serial.println(RunningProgramCurrentLine);
+	CheckForUdpData();
+	webSocket.loop();
   }
 
 
@@ -1639,14 +1660,14 @@ String StripCommentsFromLine(String ret)
   bool quotes = false;
   for (int i = 0; i < ret.length(); i++)
   {
-    if (ret[i] == '"')
-      quotes = !quotes;
+	if (ret[i] == '"')
+	  quotes = !quotes;
 
-    if ( (ret[i] == '\'') && (quotes == false) )
-    {
-      ret = ret.substring(0, i);  // cut the line at the current position (removes all the comments from the line
-      break;
-    }
+	if ( (ret[i] == '\'') && (quotes == false) )
+	{
+	  ret = ret.substring(0, i);  // cut the line at the current position (removes all the comments from the line
+	  break;
+	}
   }
   return ret;
 }
@@ -1656,95 +1677,95 @@ void CheckForUdpData()
   int numBytes = udp.parsePacket();
   if ( numBytes)
   {
-    //    Serial.print("Packet received ");
-    //    Serial.print(RunningProgramCurrentLine);
-    //    Serial.print("  ");
-    //    Serial.println(udp.available());
+	//    Serial.print("Packet received ");
+	//    Serial.print(RunningProgramCurrentLine);
+	//    Serial.print("  ");
+	//    Serial.println(udp.available());
 
-    if (numBytes > 0)
-    {
-      char Buffer[numBytes + 1];
-      UdpRemoteIP = udp.remoteIP();
-      UdpRemotePort = udp.remotePort();
-      delay(0);
-      udp.read(Buffer, numBytes);
-      Buffer[numBytes] = '\0'; // terminate the string with '\0'
-      UdpBuffer = String(Buffer);
-    }
+	if (numBytes > 0)
+	{
+	  char Buffer[numBytes + 1];
+	  UdpRemoteIP = udp.remoteIP();
+	  UdpRemotePort = udp.remotePort();
+	  delay(0);
+	  udp.read(Buffer, numBytes);
+	  Buffer[numBytes] = '\0'; // terminate the string with '\0'
+	  UdpBuffer = String(Buffer);
+	}
 
-    //// test of gosub ///////
-    if (UdpBranchLine > 0)
-    {
-      // if the program is in wait, it returns to the previous line to wait again
-      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
-      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
-      RunningProgramCurrentLine = UdpBranchLine + 1; // gosub after the udpbranch label
-      UdpBranchLine = - UdpBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
-    }
+	//// test of gosub ///////
+	if (UdpBranchLine > 0)
+	{
+	  // if the program is in wait, it returns to the previous line to wait again
+	  return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+	  WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+	  RunningProgramCurrentLine = UdpBranchLine + 1; // gosub after the udpbranch label
+	  UdpBranchLine = - UdpBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+	}
   }
   ////
   if (Serial.available() > 0)
   {
-    delay(50); // insure that the data can be received
-    //// put like a gosub ///////
-    if (SerialBranchLine > 0)
-    {
-      // if the program is in wait, it returns to the previous line to wait again
-      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
-      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
-      RunningProgramCurrentLine = SerialBranchLine + 1; // gosub after the SerialBranch label
-      SerialBranchLine = - SerialBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
-    }
+	delay(50); // insure that the data can be received
+	//// put like a gosub ///////
+	if (SerialBranchLine > 0)
+	{
+	  // if the program is in wait, it returns to the previous line to wait again
+	  return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+	  WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+	  RunningProgramCurrentLine = SerialBranchLine + 1; // gosub after the SerialBranch label
+	  SerialBranchLine = - SerialBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+	}
   }
   if ((swSer != NULL))
   {
-    if (swSer->available() > 0)
-    {
-      delay(50); // insure that the data can be received
-      //// put like a gosub ///////
-      if (Serial2BranchLine > 0)
-      {
-        // if the program is in wait, it returns to the previous line to wait again
-        return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
-        WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
-        RunningProgramCurrentLine = Serial2BranchLine + 1; // gosub after the SerialBranch label
-        Serial2BranchLine = - Serial2BranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
-      }
-    }
+	if (swSer->available() > 0)
+	{
+	  delay(50); // insure that the data can be received
+	  //// put like a gosub ///////
+	  if (Serial2BranchLine > 0)
+	  {
+		// if the program is in wait, it returns to the previous line to wait again
+		return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+		WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+		RunningProgramCurrentLine = Serial2BranchLine + 1; // gosub after the SerialBranch label
+		Serial2BranchLine = - Serial2BranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+	  }
+	}
   }
   if (irrecv->decode(&IRresults)) {
-    //Serial.println(IRresults.value, HEX);
-    //dump(&IRresults);
-    //irrecv->resume(); // Receive the next value
-    if (IRBranchLine > 0)
-    {
-      // if the program is in wait, it returns to the previous line to wait again
-      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
-      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
-      RunningProgramCurrentLine = IRBranchLine + 1; // gosub after the IRBranch label
-      IRBranchLine = - IRBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
-    }
+	//Serial.println(IRresults.value, HEX);
+	//dump(&IRresults);
+	//irrecv->resume(); // Receive the next value
+	if (IRBranchLine > 0)
+	{
+	  // if the program is in wait, it returns to the previous line to wait again
+	  return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+	  WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+	  RunningProgramCurrentLine = IRBranchLine + 1; // gosub after the IRBranch label
+	  IRBranchLine = - IRBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+	}
   }
   if (TimerCBtime > 0)
   {
-    if (millis() > (timerLastActiveTime + TimerCBtime) )
-    {
-      timerLastActiveTime = millis();
-      // if the program is in wait, it returns to the previous line to wait again
-      return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
-      WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
-      RunningProgramCurrentLine = TimerCBBranchLine + 1; // gosub after the IRBranch label
-      TimerCBBranchLine = - TimerCBBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
-    }
+	if (millis() > (timerLastActiveTime + TimerCBtime) )
+	{
+	  timerLastActiveTime = millis();
+	  // if the program is in wait, it returns to the previous line to wait again
+	  return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+	  WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+	  RunningProgramCurrentLine = TimerCBBranchLine + 1; // gosub after the IRBranch label
+	  TimerCBBranchLine = - TimerCBBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
+	}
   }
   if (TouchBranchLine > 0)
   {
-    if ( millis() > (Touch_millis + 100) ) 
-    {
-      int raw;
-      int tt = ReadTouchXY(0, &raw);
-      if ((tt != -1) && (Touch_p == -1))
-      {
+	if ( millis() > (Touch_millis + 100) ) 
+	{
+	  int raw;
+	  int tt = ReadTouchXY(0, &raw);
+	  if ((tt != -1) && (Touch_p == -1))
+	  {
 //        Serial.print(tt & 0xffff);
 //        Serial.print(":");
 //        Serial.print(tt >> 16);
@@ -1754,20 +1775,20 @@ void CheckForUdpData()
 //        Serial.print(raw >> 16);
 //        Serial.print(" ");
 //        Serial.println(Touch_p);
-        touchX = tt & 0xffff;
-        touchY = tt >> 16;
-        touchY_raw = raw & 0xffff;
-        touchY_raw = raw >> 16;
-        // if the program is in wait, it returns to the previous line to wait again
-        return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
-        WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
-        RunningProgramCurrentLine = TouchBranchLine + 1; // gosub after the IRBranch label
-        TouchBranchLine = - TouchBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command  
-      }
-      delay(0);
-      Touch_millis = millis();
-      Touch_p = tt;
-    }
+		touchX = tt & 0xffff;
+		touchY = tt >> 16;
+		touchY_raw = raw & 0xffff;
+		touchY_raw = raw >> 16;
+		// if the program is in wait, it returns to the previous line to wait again
+		return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
+		WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub
+		RunningProgramCurrentLine = TouchBranchLine + 1; // gosub after the IRBranch label
+		TouchBranchLine = - TouchBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command  
+	  }
+	  delay(0);
+	  Touch_millis = millis();
+	  Touch_p = tt;
+	}
   }  
 }
 
@@ -1775,15 +1796,15 @@ String getValueforPrograming(String data, char separator, int index)
 {
   int found = 0;
   int strIndex[] = {
-    0, -1
+	0, -1
   };
   int maxIndex = data.length() - 1;
   for (int i = 0; i <= maxIndex && found <= index; i++) {
-    if (data.charAt(i) == separator || i == maxIndex) {
-      found++;
-      strIndex[0] = strIndex[1] + 1;
-      strIndex[1] = (i == maxIndex) ? i + 1 : i;
-    }
+	if (data.charAt(i) == separator || i == maxIndex) {
+	  found++;
+	  strIndex[0] = strIndex[1] + 1;
+	  strIndex[1] = (i == maxIndex) ? i + 1 : i;
+	}
   }
   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
@@ -1801,43 +1822,43 @@ String getValue(String data, char separator, int index)
   String ChunkReturnVal;
   for (int i = 0; i <= maxIndex && j <= index; i++)
   {
-    if (data[i] == '\"' )
-    {
-      i++;
-      while (i <= maxIndex && data[i] != '\"' ) {
-        chunkVal.concat(data[i]);
-        i++;
-        delay(0);
-      }
-    }
-    else if (data[i] == '|' )
-    {
-      i++;
-      while (i <= maxIndex && data[i] != '|' ) {
-        chunkVal.concat(data[i]);
-        i++;
-        delay(0);
-      }
-    }
-    else
-    {
-      if (data[i] != separator) chunkVal.concat(data[i]);
-    }
+	if (data[i] == '\"' )
+	{
+	  i++;
+	  while (i <= maxIndex && data[i] != '\"' ) {
+		chunkVal.concat(data[i]);
+		i++;
+		delay(0);
+	  }
+	}
+	else if (data[i] == '|' )
+	{
+	  i++;
+	  while (i <= maxIndex && data[i] != '|' ) {
+		chunkVal.concat(data[i]);
+		i++;
+		delay(0);
+	  }
+	}
+	else
+	{
+	  if (data[i] != separator) chunkVal.concat(data[i]);
+	}
 
-    if (data[i] == separator & data[i - 1] != separator)
-    {
-      j++;
-      if (j > index)
-      {
-        //chunkVal.trim();
-        if (chunkVal != String(separator))
-        {
-          ChunkReturnVal = chunkVal;
-          break;
-        }
-      }
-      chunkVal = "";
-    }
+	if (data[i] == separator & data[i - 1] != separator)
+	{
+	  j++;
+	  if (j > index)
+	  {
+		//chunkVal.trim();
+		if (chunkVal != String(separator))
+		{
+		  ChunkReturnVal = chunkVal;
+		  break;
+		}
+	  }
+	  chunkVal = "";
+	}
   }
   //    Serial.println("index");
   //    Serial.println(index);
@@ -1846,7 +1867,7 @@ String getValue(String data, char separator, int index)
   if (j == index + 1)
   {
 
-    return ChunkReturnVal;
+	return ChunkReturnVal;
   }
 }
 
@@ -1871,117 +1892,117 @@ String FetchOpenWeatherMapApi(String URLtoGet, String index)
   int list = index.toInt();
 
   if (list == 0)  // if the index is 0, it takes the first part, the root
-    phase = 3;
+	phase = 3;
 
   if (client.connect(ServerToConnectTo.c_str() , 80))
   {
-    client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
-    delay(300);
+	client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
+	delay(300);
 
-    while (client.available())
-    {
-      delay(0);
-      //delay(1);
-      c = client.read();
-      delay(0);
-      //Serial.print(c);
-      switch (phase)
-      {
-        case 0:
-          if (c == lookforLIST[ptr])
-            ptr++;
-          else
-            ptr = 0;
+	while (client.available())
+	{
+	  delay(0);
+	  //delay(1);
+	  c = client.read();
+	  delay(0);
+	  //Serial.print(c);
+	  switch (phase)
+	  {
+		case 0:
+		  if (c == lookforLIST[ptr])
+			ptr++;
+		  else
+			ptr = 0;
 
-          if (ptr == strlen(lookforLIST))
-          {
-            phase = 1;
-            list = list - 1;
-            if (list == 0)
-            {
-              phase = 2;
-            }
-            //Serial.println("phase 0 OK");
-          }
-          break;
+		  if (ptr == strlen(lookforLIST))
+		  {
+			phase = 1;
+			list = list - 1;
+			if (list == 0)
+			{
+			  phase = 2;
+			}
+			//Serial.println("phase 0 OK");
+		  }
+		  break;
 
-        case 1:
-          if (c == '{')
-            graffe++;
-          else if (c == '}')
-            graffe--;
+		case 1:
+		  if (c == '{')
+			graffe++;
+		  else if (c == '}')
+			graffe--;
 
-          if (graffe == 0)
-          {
-            if ( (c == ',') || (c == ']') )
-              list--;
-          }
-          if (list == 0)
-          {
-            phase = 2;
-            //Serial.println("phase 1 OK");
-          }
-          break;
+		  if (graffe == 0)
+		  {
+			if ( (c == ',') || (c == ']') )
+			  list--;
+		  }
+		  if (list == 0)
+		  {
+			phase = 2;
+			//Serial.println("phase 1 OK");
+		  }
+		  break;
 
-        case 2:
-          s.concat(c);
-          cnt++;
-          if (c == '{')
-            graffe++;
-          else if (c == '}')
-            graffe--;
+		case 2:
+		  s.concat(c);
+		  cnt++;
+		  if (c == '{')
+			graffe++;
+		  else if (c == '}')
+			graffe--;
 
-          if ((graffe == 0) || (cnt > 600)) // max 600 chars
-          {
-            //Serial.println("phase 2 OK");
-            client.stop();
-            return s;
-          }
+		  if ((graffe == 0) || (cnt > 600)) // max 600 chars
+		  {
+			//Serial.println("phase 2 OK");
+			client.stop();
+			return s;
+		  }
 
-          break;
+		  break;
 
-        case 3:    // search the beginning of the message starting with  {"
-          if (c == lookforBEGIN[ptr])
-            ptr++;
-          else
-            ptr = 0;
+		case 3:    // search the beginning of the message starting with  {"
+		  if (c == lookforBEGIN[ptr])
+			ptr++;
+		  else
+			ptr = 0;
 
-          if (ptr == strlen(lookforBEGIN))
-          {
-            cnt = 2;
-            phase = 4;
-            //Serial.println("phase 3 OK");
-            s = F("{\"");
-          }
-          break;
+		  if (ptr == strlen(lookforBEGIN))
+		  {
+			cnt = 2;
+			phase = 4;
+			//Serial.println("phase 3 OK");
+			s = F("{\"");
+		  }
+		  break;
 
-        case 4:
-          s.concat(c);
-          cnt++;
-          if (c == lookforLIST[ptr])
-            ptr++;
-          else
-            ptr = 0;
+		case 4:
+		  s.concat(c);
+		  cnt++;
+		  if (c == lookforLIST[ptr])
+			ptr++;
+		  else
+			ptr = 0;
 
-          if ( (ptr == strlen(lookforLIST)) || (cnt > 1000)) // max 1000 chars
-          {
-            //Serial.println("phase 4 OK");
-            client.stop();
-            s.concat("]}");
-            return s;
-          }
-          break;
-      }
+		  if ( (ptr == strlen(lookforLIST)) || (cnt > 1000)) // max 1000 chars
+		  {
+			//Serial.println("phase 4 OK");
+			client.stop();
+			s.concat("]}");
+			return s;
+		  }
+		  break;
+	  }
 
-      if (client.available() == false)
-      {
-        // if no data, wait for 300ms hoping that new data arrive
-        delay(300);
-      }
+	  if (client.available() == false)
+	  {
+		// if no data, wait for 300ms hoping that new data arrive
+		delay(300);
+	  }
 
-    }//while
-    client.stop();
-    return F("END OF DATA REACHED");
+	}//while
+	client.stop();
+	return F("END OF DATA REACHED");
 
   }
   client.stop();
@@ -2011,32 +2032,32 @@ String FetchWebUrl(String URLtoGet, int PortNoForPage)
 
   if (client.connect(ServerToConnectTo.c_str() , PortNoForPage))
   {
-    client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
-    // wait for maximum 12 x 300msec = 3.6 seconds
-    while ( ! client.available() && numberOwebTries < 12 ) {
-      numberOwebTries++;
-      delay(300);   // 300ms
-    }
+	client.print(String("GET " + PageToGet + " HTTP/1.1\r\nHost: " +  ServerToConnectTo + "\r\n\r\n"));
+	// wait for maximum 12 x 300msec = 3.6 seconds
+	while ( ! client.available() && numberOwebTries < 12 ) {
+	  numberOwebTries++;
+	  delay(300);   // 300ms
+	}
 
-    while (client.available())
-    {
-      delay(0);
-      if (str.endsWith(String("\r\n\r\n")))  str = "";
+	while (client.available())
+	{
+	  delay(0);
+	  if (str.endsWith(String("\r\n\r\n")))  str = "";
 
-      str.concat( (const char)client.read());
-      delay(0);
-      if (client.available() == false)
-      {
-        // if no data, wait for 300ms hoping that new data arrive
-        delay(300);
-      }
+	  str.concat( (const char)client.read());
+	  delay(0);
+	  if (client.available() == false)
+	  {
+		// if no data, wait for 300ms hoping that new data arrive
+		delay(300);
+	  }
 
-    }
+	}
 
 
 
-    client.stop();
-    return str.substring(0, str.indexOf(String(String(char(10)) + "0" )  ));
+	client.stop();
+	return str.substring(0, str.indexOf(String(String(char(10)) + "0" )  ));
   }
   client.stop();
   return "";
@@ -2049,8 +2070,8 @@ void serialFlush()
 
   while (Serial.available() > 0)
   {
-    delay(0);
-    char t = Serial.read();
+	delay(0);
+	char t = Serial.read();
   }
 }
 
@@ -2062,7 +2083,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
 
   for (int i = 0; i < length; i++) 
   {
-    MQTTNewMSg = String(MQTTNewMSg + (char)payload[i]);
+	MQTTNewMSg = String(MQTTNewMSg + (char)payload[i]);
 	delay(0);
   }
 
@@ -2080,8 +2101,8 @@ void MQTTreconnect() {
   while (!MQTTclient.connected()) {
 	reconnectAttempts++;
 	if (reconnectAttempts > 3) return;
-    if (MQTTclient.connect("ESP8266Client")) {
-      MQTTclient.subscribe(MQTTSubscribeTopic.c_str());
+	if (MQTTclient.connect("ESP8266Client")) {
+	  MQTTclient.subscribe(MQTTSubscribeTopic.c_str());
 	  if (MQTTPublishTopic != "") 
 	  {
 		  bool MQTTSendSucess = 0;
@@ -2104,11 +2125,11 @@ void MQTTreconnect() {
 		  
 	  }
 	  //MQTTclient.loop();
-      //Serial.println("connected");
-    } else {
-      Serial.print("failed, rc=");
-      Serial.println(MQTTclient.state());
-      delay(0);
-    }
+	  //Serial.println("connected");
+	} else {
+	  Serial.print("failed, rc=");
+	  Serial.println(MQTTclient.state());
+	  delay(0);
+	}
   } 
 }

@@ -156,6 +156,65 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  =  UniversalPinIO(*args_str[0], String(args[1]),  args[2]);
     return PARSER_TRUE;
   }
+  
+  
+  
+  else if ( fname == F("telnet.client.connect") && num_args >= 1 ) {
+    // Tellnet client connection setup.
+	if (args_str[0] != NULL & args[1] != NULL) 
+	{
+		*value  = clientTelnet.connect( String(*args_str[0]).c_str(), (int)args[1]);
+		 return PARSER_TRUE;
+	}
+	else if (args_str[0] != NULL )
+	{
+		*value  = clientTelnet.connect(  String(*args_str[0]).c_str(), 23);
+		 return PARSER_TRUE;
+	}
+	SendErrorMsg(F("Missing arguments!"));
+    return PARSER_FALSE;
+  }
+  else if ( fname == F("telnet.client.available") && num_args == 0 ) {
+    // Tellnet client connection setup.
+	*value  = clientTelnet.available();
+	 return PARSER_TRUE;
+  }
+  else if ( fname == F("telnet.client.read.chr") && num_args == 0 ) {
+    // Tellnet client connection setup.
+	*value_str  = "";
+	if (clientTelnet.available()) *value_str = (char) clientTelnet.read();
+    return PARSER_STRING;
+  }
+  else if ( fname == F("telnet.client.read.str") && num_args == 0 ) {
+    // Tellnet client connection setup.
+	*value_str  = "";
+	while (clientTelnet.available())
+	{
+		*value_str += (char) clientTelnet.read();
+		delay(0);
+	}
+    return PARSER_STRING;
+  }
+  else if ( fname == F("telnet.client.write") && num_args == 1 ) {
+    // Tellnet client connection setup.
+	if (args_str[0] != NULL) 
+	{
+		*value  = clientTelnet.write( String(*args_str[0]).c_str(),  String(*args_str[0]).length());
+		return PARSER_TRUE;
+	}
+	
+  }  
+  else if ( fname == F("telnet.client.stop") && num_args == 0 ) {
+    // Tellnet client connection setup.
+	*value  = 0;
+	clientTelnet.stop();
+	 return PARSER_TRUE;
+  }
+  
+  
+  
+  
+  
   else if ( fname == F("millis") && num_args == 0 ) // the function is millis()
   {
     // set return value and return true
@@ -1121,6 +1180,63 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
   }
+  
+/*     else if (fname.startsWith(F("oled.")) )      // block TFT functions; this reduces the number of compares
+  {
+    fname = fname.substring(5); // skip the term tft.
+    if ( fname == F("color") && num_args == 1 ) {
+      // function tft.fill(color)   fill the screen with the color (565)
+	  if (args[0] == 0) display.setColor(BLACK);
+	  if (args[0] == 1) display.setColor(WHITE);
+      return PARSER_TRUE;
+    }
+    else if ( fname == F("cls") && num_args == 0 ) {
+      // function tft.fill(color)   fill the screen with the color (565)
+      display.clear();
+	  display.display();
+      return PARSER_TRUE;
+    }
+    else if ( fname == F("rect") && num_args == 4) {
+      // function tft.rect(x, y, width, height, color)
+      display.drawRect(args[0], args[1], args[2], args[3]);
+	  display.display();
+      return PARSER_TRUE;
+    }
+    else if ( fname == F("rect.fill") && num_args == 4 ) {
+      // function tft.rect.fill(x, y, width, height, color)
+      display.fillRect(args[0], args[1], args[2], args[3]);
+	  display.display();
+      return PARSER_TRUE;
+    }
+    else if ( fname == F("circle") && num_args == 3 ) {
+      // function tft.circle(x, y, radius, color)
+      display.drawCircle(args[0], args[1], args[2]);
+	  display.display();
+      return PARSER_TRUE;
+    }
+    else if ( fname == F("circle.fill") && num_args == 3 ) {
+      // function tft.circle.fill(x, y, radius, color)
+      display.fillCircle(args[0], args[1], args[2]);
+	  display.display();
+      return PARSER_TRUE;
+    }
+
+    else if ( fname == F("print") && num_args >= 1) {
+      // function tft.text.size(size)
+      if (args[1] != NULL & args[2] !=NULL & args_str[0] != NULL) {
+		  display.drawString(args[1], args[2], *args_str[0]);
+		  display.display();
+		  }
+      else if ( args_str[1] != NULL) {
+		  display.drawString(0, 0, *args_str[0]);
+		  display.display();
+		  }	  
+	display.display();
+      return PARSER_STRING;
+    }  
+  } */
+  
+  
   else if (fname.startsWith(F("tft.")) )      // block TFT functions; this reduces the number of compares
   {
     fname = fname.substring(4); // skip the term tft.
@@ -1485,6 +1601,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
 #endif
   }
+  
+  
+  
+  
+  
   else if (fname.startsWith(F("debug.")) )      // block DEBUG functions; this reduces the number of compares
   {
     fname = fname.substring(6); // skip the term debug.

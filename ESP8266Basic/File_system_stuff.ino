@@ -28,7 +28,7 @@ String LoadDataFromFile(String fileNameForSave)
   {
     fileOpenFail = 1;
     //Serial.print("file open failed  :");
-    Serial.println(fileNameForSave);
+    //Serial.println(fileNameForSave);
   }
   else
   {
@@ -37,61 +37,10 @@ String LoadDataFromFile(String fileNameForSave)
     WhatIwillReturn.replace("\n", "");
     f.close();  
   }
-  Serial.println(String("Data Read " + WhatIwillReturn));
+  //Serial.println(String("Data Read " + WhatIwillReturn));
   return WhatIwillReturn;
 }
 
-
-
-/*
-String BasicProgram___(int LineNumberToLookUp)
-{
-  if (ProgramName == "")
-  {
-    ProgramName = F("default");
-  }
-  delay(0);
-
-  return LoadDataFromFile(String(ProgramName  + "/" + String(LineNumberToLookUp))) ;
-  delay(0);
-}
-
-
-void BasicProgramWriteLine(int LineNumberToLookUp, String DataToWriteForProgramLine)
-{
-  if (ProgramName == "")
-  {
-    ProgramName = F("default");
-  }
-  delay(0);
-  SaveDataToFile(String(ProgramName  + "/" +  String(LineNumberToLookUp)), DataToWriteForProgramLine);
-  delay(0);
-}
-
-
-void LoadBasicProgramFromFlash__(String fileNameForSave)
-{
-  String lineToBeWrittenToFile;
-  SPIFFS.begin();
-  File f = SPIFFS.open(String("uploads/" + fileNameForSave), "r");
-  if (!f)
-  {
-    PrintAndWebOut(F("file open failed"));
-  }
-  else
-  {
-    for (int i = 0; i <= TotalNumberOfLines; i++)
-    {
-
-      lineToBeWrittenToFile = f.readStringUntil('\r');
-      lineToBeWrittenToFile.replace("\n", "");
-      BasicProgramWriteLine(i,lineToBeWrittenToFile );
-    }
-    f.close();
-  }
-  return;
-}
-*/
 //////////// New file stuff by CiccioCB /////////////
 
 static File BasicFileToSave;

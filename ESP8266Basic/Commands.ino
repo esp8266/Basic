@@ -890,6 +890,11 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("wait"))
   {
+	if (NewGuiItemAddedSinceLastWait == 1) 
+	{
+		NewGuiItemAddedSinceLastWait = 0;
+		WebSocketSend(  "guicls");
+	}
     WaitForTheInterpertersResponse = 1;
     return;
   }
@@ -919,6 +924,7 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("graphics"))
   {
+	NewGuiItemAddedSinceLastWait = 1;
     GraphicsEliments[0][1] = evaluate(Param1).toInt();
     GraphicsEliments[0][2] = evaluate(Param2).toInt();
     HTMLout += F("**graphics**");

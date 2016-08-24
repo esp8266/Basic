@@ -1679,11 +1679,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
   }
 
-  else if ( (i = Search_Array(fname)) != -1) // check if is an array
+  else if ( (i = Search_Array(String(name))) != -1) // check if is an array
   {
     if ( num_args == 0) // the array is just defined as a name without arguments such as a$()
     {
-      SendErrorMsg(String(F("Array without argument ")) + fname  + String(i));
+      SendErrorMsg(String(F("Array without argument ")) + String(name)  + String(i));
       return PARSER_FALSE;
     }
     else if ( num_args == 1)

@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
 #include <avr/pgmspace.h>
 
-#define swap(a, b) { uint8_t t = a; a = b; b = t; }
+#define swap(a, b) { float t = a; a = b; b = t; }
 
 #define I2C_ADDRESS_SA0_0 0b0111100
 #define I2C_ADDRESS_SA0_1 0b0111101
@@ -124,81 +124,81 @@ typedef enum COMM_MODE{
 class MicroOLED : public Print{
 public:
 	// Constructor(s)
-	MicroOLED(uint8_t rst, uint8_t dc, uint8_t cs);
-	MicroOLED(uint8_t rst, uint8_t dc);
-	MicroOLED(uint8_t rst, uint8_t dc, uint8_t cs, uint8_t wr, uint8_t rd, 
-			  uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, 
-			  uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
+	MicroOLED(float rst, float dc, float cs);
+	MicroOLED(float rst, float dc);
+	MicroOLED(float rst, float dc, float cs, float wr, float rd, 
+			  float d0, float d1, float d2, float d3, 
+			  float d4, float d5, float d6, float d7);
 	
 	void begin(void);
 	virtual size_t write(uint8_t);
 
 	// RAW LCD functions
-	void command(uint8_t c);
-	void data(uint8_t c);
-	void setColumnAddress(uint8_t add);
-	void setPageAddress(uint8_t add);
+	void command(float c);
+	void data(float c);
+	void setColumnAddress(float add);
+	void setPageAddress(float add);
 	
 	// LCD Draw functions
-	void clear(uint8_t mode);
-	void clear(uint8_t mode, uint8_t c);
+	void clear(float mode);
+	void clear(float mode, float c);
 	void invert(boolean inv);
-	void contrast(uint8_t contrast);
+	void contrast(float contrast);
 	void display(void);
-	void setCursor(uint8_t x, uint8_t y);
-	void pixel(uint8_t x, uint8_t y);
-	void pixel(uint8_t x, uint8_t y, uint8_t color, uint8_t mode);
-	void line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
-	void line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color, uint8_t mode);
-	void lineH(uint8_t x, uint8_t y, uint8_t width);
-	void lineH(uint8_t x, uint8_t y, uint8_t width, uint8_t color, uint8_t mode);
-	void lineV(uint8_t x, uint8_t y, uint8_t height);
-	void lineV(uint8_t x, uint8_t y, uint8_t height, uint8_t color, uint8_t mode);
-	void rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
-	void rect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color , uint8_t mode);
-	void rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
-	void rectFill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color , uint8_t mode);
-	void circle(uint8_t x, uint8_t y, uint8_t radius);
-	void circle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color, uint8_t mode);
-	void circleFill(uint8_t x0, uint8_t y0, uint8_t radius);
-	void circleFill(uint8_t x0, uint8_t y0, uint8_t radius, uint8_t color, uint8_t mode);
-	void drawChar(uint8_t x, uint8_t y, uint8_t c);
-	void drawChar(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t mode);
-	void drawBitmap(uint8_t * bitArray);
-	uint8_t getLCDWidth(void);
-	uint8_t getLCDHeight(void);
-	void setColor(uint8_t color);
-	void setDrawMode(uint8_t mode);
-	uint8_t *getScreenBuffer(void);
+	void setCursor(float x, float y);
+	void pixel(float x, float y);
+	void pixel(float x, float y, float color, float mode);
+	void line(float x0, float y0, float x1, float y1);
+	void line(float x0, float y0, float x1, float y1, float color, float mode);
+	void lineH(float x, float y, float width);
+	void lineH(float x, float y, float width, float color, float mode);
+	void lineV(float x, float y, float height);
+	void lineV(float x, float y, float height, float color, float mode);
+	void rect(float x, float y, float width, float height);
+	void rect(float x, float y, float width, float height, float color , float mode);
+	void rectFill(float x, float y, float width, float height);
+	void rectFill(float x, float y, float width, float height, float color , float mode);
+	void circle(float x, float y, float radius);
+	void circle(float x, float y, float radius, float color, float mode);
+	void circleFill(float x0, float y0, float radius);
+	void circleFill(float x0, float y0, float radius, float color, float mode);
+	void drawChar(float x, float y, float c);
+	void drawChar(float x, float y, float c, float color, float mode);
+	void drawBitmap(float * bitArray);
+	float getLCDWidth(void);
+	float getLCDHeight(void);
+	void setColor(float color);
+	void setDrawMode(float mode);
+	float *getScreenBuffer(void);
 
 	// Font functions
-	uint8_t getFontWidth(void);
-	uint8_t getFontHeight(void);
-	uint8_t getTotalFonts(void);
-	uint8_t getFontType(void);
-	uint8_t setFontType(uint8_t type);
-	uint8_t getFontStartChar(void);
-	uint8_t getFontTotalChar(void);
+	float getFontWidth(void);
+	float getFontHeight(void);
+	float getTotalFonts(void);
+	float getFontType(void);
+	float setFontType(float type);
+	float getFontStartChar(void);
+	float getFontTotalChar(void);
 
 	// LCD Rotate Scroll functions	
-	void scrollRight(uint8_t start, uint8_t stop);
-	void scrollLeft(uint8_t start, uint8_t stop);
-	void scrollVertRight(uint8_t start, uint8_t stop);
-	void scrollVertLeft(uint8_t start, uint8_t stop);
+	void scrollRight(float start, float stop);
+	void scrollLeft(float start, float stop);
+	void scrollVertRight(float start, float stop);
+	void scrollVertLeft(float start, float stop);
 	void scrollStop(void);
 	void flipVertical(boolean flip);
 	void flipHorizontal(boolean flip);
 	
 private:
-	uint8_t csPin, dcPin, rstPin;
-	uint8_t wrPin, rdPin, dPins[8];
-	volatile uint8_t *wrport, *wrreg, *rdport, *rdreg;
-	uint8_t wrpinmask, rdpinmask;
+	float csPin, dcPin, rstPin;
+	float wrPin, rdPin, dPins[8];
+	volatile float *wrport, *wrreg, *rdport, *rdreg;
+	float wrpinmask, rdpinmask;
 	micro_oled_mode interface;
 	byte i2c_address;
-	volatile uint8_t *ssport, *dcport, *ssreg, *dcreg;	// use volatile because these are fixed location port address
-	uint8_t mosipinmask, sckpinmask, sspinmask, dcpinmask;
-	uint8_t foreColor,drawMode,fontWidth, fontHeight, fontType, fontStartChar, fontTotalChar, cursorX, cursorY;
+	volatile float *ssport, *dcport, *ssreg, *dcreg;	// use volatile because these are fixed location port address
+	float mosipinmask, sckpinmask, sspinmask, dcpinmask;
+	float foreColor,drawMode,fontWidth, fontHeight, fontType, fontStartChar, fontTotalChar, cursorX, cursorY;
 	uint16_t fontMapWidth;
 	static const unsigned char *fontsPointer[];
 	

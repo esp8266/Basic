@@ -1644,7 +1644,7 @@ void ExicuteTheCurrentLine()
     if (eq != -1) // the '=' is present on the line; so this should be an array init
     {
       //{  PrintAndWebOut(F("Array: missing = on the line"));  return; }
-      Param1 = Param0.substring(0, r); // array name
+      Param1 = getValue(inData, ' ', 0).substring(0, r); // array name
       Param1.trim();
       Param2 = inData.substring(r + 1 , i); // arguments
       r = ExtractArguments(Param2);

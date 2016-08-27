@@ -23,6 +23,13 @@ void StartUp_OLED()
   displayOn();
 }
 
+void StartUp_OLED_AFTER_I2C_REMAP()
+{
+  init_OLED();
+  reset_display();
+  displayOff();
+  displayOn();
+}
 
 void displayOn(void)
 {

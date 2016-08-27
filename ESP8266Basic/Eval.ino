@@ -999,6 +999,18 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value_str  =  String(Wire.read());
       return PARSER_STRING;
     }
+    else if ( fname == F("setup") && num_args == 2 ) {
+      // function i2c.read()
+      // set return value
+	  Wire.begin(args[0], args[1]);
+	  StartUp_OLED_AFTER_I2C_REMAP();
+	  lcd.begin(16, 2);
+      *value  =  1;
+      return PARSER_TRUE;;
+    }
+	
+	
+	
   }
   else if ( fname == F("htmlvar") && num_args > 0 ) {
     // function json(buffer, key)

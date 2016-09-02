@@ -1082,6 +1082,17 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value = 0;
       return PARSER_TRUE;
     }
+	
+    else if ( fname == F("setfrequency") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
+	SPI.setFrequency(args[0]);
+      *value = -1;
+      return PARSER_TRUE;
+    }	
+	
+
+	
+	
+	
     else if ( fname == F("byte") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
       *value = SPI.transfer(args[0]);
       return PARSER_TRUE;

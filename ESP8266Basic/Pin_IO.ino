@@ -28,8 +28,10 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
 
   if (PinCommand != F("po") & PinCommand != F("pi") & PinCommand != F("pwi") & PinCommand != F("pwo") & PinCommand != F("servo") & PinCommand != "")
   {
+	  
     PinListOfStatus[pin] = PinCommand;
     PinCommand = F("pi");
+	SetThePinMode(PinCommand, pin);
   }
   else
   {
@@ -37,12 +39,14 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
     {
       if ((PinListOfStatus[pin] == F("po")) | ( PinListOfStatus[pin] == F("pi")) | (PinListOfStatus[pin] == F("pwi")) | (PinListOfStatus[pin] == F("pwo"))  | (PinListOfStatus[pin] == F("servo")) | ( PinListOfStatus[pin] == ""))
       {
+		  SetThePinMode(PinCommand, pin);
         PinListOfStatus[pin] = PinCommand;
       }
 
     }
     else
     {
+		SetThePinMode(PinCommand, pin);
       PinListOfStatus[pin] = PinCommand;
     }
   }
@@ -51,7 +55,7 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
 
 
   PinListOfStatusValues[pin] = PinValue;
-  SetThePinMode(PinCommand, pin);
+  
   if (PinCommand == F("po")) digitalWrite(pin, PinValue);
   else if (PinCommand == F("pi")) {
     PinListOfStatusValues[pin] = digitalRead(pin);
@@ -70,6 +74,9 @@ float UniversalPinIO(String PinCommand, String PinDesignaor, float PinValue)
 
 void SetThePinMode(String PinCommand, byte pin)
 {
+  if (PinListOfStatus[pin] == PinCommand) return;
+  if (PinListOfStatus[pin].startsWith("[") & PinCommand == "pi") return;
+  
   delay(0);
 
   pinMode(pin, OUTPUT);

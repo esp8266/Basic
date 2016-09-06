@@ -269,14 +269,24 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     return PARSER_STRING;
   }
 
-  else if ( fname == F("timesetup") && num_args > 0 ) {
+  else if ( (fname == F("timesetup") | fname == F("time.setup")) && num_args > 0 ) {
     String bla;
     SaveDataToFile("TimeZone", String(args[0]));
-    SaveDataToFile("DaylightSavings", String(args[1]));
-    configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
+	if (num_args >= 2) {SaveDataToFile("DaylightSavings", String(args[1])); }else {SaveDataToFile("DaylightSavings", String(F("0")));}
+	if (num_args == 3)
+	{
+		SaveDataToFile("TimeServer", String(args[2]));
+		configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), LoadDataFromFile("TimeServer").c_str(), "pool.ntp.org"); 		
+	}
+	else
+	{
+		configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), "pool.ntp.org", "time.nist.gov");
+	}
     *value_str = "";
     return PARSER_STRING;
   }
+
+
   else if ( fname == F("mid") && num_args == 2 ) {
     // example of the mid(string, start)
     // set return value

@@ -327,7 +327,7 @@ function start(websocketServerLocation) {
 	};
 	connection.onclose = function() {
 		setTimeout(function() {
-			tart(websocketServerLocation)
+			start(websocketServerLocation)
 		}, 1000);
 		document.getElementById("connection_status").value = "Disconnected";
 	};

@@ -117,7 +117,7 @@ int IRBranchLine = 0;
 Adafruit_ILI9341 *tft = NULL; //= Adafruit_ILI9341(TFT_CS, TFT_DC);
 byte TFT_CS_pin, TFT_DC_pin;
 #include "TFT_Objects.h"
-TFT_Form form1(20);
+TFT_Form form1(40);
 
 // touch stuff
 byte Touch_CS_pin;
@@ -434,7 +434,7 @@ function aliveTimer() {
 }
 
 window.onload = function makeVarList() {
-	for (xxx = 0; xxx < 51; xxx++) {
+	for (xxx = 0; xxx < 101; xxx++) {
 		add(xxx.toString(), "");
 	}
 	var arrayOfLines = localStorage.getItem("lastcode").split("\n");
@@ -670,7 +670,7 @@ int  program_nb_lines = 0;                      //this is the number of program 
 int LastVarNumberLookedUp;                                 //Array to hold all of the basic variables
 bool VariableLocated;
 
-const int TotalNumberOfVariables = 50;
+const int TotalNumberOfVariables = 100;
 #define VariablesNameLength  30
 #include "Classes.h"
 
@@ -1575,7 +1575,7 @@ void RunBasicTillWait()
 
   
   
-  if (TimerWaitTime + timerLastActiveTime <= millis() &&  TimerWaitTime != 0)
+  if (TimerWaitTime + timerLastActiveTime <= millis() &&  TimerWaitTime != 0  & WaitForTheInterpertersResponse )
   {
 	inData = String(" goto " + TimerBranch + " ");
 	WaitForTheInterpertersResponse = 0;

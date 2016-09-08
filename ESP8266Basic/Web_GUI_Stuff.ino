@@ -56,7 +56,8 @@ void PrintAndWebOut(String itemToBePrinted)
   itemToBePrinted.replace(' ' , char(160));
   //if ( WebGuiOff == 1 ){return;}
   if ( WebGuiOff == 2 ){HTMLout = "";return;}
-  if (HTMLout.length() < 4000)
+
+  if (HTMLout.length() < 4000 | ESP.getFreeHeap() < 5000)
     HTMLout = String(HTMLout + "<hr>" + itemToBePrinted);
   else
   {

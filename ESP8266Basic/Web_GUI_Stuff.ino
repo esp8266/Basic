@@ -31,8 +31,9 @@ String RunningProgramGui()
     WebOut.replace(String(F("VARS|")) + String(i), AllMyVariables[i].getVar());
   }
   
-  
+  #if defined(BASIC_TFT)
   WebOut.replace(F("**graphics**"), F("<iframe src='graphics.htm' style='border:none' name='gra' width='*gwid*' height='*ghei*' scrolling='no'></iframe>"));
+  #endif
   WebOut.replace(F("*gwid*"),  String(GraphicsEliments[0][1]));
   WebOut.replace(F("*ghei*"),  String(GraphicsEliments[0][2]));
   WebOut.replace(F("*speed*"),  String(debugDelaySpeed));
@@ -110,7 +111,7 @@ void SendAllTheVars()
 
 
 
-
+#if defined(BASIC_TFT)
 String BasicGraphics()
 {
   String BasicGraphicsOut;
@@ -177,7 +178,7 @@ String BasicGraphics()
   BasicGraphicsOut += "</svg>";
   return BasicGraphicsOut;
 }
-
+#endif
 
 
 
@@ -261,7 +262,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       // Serial.print(" get text ");
 
       //Serial.println(WebSockMessage);
-
+#if defined(BASIC_TFT)
       if (WebSockMessage == F("cmd:stop"))
       {
         HaltBasic("");
@@ -297,7 +298,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         //WaitForTheInterpertersResponse = 0;
         break;
       }
-
+#endif
 
       if (WebSockMessage.startsWith(F("guievent:")))
       {

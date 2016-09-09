@@ -47,7 +47,9 @@ void clear_stacks()
   return_Stack.clear(); // clear the return stack
   forNextStack.clear(); // clear the for next stack
   doLoopStack.clear(); // clear the do loop stack
+  #if defined(BASIC_TFT)
   form1.clear();
+  #endif
 }
 
 void HaltBasic(String err_mess)
@@ -542,7 +544,7 @@ void ExicuteTheCurrentLine()
 
 
 
-
+ #if defined(BASIC_TFT)
   //i2c led display
   if (Param0 == "oledprint")
   {
@@ -618,7 +620,7 @@ void ExicuteTheCurrentLine()
   }
 
   //end i2c 1602 lcd display code
-
+ #endif
 
 
 
@@ -711,7 +713,7 @@ void ExicuteTheCurrentLine()
 	VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "", PARSER_STRING);
+      SetMeThatVar(Param1, "0", PARSER_STRING);
       GetMeThatVar(Param1);
     }
     tempSlider.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
@@ -732,7 +734,7 @@ void ExicuteTheCurrentLine()
 	VarialbeLookup(Param1);
     if (VariableLocated == 0)
     {
-      SetMeThatVar(Param1, "", PARSER_STRING);
+      SetMeThatVar(Param1, "0", PARSER_STRING);
       GetMeThatVar(Param1);
     }
     tempMeter.replace(F("variablevalue"),  String(F("VARS|")) + String(LastVarNumberLookedUp));
@@ -921,7 +923,7 @@ void ExicuteTheCurrentLine()
 
 
   //All of my graphis engeine commands
-
+#if defined(BASIC_TFT)
   if (Param0 == F("graphics"))
   {
 	NewGuiItemAddedSinceLastWait = 1;
@@ -1012,7 +1014,7 @@ void ExicuteTheCurrentLine()
     GraphicsEliments[i][5] = evaluate(Param5).toInt();
     return;
   }
-
+#endif
 
   if (Param0 == F("input"))
   {
@@ -1114,7 +1116,10 @@ void ExicuteTheCurrentLine()
     Serial2BranchLine = abs(Serial2BranchLine); // restore the serial2branch command
     IRBranchLine = abs(IRBranchLine); // restore the IRbranch command
     TimerCBBranchLine = abs(TimerCBBranchLine); // restore the timercb command
-    TouchBranchLine = abs(TouchBranchLine); // restore the TouchBranch command
+	
+    #if defined(BASIC_TFT)
+	TouchBranchLine = abs(TouchBranchLine); // restore the TouchBranch command
+	#endif
     WebSockEventBranchLine = abs(WebSockEventBranchLine); // restore the websockevent command
     WebSockChangeBranchLine = abs(WebSockChangeBranchLine); // restore the websockchange command
     webSocket.loop();
@@ -1127,7 +1132,9 @@ void ExicuteTheCurrentLine()
     clear_stacks();
 	WebGuiOff = 0;
 	IRBranchLine = 0;
+	#if defined(BASIC_TFT)
 	TouchBranchLine = 0;
+	#endif
 	WebSockEventBranchLine = 0;
 	telnetBranch = 0;
 	
@@ -1168,7 +1175,9 @@ void ExicuteTheCurrentLine()
     clear_stacks();
 	WebGuiOff = 0;
 	IRBranchLine = 0;
+	#if defined(BASIC_TFT)
 	TouchBranchLine = 0;
+	#endif
 	WebSockEventBranchLine = 0;
 	telnetBranch = 0;
 	TimerWaitTime = 0;
@@ -1472,7 +1481,7 @@ void ExicuteTheCurrentLine()
     SendErrorMsg(F("WebSockChangeBranch line not found!"));
     return;
   }
-
+#if defined(BASIC_TFT)
   if (Param0 == F("touchbranch"))
   {
     TouchBranchLine = 0;
@@ -1486,7 +1495,7 @@ void ExicuteTheCurrentLine()
     return;
   }
   ////////////////////////////
-
+#endif
   /////// NEW mid STUFF //////
   if ( Param0.startsWith(F("mid(")) )
   {

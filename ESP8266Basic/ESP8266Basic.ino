@@ -1,3 +1,5 @@
+
+
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
 //
@@ -30,6 +32,16 @@
 //JSON parsing routine added by cicciocb
 
 
+
+// Comment or uncomment following lines to produce a custom build omitting features.
+
+
+
+
+
+
+
+
 #include <WebSocketsServer.h>
 #include <Hash.h>
 #include <WebSockets.h>
@@ -54,19 +66,23 @@
 #include "Base64.h"
 
 //#include <WiFiClientSecure.h>
+#if defined(BASIC_TFT)
 #include "ESP8266httpUpdate.h"
+#endif
 #include <time.h>
 #include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
 
 
 //LCD Stuff
+ #if defined(BASIC_TFT)
 #include <LiquidCrystal_SR.h>
 #include <I2CIO.h>
 #include <LiquidCrystal.h>
 #include <LiquidCrystal_SR3W.h>
 #include <LCD.h>
 #include <LiquidCrystal_SR2W.h>
+#endif
 //#include <FastIO.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -107,6 +123,9 @@ IRrecv *irrecv = NULL;
 decode_results IRresults;
 int IRBranchLine = 0;
 
+
+
+#if defined(BASIC_TFT)
 //ILI9341 Stuff
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
@@ -126,6 +145,7 @@ int Touch_p = 0;
 unsigned int Touch_millis = 0;
 uint16_t touchX, touchY;
 uint16_t touchX_raw, touchY_raw;
+#endif
 
 // The Math precision is defined, by default, inside expression_parser_string.h
 // there is a definition PARSER_PREC that can be double or float
@@ -145,7 +165,11 @@ DallasTemperature sensors(&oneWire);
 //DHT dht(5, DHT21);   // 5 is GPIO5, DHT21 you may want change at DHT11 or DHT22
 DHT *dht = NULL;
 
+
+ #if defined(BASIC_TFT)
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2C address
+#endif
+
 // i2c OLED Display
 
 
@@ -217,6 +241,8 @@ PROGMEM const char meter[] =  R"=====(<meter id="myid" name="variablenumber" val
 String LastElimentIdTag;
 
 PROGMEM const char MobileFreindlyWidth[] = R"=====(<meta name="viewport" content="width=device-width, initial-scale=1.0">)=====";
+
+ #if defined(BASIC_TFT)
 PROGMEM const char DebugPage[] =  R"=====(</script><script src='WebSockets.js'></script>
 <div id="fooBar" style="float:left; width:20%;">Vars<hr></div>
 <DIV style="float:left; width:35%;">
@@ -234,12 +260,16 @@ Speed
 </DIV>
 <div id="app" style="float:left; width:40%;">
 )=====";
-
+#else
+PROGMEM const char DebugPage[] =  R"=====( )=====";
+#endif
 
 
 
 byte WaitForTheInterpertersResponse = 1;
 
+
+ #if defined(BASIC_TFT)
 PROGMEM const char AdminBarHTML[] = R"=====(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="/file?file=skin.css">
@@ -250,7 +280,15 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 <a href="./settings">[ SETTINGS ]</a>
 <a href="./filemng">[ FILE MANAGER ]</a>
 <hr>)=====";
-
+#else
+PROGMEM const char AdminBarHTML[] = R"=====(
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<a href="./edit">[ EDIT ]</a>
+<a href="./run">[ RUN ]</a>
+<a href="./settings">[ SETTINGS ]</a>
+<a href="./filemng">[ FILE MANAGER ]</a>
+<hr>)=====";
+#endif
 
 
 PROGMEM const char UploadPage[] = R"=====(
@@ -625,6 +663,7 @@ Log In Key
 
 
 //Graphics HTML CODE
+#if defined(BASIC_TFT)
 
 PROGMEM const char GraphicsStartCode[] =  R"=====(<svg width="*wid*" height="*hei*">)=====";
 
@@ -637,7 +676,7 @@ PROGMEM const char GraphicsEllipseCode[] =  R"=====(<ellipse cx="*x1*" cy="*y1*"
 PROGMEM const char GraphicsRectangleCode[] =  R"=====(<rect x="*x1*" y="*y1*" width="*x2*" height="*y2*" style="fill:*collor*"/>)=====";
 
 PROGMEM const char GraphicsTextCode[] =  R"=====(<text x="*x1*" y="*y1*" style="fill:*collor*" transform="rotate(*x2* *x1*,*y1*)">*text*</text>)=====";
-
+#endif
 
 
 byte numberButtonInUse = 0;
@@ -782,7 +821,7 @@ void setup() {
   });
 
 
-
+#if defined(BASIC_TFT)
   server->on("/vars", []()
   {
 	String WebOut = AdminBarHTML;
@@ -813,7 +852,7 @@ void setup() {
 
 	server->send(200, "text/html", WebOut);
   });
-
+#endif
 
   server->on("/run", []()
   {
@@ -835,6 +874,7 @@ void setup() {
 	server->send(200, "text/html", WebOut);
   });
 
+  #if defined(BASIC_TFT)
   server->on("/debug", []()
   {
 	clientTelnet.stop();
@@ -854,15 +894,15 @@ void setup() {
 	server->send(200, "text/html", WebOut);
 
   });
+  #endif
   
   
-  
-
+#if defined(BASIC_TFT)
   server->on("/graphics.htm", []()
   {
 	server->send(200, "text/html", BasicGraphics());
   });
-
+#endif
 
   server->onFileUpload(handleFileUpdate);
 
@@ -1119,12 +1159,11 @@ void setup() {
   Wire.begin(0, 2);
 
   //  keyboard.begin(14, 12); //For PS2 keyboard input
+ #if defined(BASIC_TFT)
+  StartUp_OLED();
 
-StartUp_OLED();
-  
-//  display.init();
-//  display.setFont(ArialMT_Plain_10);
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
+#endif
   sensors.begin();
 
   LoadBasicProgramFromFlash( ProgramName);
@@ -1179,7 +1218,7 @@ String SettingsPageHandeler()
 
 	if ( server->arg("restart") == F("Restart") ) ESP.restart();
 
-
+    #if defined(BASIC_TFT)
 	if ( server->arg("update") == F("Update") )
 	{
 
@@ -1202,7 +1241,7 @@ String SettingsPageHandeler()
 	  //t_httpUpdate_return  ret = ESPhttpUpdate.update("cdn.rawgit.com", 80, "/esp8266/Basic/master/Flasher/Build/4M/ESP8266Basic.cpp.bin");
 
 	}
-
+    #endif
 
 	if ( server->arg("save") == F("Save") )
 	{
@@ -1758,6 +1797,7 @@ void CheckForUdpData()
 	  TimerCBBranchLine = - TimerCBBranchLine; // this is to avoid to go again inside the branch; it will be restored back by the return command
 	}
   }
+  #if defined(BASIC_TFT)
   if (TouchBranchLine > 0)
   {
 	if ( millis() > (Touch_millis + 100) ) 
@@ -1790,6 +1830,7 @@ void CheckForUdpData()
 	  Touch_p = tt;
 	}
   }  
+  #endif
 }
 
 String getValueforPrograming(String data, char separator, int index)

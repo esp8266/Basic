@@ -2,6 +2,7 @@
 // Lightweight Mike-Rankin OLED routines added in this project, Credits to Mike for this.
 // http://www.esp8266.com/viewtopic.php?f=29&t=3256
 
+ #if defined(BASIC_TFT)
 #include "font.h"
 #define OLED_address  0x3c  //OLED I2C bus address... even if OLED states 0x78 !!!
 
@@ -198,4 +199,4 @@ static void init_OLED(void)
 ------------------------------------------------------------------------------------
 */
 
-
+#endif

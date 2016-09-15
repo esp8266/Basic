@@ -1645,6 +1645,12 @@ void ExicuteTheCurrentLine()
     return;
   }
 
+  if (inData.substring(0, 3) == F("let"))
+  {
+	inData = inData.substring(4);
+	Param0 = getValue(inData, ' ', 0);
+  }
+  
 
   /// NEW array identification //
   if ((r = Param0.indexOf('(')) != -1) // there is a parenthesys in the command; maybe it's an array
@@ -1709,7 +1715,7 @@ void ExicuteTheCurrentLine()
   if ( Param0.indexOf('=') > 1 )
   { //Serial.println("Found the  = sign");
     inData.replace(F("="), F(" = "));
-    Param0 = "let";
+    Param0 = F("let");
   }
 
 

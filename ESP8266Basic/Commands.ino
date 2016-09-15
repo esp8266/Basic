@@ -1079,26 +1079,41 @@ void ExicuteTheCurrentLine()
 
   if (Param0 == F("goto"))
   {
-    if ((r = JumpList.getPos(Param1)) != -1)
-    {
-      RunningProgramCurrentLine = r - 1;
-      return;
-    }
-    SendErrorMsg(String(F("Goto Label not found:")) + Param1);
-    return;
+	  
+	if (!Param1.startsWith(F("[")))
+	{
+		Param1 = evaluate(Param1);
+	}
+	if ((r = JumpList.getPos(Param1)) != -1)
+	{
+	  RunningProgramCurrentLine = r - 1;
+	  return;
+	}
+	SendErrorMsg(String(F("Goto Label not found:")) + Param1);
+	return;
+	
+
   }
 
 
   if (Param0 == F("gosub"))
   {
-    if ((r = JumpList.getPos(Param1)) != -1)
-    {
-      return_Stack.push(RunningProgramCurrentLine);
-      RunningProgramCurrentLine = r - 1;
-      return;
-    }
+
+	if (!Param1.startsWith(F("[")))
+	{
+		Param1 = evaluate(Param1);
+	}
+	
+	if ((r = JumpList.getPos(Param1)) != -1)
+	{
+	  return_Stack.push(RunningProgramCurrentLine);
+	  RunningProgramCurrentLine = r - 1;
+	  return;
+	}
    SendErrorMsg(String(F("Gosub Label not found:")) + Param1);
-    return;
+	return;
+
+	
   }
 
 

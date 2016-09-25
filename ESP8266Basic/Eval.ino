@@ -1217,7 +1217,9 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
   }
   
-/*     else if (fname.startsWith(F("oled.")) )      // block TFT functions; this reduces the number of compares
+  
+#if defined(BASIC_TFT)
+    else if (fname.startsWith(F("oled.")) )      // block TFT functions; this reduces the number of compares
   {
     fname = fname.substring(5); // skip the term tft.
     if ( fname == F("color") && num_args == 1 ) {
@@ -1270,9 +1272,9 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	display.display();
       return PARSER_STRING;
     }  
-  } */
+  }
   
-#if defined(BASIC_TFT)
+
   else if (fname.startsWith(F("tft.")) )      // block TFT functions; this reduces the number of compares
   {
     fname = fname.substring(4); // skip the term tft.

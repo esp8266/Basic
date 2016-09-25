@@ -1,5 +1,7 @@
 
 
+//#define BASIC_TFT
+
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
 //
@@ -172,9 +174,11 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); // Set the LCD I2
 
 // i2c OLED Display
 
+#if defined(BASIC_TFT)
+#include "SSD1306.h" 
+SSD1306  display(0x3c);
+#endif
 
-//#include "SSD1306.h" 
-//SSD1306  display(0x3c);
 
 
 
@@ -1161,7 +1165,7 @@ void setup() {
   //  keyboard.begin(14, 12); //For PS2 keyboard input
  #if defined(BASIC_TFT)
   StartUp_OLED();
-
+  display.init();
   lcd.begin(16, 2); // initialize the lcd for 16 chars 2 lines and turn on backlight
 #endif
   sensors.begin();
@@ -1326,25 +1330,27 @@ String getContentType(String filename) {
 	Serial.println("getcontenttype " + filename);
   }
   
-	   if (filename.endsWith(".htm")) return F("text/html");
+	   if (filename.endsWith(".htm"))  return F("text/html");
   else if (filename.endsWith(".html")) return F("text/html");
-  else if (filename.endsWith(".css")) return F("text/css");
-  else if (filename.endsWith(".js")) return F("application/javascript");
-  else if (filename.endsWith(".png")) return F("image/png");
-  else if (filename.endsWith(".gif")) return F("image/gif");
-  else if (filename.endsWith(".jpg")) return F("image/jpeg");
-  else if (filename.endsWith(".ico")) return F("image/x-icon");
-  else if (filename.endsWith(".xml")) return F("text/xml");
-  else if (filename.endsWith(".pdf")) return F("application/x-pdf");
-  else if (filename.endsWith(".zip")) return F("application/x-zip");
-  else if (filename.endsWith(".gz")) return F("application/x-gzip");
+  else if (filename.endsWith(".css"))  return F("text/css");
+  else if (filename.endsWith(".js"))   return F("application/javascript");
+  else if (filename.endsWith(".png"))  return F("image/png");
+  else if (filename.endsWith(".gif"))  return F("image/gif");
+  else if (filename.endsWith(".jpg"))  return F("image/jpeg");
+  else if (filename.endsWith(".ico"))  return F("image/x-icon");
+  else if (filename.endsWith(".xml"))  return F("text/xml");
+  else if (filename.endsWith(".pdf"))  return F("application/x-pdf");
+  else if (filename.endsWith(".zip"))  return F("application/x-zip");
+  else if (filename.endsWith(".gz"))   return F("application/x-gzip");
   return ret;
 }
 
 void StartUpProgramTimer()
 {
+  int Startuptimer  = LoadDataFromFile("").toInt();
+  if (Startuptimer == 0) Startuptimer = 30;
   pinMode(0, INPUT_PULLUP);  // set GPIO0 to input with pullup; so if float should read 1, 0 on ground
-  while  (millis() < 30000)
+  while  (millis() < Startuptimer * 1000)
   {
 	delay(0);
 	//Serial.println(millis());

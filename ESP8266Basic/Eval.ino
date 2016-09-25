@@ -1259,6 +1259,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
 
+    else if ( fname == F("font") && num_args == 1 ) {
+      // function tft.circle.fill(x, y, radius, color)
+	  if (args[0] == 10) display.setFont(ArialMT_Plain_10);
+	  if (args[0] == 16) display.setFont(ArialMT_Plain_16);
+	  if (args[0] == 24) display.setFont(ArialMT_Plain_24);
+      return PARSER_TRUE;
+    }
+	
     else if ( fname == F("print") && num_args >= 1) {
       // function tft.text.size(size)
       if (args[1] != NULL & args[2] !=NULL & args_str[0] != NULL) {

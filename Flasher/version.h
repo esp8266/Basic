@@ -1,1 +1,1 @@
-PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 50";
+PROGMEM const char BasicVersion[] = "ESP Basic 3.0.Alpha 51";

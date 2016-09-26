@@ -83,6 +83,17 @@ void ExicuteTheCurrentLine()
 
   Param0.toLowerCase();
 
+  
+  
+  if (inData.substring(0, 3) == F("let"))
+  {
+	inData = inData.substring(4);
+	inData.trim();
+	Param0 = getValue(inData, ' ', 0);
+  }
+  
+  
+  
   // Line_For_Eval = inData; /////////////////////////////////////////////////////////////////////////////////////////////////
   String Params[10]; // max 10 parameters are allowed
 
@@ -1645,11 +1656,7 @@ void ExicuteTheCurrentLine()
     return;
   }
 
-  if (inData.substring(0, 3) == F("let"))
-  {
-	inData = inData.substring(4);
-	Param0 = getValue(inData, ' ', 0);
-  }
+
   
 
   /// NEW array identification //

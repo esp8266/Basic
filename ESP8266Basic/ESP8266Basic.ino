@@ -1,6 +1,6 @@
 
 
-#define BASIC_TFT
+//#define BASIC_TFT
 
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM

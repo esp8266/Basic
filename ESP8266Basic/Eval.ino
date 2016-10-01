@@ -100,7 +100,7 @@ int variable_callback( void *user_data, const char *name, float *value, String *
   if (Name == F("D5")) { *value = 14; return PARSER_TRUE;}
   if (Name == F("D6")) { *value = 12; return PARSER_TRUE;}
   if (Name == F("D7")) { *value = 13; return PARSER_TRUE;}
-  if (Name == F("D8")) { *value = 13; return PARSER_TRUE;}
+  if (Name == F("D8")) { *value = 15; return PARSER_TRUE;}
   if (Name == F("RX")) { *value =  3; return PARSER_TRUE;}
   if (Name == F("TX")) { *value =  1; return PARSER_TRUE;}
 
@@ -109,7 +109,7 @@ int variable_callback( void *user_data, const char *name, float *value, String *
   *value = 0;
   *value_str = name;
   // against my will, I have been obliged to put a PARSER_STRING here instead of PARSER_FALSE; this will inhibit the error message if the
-  // variable is not existing permitting to use any variable not initialised; :-)
+  // variable is not existing permitting to use any variable not initialized; :-)
   return PARSER_STRING;
 }
 
@@ -897,13 +897,49 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   
   
   
-  else if ( fname == F("temp") && num_args > 0 ) {
-    // function temp(sensor #)
-    // set return value
-	sensors.requestTemperatures();
-    *value  = sensors.getTempCByIndex(args[0]);
-    return PARSER_TRUE;
-  }
+	else if ( fname == F("temp") && num_args < 2 ) {
+		byte deviceAddr[8]; // create 8 byte storage area for device code
+		String tmp="";
+		if (num_args==0) {
+			byte xx;
+			// Return all connected sensor ROM codes as space-separated string (16 characters each)
+			for (i=0; sensors.getAddress(deviceAddr,i); i++) // Loop while devices are found
+			{
+				delay(0);
+				if (i>0) tmp.concat(" "); // If not the first device, add a separator space
+				for (xx=0; xx<8; xx++) {
+				if (deviceAddr[xx]<16) tmp.concat("0");
+				tmp.concat(String(deviceAddr[xx], HEX));
+				}
+			}
+				*value_str = tmp;
+				return PARSER_STRING;
+			}
+			else 
+			{
+			sensors.requestTemperatures(); // Tell all sensors to convert analog to digital REGARDLESS of how we are addressing them
+			if (args_str[0] != NULL) 
+			{
+				// Query a sensor by ROM code. Rom code is a 16 character hexadecimal string
+				uint32_t longx;
+				for (i=0; i<16; i+=2) 
+				{
+					delay(0);
+					tmp = args_str[0]->substring(i,i+2);
+					longx = strtoul(tmp.c_str(), NULL, 16);
+					deviceAddr[i>>1] = longx;
+				}
+				// Read by device rom code and set the return value
+				*value = sensors.getTempC(deviceAddr); // Perform the temperature read by device code
+			}
+			else 
+			{
+			// function temp(sensor #) - Read by sensor number and set the return value
+			*value = sensors.getTempCByIndex(args[0]);
+			}
+		return PARSER_TRUE;
+		}
+	}
   else if (fname.startsWith(F("dht.")) )      // block DHT functions; this reduces the number of compares
   {
     fname = fname.substring(4); // skip the term dht.
@@ -1307,7 +1343,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       tft->fillScreen(args[0]);
       return PARSER_TRUE;
     }
-    else if ( fname == F("cls") && num_args == 1 ) {
+    else if ( fname == F("cls")  ) {
       // function tft.fill(color)   fill the screen with the color (565)
       tft->fillScreen(0);
 	  form1.clear();

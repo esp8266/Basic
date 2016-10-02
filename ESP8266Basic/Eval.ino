@@ -1202,6 +1202,21 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       irsend->begin();
       return PARSER_STRING;
     }
+    else if ( fname == F("send") && num_args == 1 ) {
+      // function ir.send.nec(code, len)   send a NEC code with the first argument and the lenght on the 2nd
+      if (args_str[0] == NULL)  {
+        SendErrorMsg(F("ir.send() : Argument must be a string!"));
+        return PARSER_FALSE;
+      }
+	  String IRhexCodeForOutput = getValue(*args_str[0], ':' ,0);
+	  String IRmfgCodeForOutput = getValue(*args_str[0], ':' ,1);
+	  byte IRbytesCodeForOutput = getValue(*args_str[0], ':' ,2).toInt();
+	  delay(0);
+	  
+	  if (IRmfgCodeForOutput == "NEC") irsend->sendNEC(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+	  if (IRmfgCodeForOutput == "SONY") irsend->sendSony(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+      return PARSER_STRING;
+    }
     else if ( fname == F("send.nec") && num_args == 2 ) {
       // function ir.send.nec(code, len)   send a NEC code with the first argument and the lenght on the 2nd
       if (args_str[0] == NULL)  {
@@ -1270,6 +1285,12 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	  display.display();
       return PARSER_TRUE;
     }
+    else if ( fname == F("line") && num_args == 4) {
+      // function tft.rect(x, y, width, height, color)
+      display.drawLine(args[0], args[1], args[2], args[3]);
+	  display.display();
+      return PARSER_TRUE;
+    }	
     else if ( fname == F("rect") && num_args == 4) {
       // function tft.rect(x, y, width, height, color)
       display.drawRect(args[0], args[1], args[2], args[3]);

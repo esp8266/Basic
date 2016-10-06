@@ -619,7 +619,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   }
   else if ( fname == F("del.dat") && num_args == 1 ) {
 	  *value_str = "";
-	  SPIFFS.remove(*args_str[0]);
+	  SPIFFS.remove(String("/data/" + *args_str[0] + ".dat"));
     return PARSER_STRING;
   }
   

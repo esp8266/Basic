@@ -617,7 +617,13 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value = LoadDataFromFile(*args_str[0]).toInt();
     return PARSER_TRUE;
   }
-
+  else if ( fname == F("del.dat") && num_args == 1 ) {
+	  *value_str = "";
+	  SPIFFS.remove(*args_str[0]);
+    return PARSER_STRING;
+  }
+  
+  
 
 
   else if ( fname == F("str") && num_args == 1 ) {

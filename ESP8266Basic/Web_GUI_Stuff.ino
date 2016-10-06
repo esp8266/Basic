@@ -193,17 +193,7 @@ String GenerateIDtag(String TempateString)
 
 
 
-String RequestWebSocket(String Request)
-{
-  WebSocketSend(  Request);
-  WebSockMessage = "";
-  for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
-  {
-    webSocket.loop();
-    //delay(100);
-  }
-  return WebSockMessage;
-}
+
 
 
 void WebSocketSend(String MessageToSend)

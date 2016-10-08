@@ -198,7 +198,7 @@ String GenerateIDtag(String TempateString)
 
 void WebSocketSend(String MessageToSend)
 {
-	if ( WebGuiOff == 1 )return;
+	if ( WebGuiOff == 1 ){Serial.println(" webguioff");return;}
 	for (byte i = 0; i <= 5; i++)
 	{
 		if (WebSocketTimeOut[i] + 20000 >=  millis())
@@ -251,7 +251,17 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       // Serial.print(num);
       // Serial.print(" get text ");
 
-      //Serial.println(WebSockMessage);
+      Serial.println(WebSockMessage);
+      if (WebSockMessage== F("filelist"))
+      {
+		Dir dir = SPIFFS.openDir(String(F("/") ));
+		while (dir.next()) {
+			
+			WebSocketSend(String("filename~^`") + dir.fileName() );
+			delay(0);
+		}	
+        break;
+      }	
 #if defined(BASIC_TFT)
       if (WebSockMessage == F("cmd:stop"))
       {
@@ -310,6 +320,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         //runTillWaitPart2();
         break;
       }
+  
+	  
+
+	  
+	  
       if (WebSockMessage.startsWith(F("guichange~")))
       {
         //Serial.println(getValue(WebSockMessage, '~', 1).toInt());

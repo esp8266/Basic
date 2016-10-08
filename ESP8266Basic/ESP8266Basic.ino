@@ -1,6 +1,6 @@
 
 
-//#define BASIC_TFT
+#define BASIC_TFT
 
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
@@ -307,32 +307,49 @@ PROGMEM const char UploadPage[] = R"=====(
 <input type="submit" value="Rename" name="Rename">
 </form>
 
-<select name="fileName" size="25" form="filelist">*table*</select>
-<script>
-function call() {
-	var x = document.getElementsByName("fileName")[0];
-	var optionVal = new Array();
-	for (i = 0; i < x.length; i++) {
-		optionVal.push(x.options[i].text);
-	}
-	for (i = x.length; i >= 0; i--) {
-		x.remove(i);
-	}
-	optionVal.sort();
-	for (var i = 0; i < optionVal.length; i++) {
-		var opt = optionVal[i];
-		var el = document.createElement("option");
-		el.textContent = opt;
-		el.value = opt;
-		x.appendChild(el);
-	}
-}
-</script>
-<body onload="call()">
+<select name="fileName" size="25" form="filelist"></select>
+</script><script src='filmanws.js'></script>
 )=====";
 
 
 
+
+PROGMEM const char FIleManWSJS[] =  R"=====(
+start('ws://' + location.hostname + ':81/');
+
+function start(websocketServerLocation) {
+	connection = new WebSocket(websocketServerLocation);
+	connection.onopen = function() {
+		connection.send("OK");
+		window.setTimeout(requestfiles, 1000);
+		
+	};
+	connection.onclose = function() {
+		setTimeout(function() { start(websocketServerLocation)}, 1000);
+	};
+
+	connection.onmessage = function(e) {
+		var res = e.data.split("~^`");
+
+		
+		if (res[0].toLowerCase() == "filename") {
+			connection.send("OK");
+			
+			var x = document.getElementsByName("fileName")[0];
+			var option = document.createElement("option");
+			option.text = res[1];
+			x.add(option);
+			return;
+		}
+	};
+}
+
+var aliveme = setInterval(aliveTimer, 5000);
+function requestfiles(){connection.send('filelist')}
+function aliveTimer() {
+	connection.send("OK");
+}
+)=====";
 //<a href="http://www.esp8266basic.com/help"  target="_blank">[ HELP ]</a>
 
 PROGMEM const char EditorPageHTML[] =  R"=====(
@@ -914,6 +931,12 @@ void setup() {
   {
 	DoSomeFileManagerCode();
   });
+  
+  
+  server->on("/filmanws.js", []()
+  {
+	server->send(200, "text/html", FIleManWSJS);
+  });
 
 
   server->on("/edit", []()
@@ -1395,13 +1418,8 @@ void DoSomeFileManagerCode()
 	  //Serial.println(SPIFFS.remove("uploads/settings.png"));
 	}
 
-	Dir dir = SPIFFS.openDir(String(F("/") ));
-	while (dir.next()) {
-	  FileListForPage += String(F("<option>")) + dir.fileName() + String(F("</option>"));
-	  delay(0);
-	}
 
-	WholeUploadPage.replace("*table*", FileListForPage);
+
 
 	if (server->arg("View") != "")
 	{
@@ -1437,8 +1455,6 @@ void DoSomeFileManagerCode()
 		SPIFFS.rename(FileNameToView , newfileName);
 	  }
 	}
-
-
   }
   server->send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
 }

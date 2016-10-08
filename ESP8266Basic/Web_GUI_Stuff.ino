@@ -251,18 +251,21 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       // Serial.print(num);
       // Serial.print(" get text ");
 
-      Serial.println(WebSockMessage);
+      //Serial.println(WebSockMessage);
+
+	
+
+#if defined(BASIC_TFT)
       if (WebSockMessage== F("filelist"))
       {
 		Dir dir = SPIFFS.openDir(String(F("/") ));
 		while (dir.next()) {
 			
-			WebSocketSend(String("filename~^`") + dir.fileName() );
+			WebSocketSend(String(F("filename~^`")) + dir.fileName() );
 			delay(0);
 		}	
         break;
-      }	
-#if defined(BASIC_TFT)
+      }
       if (WebSockMessage == F("cmd:stop"))
       {
         HaltBasic("");

@@ -1,6 +1,7 @@
 
 
-#define BASIC_TFT
+
+//#define BASIC_TFT
 
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
@@ -295,6 +296,8 @@ PROGMEM const char AdminBarHTML[] = R"=====(
 #endif
 
 
+
+ #if defined(BASIC_TFT)
 PROGMEM const char UploadPage[] = R"=====(
 <form method='POST' action='/filemng' enctype='multipart/form-data'>
 <input type='file' name='Upload'>
@@ -306,7 +309,6 @@ PROGMEM const char UploadPage[] = R"=====(
 <input type="submit" value="Edit" name="Edit">
 <input type="submit" value="Rename" name="Rename">
 </form>
-
 <select name="fileName" size="25" form="filelist"></select>
 </script><script src='filmanws.js'></script>
 )=====";
@@ -316,13 +318,11 @@ PROGMEM const char UploadPage[] = R"=====(
 
 PROGMEM const char FIleManWSJS[] =  R"=====(
 start('ws://' + location.hostname + ':81/');
-
 function start(websocketServerLocation) {
 	connection = new WebSocket(websocketServerLocation);
 	connection.onopen = function() {
 		connection.send("OK");
-		window.setTimeout(requestfiles, 1000);
-		
+		connection.send('filelist')		
 	};
 	connection.onclose = function() {
 		setTimeout(function() { start(websocketServerLocation)}, 1000);
@@ -343,13 +343,51 @@ function start(websocketServerLocation) {
 		}
 	};
 }
-
 var aliveme = setInterval(aliveTimer, 5000);
-function requestfiles(){connection.send('filelist')}
 function aliveTimer() {
 	connection.send("OK");
 }
 )=====";
+#else
+PROGMEM const char UploadPage[] = R"=====(
+<form method='POST' action='/filemng' enctype='multipart/form-data'>
+<input type='file' name='Upload'>
+<input type='submit' value='Upload'>
+</form>
+<form id="filelist">
+<input type="submit" value="Delete" name="Delete">
+<input type="submit" value="View" name="View">
+<input type="submit" value="Edit" name="Edit">
+<input type="submit" value="Rename" name="Rename">
+</form>
+<select name="fileName" size="25" form="filelist">*table*</select>
+<script>
+function call() {
+	var x = document.getElementsByName("fileName")[0];
+	var optionVal = new Array();
+	for (i = 0; i < x.length; i++) {
+		optionVal.push(x.options[i].text);
+	}
+	for (i = x.length; i >= 0; i--) {
+		x.remove(i);
+	}
+	optionVal.sort();
+	for (var i = 0; i < optionVal.length; i++) {
+		var opt = optionVal[i];
+		var el = document.createElement("option");
+		el.textContent = opt;
+		el.value = opt;
+		x.appendChild(el);
+	}
+}
+</script>
+<body onload="call()">
+)=====";
+#endif
+
+
+
+
 //<a href="http://www.esp8266basic.com/help"  target="_blank">[ HELP ]</a>
 
 PROGMEM const char EditorPageHTML[] =  R"=====(
@@ -932,12 +970,12 @@ void setup() {
 	DoSomeFileManagerCode();
   });
   
-  
+  #if defined(BASIC_TFT)
   server->on("/filmanws.js", []()
   {
 	server->send(200, "text/html", FIleManWSJS);
   });
-
+  #endif
 
   server->on("/edit", []()
   {

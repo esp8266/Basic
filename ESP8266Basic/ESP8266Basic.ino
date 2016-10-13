@@ -1,7 +1,5 @@
 
-
-
-#define BASIC_TFT
+//#define BASIC_TFT
 
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
@@ -195,7 +193,7 @@ String EmailSMTPpassword;
 WiFiUDP udp;
 
 // WebSockets
-WebSocketsServer webSocket = WebSocketsServer(81);
+WebSocketsServer *webSocket;
 String WebSockMessage;
 int WebSockEventBranchLine = 0;
 int WebSockChangeBranchLine = 0;
@@ -248,7 +246,7 @@ String LastElimentIdTag;
 PROGMEM const char MobileFreindlyWidth[] = R"=====(<meta name="viewport" content="width=device-width, initial-scale=1.0">)=====";
 
  #if defined(BASIC_TFT)
-PROGMEM const char DebugPage[] =  R"=====(</script><script src='WebSockets.js'></script>
+PROGMEM const char DebugPage[] =  R"=====(</script><script src='WebSockets.js'></script><script src='wsport.js'></script>
 <div id="fooBar" style="float:left; width:20%;">Vars<hr></div>
 <DIV style="float:left; width:35%;">
 <button id="run" onclick="dcmdClick(this)">Run</button>
@@ -311,13 +309,13 @@ PROGMEM const char UploadPage[] = R"=====(
 </form>
 <select name="fileName" size="25" form="filelist"></select>
 </script><script src='filmanws.js'></script>
+</script><script src='wsport.js'></script>
 )=====";
 
 
 
 
 PROGMEM const char FIleManWSJS[] =  R"=====(
-start('ws://' + location.hostname + ':81/');
 function start(websocketServerLocation) {
 	connection = new WebSocket(websocketServerLocation);
 	connection.onopen = function() {
@@ -398,7 +396,6 @@ PROGMEM const char EditorPageHTML[] =  R"=====(
 <input type="text" id="FileName" name="name" value="*program name*">
 <input type="submit" value="Open" name="open">
 </form>
-<button onclick="ShowTheFileList()">Files List</button>
 <button onclick="SaveTheCode()">Save</button>
 <br>
 <textarea rows="30" style="width:100%" name="code" id="code">*program txt*</textarea><br>
@@ -413,8 +410,6 @@ indentUnit: 4});
 
 
 PROGMEM const char WebSocketsJS[] =  R"=====(
-start('ws://' + location.hostname + ':81/');
-
 function start(websocketServerLocation) {
 	connection = new WebSocket(websocketServerLocation);
 	connection.onopen = function() {
@@ -653,11 +648,6 @@ function stocca(s)
    Sendy += "%0D%0A";
  }
 }
-function ShowTheFileList(){
-  var filelist;
-  filelist = httpGet("/filelist?all=true");
-  alert("List of the Files saved :\n\r" + filelist);
-}
 function httpGet(theUrl)
 {
 	var xmlHttp = new XMLHttpRequest();
@@ -679,25 +669,26 @@ PROGMEM const char SettingsPageHTML[] =  R"=====(
 <form action='settings' id="usrform"><table>
 *BasicVersion*
 <tr><th>
-Station Mode (Connect to your router):</th></tr>
-<tr><th><p align="right">Name:</p></th><th><input type="text" name="staName" value="*sta name*"></th></tr>
-<tr><th><p align="right">Pass:</p></th><th><input type="password" name="staPass" value="*sta pass*"></th></tr>
+Station Mode (Connect to router):</th></tr>
+<tr><th>Name:</th><th><input type="text" name="staName" value="*sta name*"></th></tr>
+<tr><th>Pass:</th><th><input type="password" name="staPass" value="*sta pass*"></th></tr>
 <tr><th>
-<br><br>Ap mode (ESP brocast out its own ap):</th></tr>
-<tr><th><p align="right">Name:</p></th><th><input type="text" name="apName" value="*ap name*"></th></tr>
-<tr><th><p align="right">Pass:<br>Must be at least 8 characters</p></th><th><input type="password" name="apPass" value="*ap pass*"></th></tr>
+<br><br>Ap mode (brocast out its own ap):</th></tr>
+<tr><th>Name:</th><th><input type="text" name="apName" value="*ap name*"></th></tr>
+<tr><th>Pass:<br>Must be at least 8 characters</p></th><th><input type="password" name="apPass" value="*ap pass*"></th></tr>
 <tr><th>
-<br><br>IP Address (Station or AP mode):</th></tr>
-<tr><th><p align="right">IP address:</p></th><th><input type="text" name="ipaddress" value="*ipaddress*"></th></tr>
-<tr><th><p align="right">Subnet mask:</p></th><th><input type="text" name="subnetmask" value="*subnetmask*"></th></tr>
-<tr><th><p align="right">Default gateway:</p></th><th><input type="text" name="gateway" value="*gateway*"></th></tr>
-<tr><th><p align="right">Server listening port:</p></th><th><input type="text" name="listenport" value="*listenport*"></th></tr>
+<br><br>IP (STA or AP mode):</th></tr>
+<tr><th>IP address:</th><th><input type="text" name="ipaddress" value="*ipaddress*"></th></tr>
+<tr><th>Subnet mask:</th><th><input type="text" name="subnetmask" value="*subnetmask*"></th></tr>
+<tr><th>gateway:</th><th><input type="text" name="gateway" value="*gateway*"></th></tr>
+<tr><th>HTTP port:</th><th><input type="text" name="listenport" value="*listenport*"></th></tr>
+<tr><th>WS port:</th><th><input type="text" name="wsport" value="*wsport*"></th></tr>
 <tr><th>
-<br><br>Log In Key (For Security):</th></tr>
-<tr><th><p align="right">Log In Key:</p></th><th><input type="password" name="LoginKey" value="*LoginKey*"></th></tr>
-<tr><th><p align="right">Display menu bar on index page:</p></th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
-<tr><th><p align="right">Run default.bas at startup :</p></th><th><input type="checkbox" name="autorun" value="on" **autorun**> Enable<br></th></tr>
-<tr><th><p align="right">OTA URL. Leave blank for default:</p></th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
+<br></th></tr>
+<tr><th>Log In Key:</th><th><input type="password" name="LoginKey" value="*LoginKey*"></th></tr>
+<tr><th>Display menu bar:</th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
+<tr><th>Run default.bas at startup:</p></th><th><input type="checkbox" name="autorun" value="on" **autorun**> Enable<br></th></tr>
+<tr><th>OTA URL</th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
 <tr><th>
 <input type="submit" value="Save" name="save">
 <input type="submit" value="Format" name="format">
@@ -832,15 +823,16 @@ void setup() {
   Serial.begin(9600);
   // gets the listening port
   String listenport = LoadDataFromFile("listenport");
+  String WebSocketslistenport = LoadDataFromFile("wsport");
   // listening port - by default goes to 80 -
-  if (listenport.toInt() == 0)
-	listenport = F("80");
+  if (listenport.toInt() == 0) listenport = "80";
+  if (WebSocketslistenport.toInt() == 0) {WebSocketslistenport = F("81"); SaveDataToFile(F("wsport"), WebSocketslistenport);}
 
   // print the listening port in the console
-  Serial.print(F("\nServer listening Port: "));
-  Serial.println(listenport.toInt());
+  Serial.println("HTTP Port: " + listenport);
   // create the instance of the web server
   server = new ESP8266WebServer(listenport.toInt());
+  webSocket = new WebSocketsServer(WebSocketslistenport.toInt());
   
   
 
@@ -848,7 +840,7 @@ void setup() {
   
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
-  PrintAndWebOut("Device MAC: " + WiFi.softAPmacAddress());
+  PrintAndWebOut("MAC: " + WiFi.softAPmacAddress());
   //CheckWaitForRunningCode();
   
   MQTTclient.setCallback(MQTTcallback);
@@ -944,6 +936,16 @@ void setup() {
 
   });
   #endif
+  
+  
+
+  server->on("/wsport.js", []()
+  {
+	server->send(200, "text/html", String("start('ws://' + location.hostname + ':" + LoadDataFromFile("wsport") + "/');"));
+  });
+
+  
+  
   
   
 #if defined(BASIC_TFT)
@@ -1069,22 +1071,6 @@ void setup() {
   });
 
 
-  server->on("/filelist", []()
-  {
-	String ret = "";
-	String fn;
-	Dir dir = SPIFFS.openDir(String(F("/") ));
-	while (dir.next())
-	{
-	  fn = dir.fileName();
-	  if (fn.indexOf(F(".bas")) != -1)
-		ret +=  fn + "\n";
-	  delay(0);
-	}
-
-
-	server->send(200, "text/html", ret);
-  });
 
   server->on("/codein", []() {
 	//    ProgramName.trim();
@@ -1230,8 +1216,8 @@ void setup() {
   InitCommandParser(); // init the commands parser
 
   // start webSocket server
-  webSocket.begin();
-  webSocket.onEvent(webSocketEvent);
+  webSocket->begin();
+  webSocket->onEvent(webSocketEvent);
 }
 
 
@@ -1254,9 +1240,13 @@ String SettingsPageHandeler()
   String otaUrl = LoadDataFromFile("otaUrl");
   String autorun = LoadDataFromFile("autorun");
   String listenport = LoadDataFromFile("listenport");
+  String wsport = LoadDataFromFile("wsport");
   String ipaddress = LoadDataFromFile("ipaddress");
   String subnetmask = LoadDataFromFile("subnetmask");
-  String gateway = LoadDataFromFile("gateway");
+  String gateway = LoadDataFromFile(F("gateway"));
+  
+  
+  
 
   // listening port - by default goes to 80 -
   if (listenport.toInt() == 0)
@@ -1312,6 +1302,7 @@ String SettingsPageHandeler()
 	  subnetmask   = GetRidOfurlCharacters(server->arg("subnetmask"));
 	  gateway   = GetRidOfurlCharacters(server->arg("gateway"));
 	  listenport   = GetRidOfurlCharacters(server->arg("listenport"));
+	  wsport   = GetRidOfurlCharacters(server->arg("wsport"));
 
 	  SaveDataToFile("WIFIname" , staName);
 	  SaveDataToFile("WIFIpass" , staPass);
@@ -1325,6 +1316,7 @@ String SettingsPageHandeler()
 	  SaveDataToFile("subnetmask" , subnetmask);
 	  SaveDataToFile("gateway" , gateway);
 	  SaveDataToFile("listenport" , listenport);
+	  SaveDataToFile("wsport" , wsport);
 
 	}
 
@@ -1347,6 +1339,7 @@ String SettingsPageHandeler()
 	WebOut.replace(F("*subnetmask*"), subnetmask);
 	WebOut.replace(F("*gateway*"), gateway);    
 	WebOut.replace(F("*listenport*"), listenport);
+	WebOut.replace(F("*wsport*"), wsport);
 
 	if ( ShowMenueBar == F("off"))
 	{
@@ -1446,8 +1439,15 @@ void DoSomeFileManagerCode()
 	  //Serial.println(SPIFFS.remove("uploads/settings.png"));
 	}
 
+#if !defined(BASIC_TFT)
+	Dir dir = SPIFFS.openDir(String(F("/") ));
+	while (dir.next()) {
+	  FileListForPage += String(F("<option>")) + dir.fileName() + String(F("</option>"));
+	  delay(0);
+	}
 
-
+	WholeUploadPage.replace("*table*", FileListForPage);
+#endif
 
 	if (server->arg("View") != "")
 	{
@@ -1621,7 +1621,7 @@ void loop()
   RunBasicTillWait();
   delay(0);
   if (delaytime == 0)server->handleClient();
-  webSocket.loop();
+  webSocket->loop();
   
   if (MQTTActivated)
   { 
@@ -1649,7 +1649,7 @@ void loop()
 
 void RunBasicTillWait()
 {
-  webSocket.loop();
+  webSocket->loop();
   if (delaytime > millis() && delaytime != 0) {return;} else {delaytime = 0;}
   runTillWaitPart2();
   if (RunningProgramCurrentLine > TotalNumberOfLines)
@@ -1725,14 +1725,14 @@ void runTillWaitPart2()
 	ExicuteTheCurrentLine();
 	delay(0);
 	CheckForUdpData();
-	webSocket.loop();
+	webSocket->loop();
   }
   if (RunningProgram == 1 && RunningProgramCurrentLine < TotalNumberOfLines && WaitForTheInterpertersResponse == 1 )
   {
 	//Serial.print("sto in wait ");
 	//Serial.println(RunningProgramCurrentLine);
 	CheckForUdpData();
-	webSocket.loop();
+	webSocket->loop();
   }
 
 

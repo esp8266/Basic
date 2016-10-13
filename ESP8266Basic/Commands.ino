@@ -1148,7 +1148,7 @@ void ExicuteTheCurrentLine()
 	#endif
     WebSockEventBranchLine = abs(WebSockEventBranchLine); // restore the websockevent command
     WebSockChangeBranchLine = abs(WebSockChangeBranchLine); // restore the websockchange command
-    webSocket.loop();
+    webSocket->loop();
     return;
   }
 

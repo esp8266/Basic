@@ -39,22 +39,7 @@ String evaluate(String expr)
 #include "Fonts/FreeSerifBold24pt7b.h"
 #endif
 
-byte LookUpNodeMCUPins(String Name)
-{
-  byte PinReturnValue = Name.toInt();
-  if (Name == F("D0")) PinReturnValue = 16;
-  if (Name == F("D1")) PinReturnValue =  5;
-  if (Name == F("D2")) PinReturnValue =  4;
-  if (Name == F("D3")) PinReturnValue =  0;
-  if (Name == F("D4")) PinReturnValue =  2;
-  if (Name == F("D5")) PinReturnValue = 14;
-  if (Name == F("D6")) PinReturnValue = 12;
-  if (Name == F("D7")) PinReturnValue = 13;
-  if (Name == F("D8")) PinReturnValue = 15;
-  if (Name == F("RX")) PinReturnValue =  3;
-  if (Name == F("TX")) PinReturnValue =  1;
-  return PinReturnValue;
-}
+
 
 
 
@@ -1743,7 +1728,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       WebSockMessage = "";
       for (int i = 0; ((i < 5) && (WebSockMessage == "")); i++) // wait for the answer
       {
-        webSocket.loop();
+        webSocket->loop();
         delay(0);
       }
       *value_str = WebSockMessage;
@@ -1761,7 +1746,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
             tmp = tmp + *args_str[i];
           tmp = tmp + "~^`"; 
         }
-        webSocket.sendTXT(0,tmp.c_str());
+        webSocket->sendTXT(0,tmp.c_str());
       return PARSER_TRUE;
     }
     else if ( fname == F("log") && num_args >= 1 )

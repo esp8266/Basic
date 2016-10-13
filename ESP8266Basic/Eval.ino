@@ -1,6 +1,8 @@
 #define TFT_DEMO
 #include "expression_parser_string.h"
 
+
+char bmp_buff[320 * 4];
 extern char* _parser_error_msg;
 extern String args_var[PARSER_MAX_ARGUMENT_COUNT];
 
@@ -422,7 +424,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
     else {
-      return PARSER_FALSE;
+	  *value = -1;
+      return PARSER_TRUE;
     }
   }
 
@@ -433,7 +436,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
     else {
-      return PARSER_FALSE;
+	  *value_str  = "-1";
+      return PARSER_STRING;
     }
   }
 
@@ -1992,7 +1996,6 @@ void show_bmp(String filename, uint16_t xi, uint16_t yi, int backColor)
   BMP_Pixel32  *p32;
   BMP_Pixel *px;
   BMP_Header header;
-  char bmp_buff[320 * 4];   // the buffer will contain a full line of 320 pixels
   
   File fs_bmp = SPIFFS.open(filename, "r");
   if (!fs_bmp) {

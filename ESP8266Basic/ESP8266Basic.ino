@@ -1,7 +1,7 @@
 
 
 
-//#define BASIC_TFT
+#define BASIC_TFT
 
 //ESP8266 Basic Interpreter
 //HTTP://ESP8266BASIC.COM
@@ -810,18 +810,8 @@ int TimerCBBranchLine;
 
 
 
-Servo Servo0;
-Servo Servo1;
-Servo Servo2;
-Servo Servo3;
-Servo Servo4;
-Servo Servo5;
+Servo servos[11];
 
-Servo Servo12;
-Servo Servo13;
-Servo Servo14;
-Servo Servo15;
-Servo Servo16;
 
 String  PinListOfStatus[17];
 int  PinListOfStatusValues[17];

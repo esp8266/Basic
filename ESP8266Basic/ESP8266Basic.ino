@@ -1391,7 +1391,7 @@ String getContentType(String filename) {
 
 void StartUpProgramTimer()
 {
-  int Startuptimer  = LoadDataFromFile("").toInt();
+  int Startuptimer  = LoadDataFromFile("starttimer").toInt();
   if (Startuptimer == 0) Startuptimer = 30;
   pinMode(0, INPUT_PULLUP);  // set GPIO0 to input with pullup; so if float should read 1, 0 on ground
   while  (millis() < Startuptimer * 1000)

@@ -15,7 +15,7 @@ Look at licence information for each.
 Compile using the arduino ESP8266 package using the stable version 2.3.0
 
 Special thanks to the people who have worked to extend and improve ESP BASIC.
-Contributers include MMiscool, Cicciob and Rotohammer.
+Contributers include MMiscool, Cicciob, Rotohammer, Livetv, Tcpipchip.
 
 ESP Basic allows for browser based development of basic programs to run on the esp8266 microcontroller. 
 

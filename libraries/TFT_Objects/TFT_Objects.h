@@ -127,7 +127,7 @@ public:
 		return "";
 	}
 	
-	void setValue(uint8_t pos, uint8_t val)
+	void setValue(uint8_t pos, float val)
 	{
 		if (_form[pos] != NULL)
 		{
@@ -136,7 +136,7 @@ public:
 		}
 	}
 	
-	uint8_t getValue(uint8_t pos)
+	float getValue(uint8_t pos)
 	{
 		if (_form[pos] != NULL)
 		{
@@ -286,6 +286,8 @@ public:
 				ax = (obj->width - (obj->label.length() * obj->textsize * FontSizeX)) >> 1;  // divided by 2
 				ay = (obj->height - obj->textsize * FontSizeY) >> 1;
 				r = (float)obj->value/100.0 * (obj->width -2);
+				
+				
 				tft->fillRect(obj->x+1, obj->y+1, obj->width-2, obj->height-2, 0);
 				tft->drawRect(obj->x, obj->y, obj->width, obj->height, obj->forecolor);
 				tft->fillRect(obj->x+1, obj->y+1, r, obj->height-2, obj->backcolor);

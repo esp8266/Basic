@@ -1132,8 +1132,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value = -1;
       return PARSER_TRUE;
     }	
-	
-
+    else if ( fname == F("setmode") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
+	SPI.setDataMode(args[0]);
+      *value = -1;
+      return PARSER_TRUE;
+    }		
 	
 	
 	

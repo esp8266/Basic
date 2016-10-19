@@ -851,14 +851,14 @@ void setup() {
 	String WebOut;
 	if (LoadDataFromFile("ShowMenueBar") != "off") WebOut =    AdminBarHTML;
 	WebOut += RunningProgramGui();
-	server->send(200, "text/html", WebOut);
+	server->send(200, F("text/html"), WebOut);
   });
 
 
   server->on("/settings", []()
   {
 
-	server->send(200, "text/html", SettingsPageHandeler());
+	server->send(200, F("text/html"), SettingsPageHandeler());
   });
 
 
@@ -891,7 +891,7 @@ void setup() {
 	  WebOut += "</div>";
 	}
 
-	server->send(200, "text/html", WebOut);
+	server->send(200, F("text/html"), WebOut);
   });
 #endif
 
@@ -912,7 +912,7 @@ void setup() {
 	WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./input?" />)=====");
 
 	clear_stacks();
-	server->send(200, "text/html", WebOut);
+	server->send(200, F("text/html"), WebOut);
   });
 
   #if defined(BASIC_TFT)
@@ -932,7 +932,7 @@ void setup() {
 	WebOut = F(R"=====(  <meta http-equiv="refresh" content="0; url=./" />)=====");
 
 	clear_stacks();
-	server->send(200, "text/html", WebOut);
+	server->send(200, F("text/html"), WebOut);
 
   });
   #endif
@@ -941,7 +941,7 @@ void setup() {
 
   server->on("/wsport.js", []()
   {
-	server->send(200, "text/html", String("start('ws://' + location.hostname + ':" + LoadDataFromFile("wsport") + "/');"));
+	server->send(200, F("text/html"), String("start('ws://' + location.hostname + ':" + LoadDataFromFile("wsport") + "/');"));
   });
 
   
@@ -951,7 +951,7 @@ void setup() {
 #if defined(BASIC_TFT)
   server->on("/graphics.htm", []()
   {
-	server->send(200, "text/html", BasicGraphics());
+	server->send(200, F("text/html"), BasicGraphics());
   });
 #endif
 
@@ -965,7 +965,7 @@ void setup() {
   #if defined(BASIC_TFT)
   server->on("/filmanws.js", []()
   {
-	server->send(200, "text/html", FIleManWSJS);
+	server->send(200, F("text/html"), FIleManWSJS);
   });
   #endif
 
@@ -976,7 +976,7 @@ void setup() {
 	if (CheckIfLoggedIn())
 	{
 	  WebOut = String(LogInPage);
-	  server->send(200, "text/html", String(AdminBarHTML + WebOut ));
+	  server->send(200, F("text/html"), String(AdminBarHTML + WebOut ));
 	  WebGuiOff = 0;return;
 	}
 	else
@@ -1061,13 +1061,13 @@ void setup() {
 
 
   server->on("/editor.js", []() {
-	server->send(200, "text/html", editCodeJavaScript);
+	server->send(200, F("text/html"), editCodeJavaScript);
   });
 
 
 
   server->on("/WebSockets.js", []() {
-	server->send(200, "text/html", WebSocketsJS);
+	server->send(200, F("text/html"), WebSocketsJS);
   });
 
 
@@ -1106,7 +1106,7 @@ void setup() {
 	  delay(0);
 	  noOfLinesForEdit = y;
 
-	}
+	} 
 
 	if (server->arg("SaveTheCode") == F("end"))
 	{
@@ -1130,7 +1130,7 @@ void setup() {
 	  //        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
 	  //      }
 	}
-	server->send(200, "text/html", F("good"));
+	server->send(200, F("text/html"), F("good"));
   });
 
 
@@ -1153,7 +1153,7 @@ void setup() {
 		WebGuiOff = oldWebGuiOff;
 	}
 
-	server->send(200, "text/html", MsgBranchRetrnData);
+	server->send(200, F("text/html"), MsgBranchRetrnData);
   });
 
 
@@ -1161,7 +1161,7 @@ void setup() {
 
 
   server->on("/input", []() {
-	server->send(200, "text/html", RunningProgramGui());
+	server->send(200, F("text/html"), RunningProgramGui());
   });
 
   server->onNotFound ( []() {
@@ -1176,7 +1176,7 @@ void setup() {
 	}
 	else
 	{
-	  server->send(200, "text/html", RunningProgramGui());
+	  server->send(200, F("text/html"), RunningProgramGui());
 	}
 	mySuperFile.close();
   });
@@ -1231,18 +1231,18 @@ String SettingsPageHandeler()
 
   WaitForTheInterpertersResponse = 1;
   String WebOut = String(AdminBarHTML) + String(SettingsPageHTML);
-  String staName = LoadDataFromFile("WIFIname");
-  String staPass = LoadDataFromFile("WIFIpass");
-  String apName = LoadDataFromFile("APname");
-  String apPass = LoadDataFromFile("APpass");
-  String LoginKey = LoadDataFromFile("LoginKey");
-  String ShowMenueBar = LoadDataFromFile("ShowMenueBar");
-  String otaUrl = LoadDataFromFile("otaUrl");
-  String autorun = LoadDataFromFile("autorun");
-  String listenport = LoadDataFromFile("listenport");
-  String wsport = LoadDataFromFile("wsport");
-  String ipaddress = LoadDataFromFile("ipaddress");
-  String subnetmask = LoadDataFromFile("subnetmask");
+  String staName = LoadDataFromFile(F("WIFIname"));
+  String staPass = LoadDataFromFile(F("WIFIpass"));
+  String apName = LoadDataFromFile(F("APname"));
+  String apPass = LoadDataFromFile(F("APpass"));
+  String LoginKey = LoadDataFromFile(F("LoginKey"));
+  String ShowMenueBar = LoadDataFromFile(F("ShowMenueBar")); 
+  String otaUrl = LoadDataFromFile(F("otaUrl"));
+  String autorun = LoadDataFromFile(F("autorun"));
+  String listenport = LoadDataFromFile(F("listenport"));
+  String wsport = LoadDataFromFile(F("wsport"));
+  String ipaddress = LoadDataFromFile(F("ipaddress"));
+  String subnetmask = LoadDataFromFile(F("subnetmask"));
   String gateway = LoadDataFromFile(F("gateway"));
   
   
@@ -1484,7 +1484,7 @@ void DoSomeFileManagerCode()
 	  }
 	}
   }
-  server->send(200, "text/html",  String( AdminBarHTML + WholeUploadPage ));
+  server->send(200, F("text/html"),  String( AdminBarHTML + WholeUploadPage ));
 }
 
 

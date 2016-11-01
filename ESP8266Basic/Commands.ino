@@ -666,6 +666,15 @@ void ExicuteTheCurrentLine()
     //Serial.print(HTMLout);
     return;
   }
+  
+  if (Param0 == F("jscall"))
+  {
+	WebSocketSend("call~^`" + evaluate(Param1));
+    //Serial.print(HTMLout);
+    return;
+  }
+  
+
 
 
   if (Param0 == F("css"))

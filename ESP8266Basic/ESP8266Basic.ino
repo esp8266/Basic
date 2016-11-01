@@ -487,9 +487,9 @@ function start(websocketServerLocation) {
 			log.value = "\n" + res[1] + log.value;
 			log.selectionStart = log.selectionEnd = log.value.length;
 			return;
-		} else if (res[0].toLowerCase() == "gauge") {
+		} else if (res[0].toLowerCase() == "call") {
 			connection.send('OK');
-			Gauge.Collection.get(res[1]).setValue(res[2]);
+			eval(res[1] + '();');
 			return;
 		} else {
 			// default 

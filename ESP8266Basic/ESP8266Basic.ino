@@ -837,7 +837,7 @@ void setup() {
   
 
   //Serial.setDebugOutput(true);
-  
+  WiFi.setAutoConnect(false) ;
   WiFi.mode(WIFI_AP_STA);
   PrintAndWebOut(BasicVersion);
   PrintAndWebOut("MAC: " + WiFi.softAPmacAddress());
@@ -1085,11 +1085,9 @@ void setup() {
 	  ExicuteTheCurrentLine();
 	  Serial.println(F("start save"));
 	  ProgramName = GetRidOfurlCharacters(server->arg("FileName"));
-	  if (ProgramName == "")
-		ProgramName = F("/default.bas");
+	  if (ProgramName == "")ProgramName = F("/default.bas");
 	  ProgramName.trim();
-	  if (ProgramName[0] != '/')
-		ProgramName = "/" + ProgramName;
+	  if (ProgramName[0] != '/') ProgramName = "/" + ProgramName;
 	  OpenToWriteOnFlash( ProgramName );
 	}
 
@@ -1207,6 +1205,15 @@ void setup() {
 #endif
   sensors.begin();
 
+  if (!SPIFFS.exists(ProgramName))
+  {
+	OpenToWriteOnFlash(ProgramName);
+	delay(0);
+	WriteBasicLineOnFlash("  ");
+	CloseWriteOnFlash();
+  }
+  
+  
   LoadBasicProgramFromFlash( ProgramName);
 
   server->begin();

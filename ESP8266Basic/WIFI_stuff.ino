@@ -10,7 +10,7 @@ bool ConnectToTheWIFI(String NetworkName, String NetworkPassword, String Network
   // Serial.println(NetworkStaticIP);
   // Serial.println(NetworkGateway);
   // Serial.println(NetworkSubnet);
-  
+  WiFi.setAutoConnect(false) ;
   if (wifiApStaModeOn == 0) WiFi.mode(WIFI_STA);
   byte numberOfAtempts = 0;
   int str_len = NetworkName.length() + 1;

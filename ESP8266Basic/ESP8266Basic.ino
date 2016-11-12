@@ -666,36 +666,39 @@ function replaceAll(str, find, replace) {
 
 
 PROGMEM const char SettingsPageHTML[] =  R"=====(
-<form action='settings' id="usrform"><table>
+<form action='settings' id="usrform">
 *BasicVersion*
-<tr><th>
-Station Mode (Connect to router):</th></tr>
-<tr><th>Name:</th><th><input type="text" name="staName" value="*sta name*"></th></tr>
-<tr><th>Pass:</th><th><input type="password" name="staPass" value="*sta pass*"></th></tr>
-<tr><th>
-<br><br>Ap mode (brocast out its own ap):</th></tr>
-<tr><th>Name:</th><th><input type="text" name="apName" value="*ap name*"></th></tr>
-<tr><th>Pass:<br>Must be at least 8 characters</p></th><th><input type="password" name="apPass" value="*ap pass*"></th></tr>
-<tr><th>
-<br><br>IP (STA or AP mode):</th></tr>
-<tr><th>IP address:</th><th><input type="text" name="ipaddress" value="*ipaddress*"></th></tr>
-<tr><th>Subnet mask:</th><th><input type="text" name="subnetmask" value="*subnetmask*"></th></tr>
-<tr><th>gateway:</th><th><input type="text" name="gateway" value="*gateway*"></th></tr>
-<tr><th>HTTP port:</th><th><input type="text" name="listenport" value="*listenport*"></th></tr>
-<tr><th>WS port:</th><th><input type="text" name="wsport" value="*wsport*"></th></tr>
-<tr><th>
-<br></th></tr>
-<tr><th>Log In Key:</th><th><input type="password" name="LoginKey" value="*LoginKey*"></th></tr>
-<tr><th>Display menu bar:</th><th><input type="checkbox" name="showMenueBar" value="off" **checked**> Disable<br></th></tr>
-<tr><th>Run default.bas at startup:</p></th><th><input type="checkbox" name="autorun" value="on" **autorun**> Enable<br></th></tr>
-<tr><th>OTA URL</th><th><input type="text" name="otaurl" value="*otaurl*"></th></tr>
-<tr><th>
+<style>div {width: 270px;text-align: right;}</style>
+<div>
+<b>Station Mode (Connect to router):</b>
+<div>Name:<input type="text" name="staName" value="*sta name*"></div>
+<div>Pass:<input type="password" name="staPass" value="*sta pass*"></div>
+</div>
+<div>
+<b>Ap mode (brocast out its own ap):</b>
+<div>Name:<input type="text" name="apName" value="*ap name*"></div>
+<div>Pass (8 characters):<input type="password" name="apPass" value="*ap pass*"></div>
+</div>
+<div>
+<b>IP (STA or AP mode):</b>
+<div>IP address:<input type="text" name="ipaddress" value="*ipaddress*"></div>
+<div>Subnet mask:<input type="text" name="subnetmask" value="*subnetmask*"></div>
+<div>gateway:<input type="text" name="gateway" value="*gateway*"></div>
+<div>HTTP port:<input type="text" name="listenport" value="*listenport*"></div>
+<div>WS port:<input type="text" name="wsport" value="*wsport*"></div>
+</div>
+<div>
+<div>Log In Key:<input type="password" name="LoginKey" value="*LoginKey*"></div>
+<div>Menu bar Disable:<input type="checkbox" name="showMenueBar" value="off" **checked**></div>
+<div>Run default.bas at startup:<input type="checkbox" name="autorun" value="on" **autorun**></div>
+<div>OTA URL<input type="text" name="otaurl" value="*otaurl*"></div>
+</div>
+<div>
 <input type="submit" value="Save" name="save">
 <input type="submit" value="Format" name="format">
 <input type="submit" value="Update" name="update">
 <input type="submit" value="Restart" name="restart">
-</th></tr>
-</table></form><br>)=====";
+</div></form><br>)=====";
 
 
 
@@ -1083,6 +1086,7 @@ void setup() {
 	{
 	  inData = "end";
 	  ExicuteTheCurrentLine();
+	  HaltBasic("");
 	  Serial.println(F("start save"));
 	  ProgramName = GetRidOfurlCharacters(server->arg("FileName"));
 	  if (ProgramName == "")ProgramName = F("/default.bas");
@@ -1111,22 +1115,13 @@ void setup() {
 	  // terminate the save
 	  Serial.println(F("end of save!!"));
 	  CloseWriteOnFlash();
+	  HaltBasic("");
 	  LoadBasicProgramFromFlash( ProgramName );
 	}
 
 	if (server->arg("SaveTheCode") == F("yes"))
 	{
-
-	  //      String directoryToDeleteFilesFrom;
-	  //      directoryToDeleteFilesFrom = String(F(" /data/") + ProgramName;
-	  //      Dir dir1 = SPIFFS.openDir(directoryToDeleteFilesFrom);
-	  //
-	  //      while (dir1.next())
-	  //      {
-	  //        delay(0);
-	  //        File f = dir1.openFile("r");
-	  //        if (dir1.fileName().substring(0, directoryToDeleteFilesFrom.length()) == directoryToDeleteFilesFrom) SPIFFS.remove(dir1.fileName());
-	  //      }
+		HaltBasic("");
 	}
 	server->send(200, F("text/html"), F("good"));
   });

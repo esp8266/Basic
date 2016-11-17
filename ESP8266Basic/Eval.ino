@@ -383,6 +383,20 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_FALSE;
     }
   }
+  else if ( fname == F("trim") && num_args == 1 ) {
+    // example of the lower(string)
+    // set return value
+    if (args_str[0] != NULL)  // we should trigger an error if the argument is not a string
+    {
+      args_str[0]->trim();
+      *value_str  =  *args_str[0];
+      return PARSER_STRING;
+    }
+    else {
+      SendErrorMsg(F("LOWER() : The argument must be a string!"));
+      return PARSER_FALSE;
+    }
+  }
   else if ( fname == F("msgget") && num_args == 1 ) {
     // example of the lower(string)
     // set return value

@@ -28,8 +28,8 @@
 
 // Update these with values suitable for your network.
 
-const char* ssid = "........";
-const char* password = "........";
+const char* ssid = "SparkTest";
+const char* password = "fancycanoe131";
 const char* mqtt_server = "broker.mqtt-dashboard.com";
 
 WiFiClient espClient;
@@ -89,7 +89,7 @@ void reconnect() {
       // Once connected, publish an announcement...
       client.publish("outTopic", "hello world");
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe("mmiscool");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());

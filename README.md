@@ -1,5 +1,5 @@
 Basic
-Basic Interpreter from scratch especialy for the ESP8266.
+Basic Interpreter from scratch especially for the ESP8266.
 
 http://esp8266basic.com
 

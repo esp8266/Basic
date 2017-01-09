@@ -144,12 +144,17 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     *value  =  UniversalPinIO(*args_str[0], String(args[1]),  args[2]);
     return PARSER_TRUE;
   }
-  
-  
-  
+  /*
+  else if ( fname == F("io.freq") && num_args > 0 ) {
+	AnalogWriteFreq(args[0]);
+    *value  =  0;
+    return PARSER_TRUE;
+  }
+ */
+
   else if ( fname == F("telnet.client.connect") && num_args >= 1 ) {
     // Tellnet client connection setup.
-	if (args_str[0] != NULL & args[1] != NULL) 
+	if (args_str[0] != NULL & args[1] != NULL)
 	{
 		*value  = clientTelnet.connect( String(*args_str[0]).c_str(), (int)args[1]);
 		 return PARSER_TRUE;
@@ -185,24 +190,24 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   }
   else if ( fname == F("telnet.client.write") && num_args == 1 ) {
     // Tellnet client connection setup.
-	if (args_str[0] != NULL) 
+	if (args_str[0] != NULL)
 	{
 		*value  = clientTelnet.write( String(*args_str[0]).c_str(),  String(*args_str[0]).length());
 		return PARSER_TRUE;
 	}
-	
-  }  
+
+  }
   else if ( fname == F("telnet.client.stop") && num_args == 0 ) {
     // Tellnet client connection setup.
 	*value  = 0;
 	clientTelnet.stop();
 	 return PARSER_TRUE;
   }
-  
-  
-  
-  
-  
+
+
+
+
+
   else if ( fname == F("millis") && num_args == 0 ) // the function is millis()
   {
     // set return value and return true
@@ -264,7 +269,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	if (num_args == 3)
 	{
 		SaveDataToFile("TimeServer", String(args[2]));
-		configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), LoadDataFromFile("TimeServer").c_str(), "pool.ntp.org"); 		
+		configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), LoadDataFromFile("TimeServer").c_str(), "pool.ntp.org");
 	}
 	else
 	{
@@ -445,7 +450,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	*value  =  Serial.available();
     return PARSER_TRUE;
   }
-  
+
 
   else if ( (fname == F("instr") || fname == F("instrrev")) && ( (num_args == 2) || (num_args == 3) ) ) {
     // example of the instr(string, string)
@@ -559,32 +564,32 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("write") && num_args == 2 ) {
 	  delay(0);
 	  *value_str = *args_str[0];
-	  
+
 	  Serial.println("Done writing data");
-	  if (args_str[1] != NULL)  
+	  if (args_str[1] != NULL)
 	  {
 		  SaveDataToFile(*args_str[0], *args_str[1]);
 		  return PARSER_STRING;
 	  }
-	  
-	  
-	  if (args[1] != NULL) 
+
+
+	  if (args[1] != NULL)
 	  {
 		  SaveDataToFile(*args_str[0], FloatToString(args[1]));
 		  return PARSER_STRING;
-	  }	  
-	  
+	  }
+
 
 
   }
   else if ( fname == F("mqtt.setup") && num_args >= 1 ) {
 	int MQTTport = 1883;
-	
+
 	if (num_args == 2) MQTTport = args[1];
-	
+
 	//MQTTclient.setServer(String(*args_str[0]).c_str(), MQTTport);
 	MQTTclient.setServer("broker.mqtt-dashboard.com", MQTTport);
-    
+
 	MQTTActivated = 1;
 	Serial.println(String("Connected to " + String(*args_str[0])));
     *value_str = *args_str[0];
@@ -595,21 +600,21 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     //MQTTclient.subscribe(String(*args_str[0]).c_str());
     *value_str = *args_str[0];
     return PARSER_STRING;
-  }  
+  }
   else if ( fname == F("mqtt.msg")) {
     *value_str = MQTTlatestMsg;
     return PARSER_STRING;
-  }     
+  }
   else if ( fname == F("mqtt.publish")  && num_args >= 1 ) {
 	MQTTPublishTopic = *args_str[0];
     MQTTPublishMSG = *args_str[1];
     *value_str = MQTTlatestMsg;
     return PARSER_STRING;
-  }    
-  
-  
-  
-  
+  }
+
+
+
+
 
   else if ( fname == F("read") && num_args == 1 ) {
 	  *value_str = "";
@@ -625,8 +630,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	  SPIFFS.remove(String("/data/" + *args_str[0] + ".dat"));
     return PARSER_STRING;
   }
-  
-  
+
+
 
 
   else if ( fname == F("str") && num_args == 1 ) {
@@ -662,7 +667,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	if (numberOfWifiScanResults < args[0])return PARSER_STRING;
     *value_str =  String(WiFi.BSSIDstr(args[0] - 1));
     return PARSER_STRING;
-  }  
+  }
   else if ( fname == F("ip") && num_args == 0 ) {
     // function wifi.scan() -> no arguments
     // set return value
@@ -675,49 +680,49 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( fname == F("wifi.connect") && num_args >= 0 ) {
     // function wifi.connect(ap name, ap pass, ip, gateway, subnet)
     // set return value
-	if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) && (args_str[3] != NULL) && (args_str[4] != NULL) ) 
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) && (args_str[3] != NULL) && (args_str[4] != NULL) )
 	{
 		*value =  ConnectToTheWIFI(*args_str[0],*args_str[1],*args_str[2],*args_str[3],*args_str[4] );
 		return PARSER_TRUE;
-	}	
-	if ( (args_str[0] != NULL) && (args_str[1] != NULL) ) 
+	}
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) )
 	{
 		*value =  ConnectToTheWIFI(*args_str[0],*args_str[1], "", "", "");
         return PARSER_TRUE;
 	}
-	if ( (args_str[0] != NULL)) 
+	if ( (args_str[0] != NULL))
 	{
 		*value =  ConnectToTheWIFI(*args_str[0],"", "", "", "");
         return PARSER_TRUE;
 	}
 	*value =  ConnectToTheWIFI("","", "", "", "");
 	return PARSER_TRUE;
-  }  
+  }
   else if ( fname == F("wifi.ap") && num_args >= 0 ) {
     // function wifi.ap(ap name, ap pass, ip, gateway, subnet)
     // set return value
-	if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) && (args_str[3] != NULL) && (args_str[4] != NULL) ) 
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) && (args_str[2] != NULL) && (args_str[3] != NULL) && (args_str[4] != NULL) )
 	{
 		*value =  CreateAP(*args_str[0],*args_str[1],*args_str[2],*args_str[3],*args_str[4] );
 		return PARSER_TRUE;
-	}	
-	if ( (args_str[0] != NULL) && (args_str[1] != NULL) ) 
+	}
+	if ( (args_str[0] != NULL) && (args_str[1] != NULL) )
 	{
 		*value =  CreateAP(*args_str[0],*args_str[1], "", "", "");
         return PARSER_TRUE;
 	}
-	if ( (args_str[0] != NULL) ) 
+	if ( (args_str[0] != NULL) )
 	{
 		*value =  CreateAP(*args_str[0],"", "", "", "");
         return PARSER_TRUE;
 	}
 	*value =  CreateAP("","", "", "", "");
-	return PARSER_TRUE;	
-  }  
-  
-  
-  
-  
+	return PARSER_TRUE;
+  }
+
+
+
+
   else if ( fname == F("wget") && num_args > 0 ) {
     // function wget(url) or wget (url, port)
     // set return value
@@ -811,7 +816,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
     return PARSER_STRING;
   }
-    
+
    else if ( fname == F("neo.shift") && num_args > 0 ) {
     // ****
     // neoshift(first pixel 0 -511,last pixel 0 to 511 ,direction -1 or +1)
@@ -828,8 +833,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       pixels = new Adafruit_NeoPixel(512, 15, NEO_GRB + NEO_KHZ800);
       pixels->begin();
     }
-    // move pixels 
-    
+    // move pixels
+
     if (args[2] > 0){
     //move pixels up one
     for (int zz = args[1]; zz>= args[0] ; zz--){
@@ -848,7 +853,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     }
     pixels->show();
     return PARSER_STRING;
-  } 
+  }
   else if ( fname == F("neostripcolor")| fname == F("neo.stripcolor") && num_args > 0 ) {
     // function neostripcolor(start, end, r, g, b)
     if (pixels == NULL)
@@ -903,9 +908,9 @@ int function_callback( void *user_data, const char *name, const int num_args, co
     pixels ->show();
   return PARSER_TRUE;
   }
-  
-  
-  
+
+
+
 	else if ( fname == F("temp") && num_args < 2 ) {
 		byte deviceAddr[8]; // create 8 byte storage area for device code
 		String tmp="";
@@ -924,14 +929,14 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 				*value_str = tmp;
 				return PARSER_STRING;
 			}
-			else 
+			else
 			{
 			sensors.requestTemperatures(); // Tell all sensors to convert analog to digital REGARDLESS of how we are addressing them
-			if (args_str[0] != NULL) 
+			if (args_str[0] != NULL)
 			{
 				// Query a sensor by ROM code. Rom code is a 16 character hexadecimal string
 				uint32_t longx;
-				for (i=0; i<16; i+=2) 
+				for (i=0; i<16; i+=2)
 				{
 					delay(0);
 					tmp = args_str[0]->substring(i,i+2);
@@ -941,7 +946,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 				// Read by device rom code and set the return value
 				*value = sensors.getTempC(deviceAddr); // Perform the temperature read by device code
 			}
-			else 
+			else
 			{
 			// function temp(sensor #) - Read by sensor number and set the return value
 			*value = sensors.getTempCByIndex(args[0]);
@@ -1066,9 +1071,9 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value  =  1;
       return PARSER_TRUE;;
     }
-	
-	
-	
+
+
+
   }
   else if ( fname == F("htmlvar") && num_args > 0 ) {
     // function json(buffer, key)
@@ -1140,20 +1145,20 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value = 0;
       return PARSER_TRUE;
     }
-	
+
     else if ( fname == F("setfrequency") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
 	SPI.setFrequency(args[0]);
       *value = -1;
       return PARSER_TRUE;
-    }	
+    }
     else if ( fname == F("setmode") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
 	SPI.setDataMode(args[0]);
       *value = -1;
       return PARSER_TRUE;
-    }		
-	
-	
-	
+    }
+
+
+
     else if ( fname == F("byte") && num_args == 1 ) {    // let a = spi.write(value_number) -> send and receive a  single byte
       *value = SPI.transfer(args[0]);
       return PARSER_TRUE;
@@ -1214,19 +1219,27 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       irsend->begin();
       return PARSER_STRING;
     }
-    else if ( fname == F("send") && num_args == 1 ) {
+    else if ( fname == F("send") && num_args == 1 )
+    {
       // function ir.send.nec(code, len)   send a NEC code with the first argument and the lenght on the 2nd
       if (args_str[0] == NULL)  {
         SendErrorMsg(F("ir.send() : Argument must be a string!"));
         return PARSER_FALSE;
       }
-	  String IRhexCodeForOutput = getValue(*args_str[0], ':' ,0);
-	  String IRmfgCodeForOutput = getValue(*args_str[0], ':' ,1);
-	  byte IRbytesCodeForOutput = getValue(*args_str[0], ':' ,2).toInt();
-	  delay(0);
-	  
-	  if (IRmfgCodeForOutput == "NEC") irsend->sendNEC(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
-	  if (IRmfgCodeForOutput == "SONY") irsend->sendSony(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+  	  String IRhexCodeForOutput = getValue(*args_str[0], ':' ,0);
+  	  String IRmfgCodeForOutput = getValue(*args_str[0], ':' ,1);
+  	  byte IRbytesCodeForOutput = getValue(*args_str[0], ':' ,2).toInt();
+  	  delay(0);
+
+  	  if (IRmfgCodeForOutput == "NEC") irsend->sendNEC(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+  	  if (IRmfgCodeForOutput == "SONY") irsend->sendSony(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+	  #if defined(BASIC_TFT)
+      if (IRmfgCodeForOutput == "LG") irsend->sendLG(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+      if (IRmfgCodeForOutput == "PANASONIC") irsend->sendPanasonic(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+      if (IRmfgCodeForOutput == "SAMSUNG") irsend->sendSAMSUNG(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+	  #endif
+//      if (IRmfgCodeForOutput == "JVC") irsend->sendJVC(HexToLongInt(IRhexCodeForOutput), (int) IRbytesCodeForOutput);
+
       return PARSER_STRING;
     }
     else if ( fname == F("send.nec") && num_args == 2 ) {
@@ -1279,8 +1292,8 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_STRING;
     }
   }
-  
-  
+
+
 #if defined(BASIC_TFT)
     else if (fname.startsWith(F("oled.")) )      // block TFT functions; this reduces the number of compares
   {
@@ -1302,7 +1315,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       display.drawLine(args[0], args[1], args[2], args[3]);
 	  display.display();
       return PARSER_TRUE;
-    }	
+    }
     else if ( fname == F("rect") && num_args == 4) {
       // function tft.rect(x, y, width, height, color)
       display.drawRect(args[0], args[1], args[2], args[3]);
@@ -1335,7 +1348,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
 	  if (args[0] == 24) display.setFont(ArialMT_Plain_24);
       return PARSER_TRUE;
     }
-	
+
     else if ( fname == F("print") && num_args >= 1) {
       // function tft.text.size(size)
       if (args[1] != NULL & args[2] !=NULL & args_str[0] != NULL) {
@@ -1345,12 +1358,12 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       else if ( args_str[1] != NULL) {
 		  display.drawString(0, 0, *args_str[0]);
 		  display.display();
-		  }	  
+		  }
 	display.display();
       return PARSER_STRING;
-    }  
+    }
   }
-  
+
 
   else if (fname.startsWith(F("tft.")) )      // block TFT functions; this reduces the number of compares
   {
@@ -1441,7 +1454,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_TRUE;
     }
       else if ( fname == F("text.font") && num_args == 1 ) {
-        // function tft.text.size(size) 
+        // function tft.text.size(size)
          switch ((int) args[0])
          {
             case 0:
@@ -1461,7 +1474,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
               break;
          }
          return PARSER_TRUE;
-      } 
+      }
     else if ( fname == F("print") && num_args == 1 ) {
       // function tft.text.size(size)
       if (args_str[0] != NULL)
@@ -1494,27 +1507,27 @@ int function_callback( void *user_data, const char *name, const int num_args, co
          Touch_CS_pin = args[0];
          pinMode(Touch_CS_pin, OUTPUT);
          return PARSER_TRUE;
-      }      
+      }
       else if ( fname == F("touch.calibrate") && num_args == 0 ) {
-        // function tft.calibrate() 
+        // function tft.calibrate()
          //calibrate();
          return PARSER_TRUE;
       }
       else if ( fname == F("touchx") && num_args == 0 ) {
-        // function tft.touchx() 
+        // function tft.touchx()
          *value = touchX;
          return PARSER_TRUE;
       }
       else if ( fname == F("touchy") && num_args == 0 ) {
-        // function tft.touchy() 
+        // function tft.touchy()
          *value = touchY;
          return PARSER_TRUE;
       }
       else if ( fname == F("checktouch") && num_args == 0 ) {
-        // function tft.getitem() 
+        // function tft.getitem()
          *value = form1.checkTouch(touchX, touchY);
          return PARSER_TRUE;
-      }       
+      }
       else if ( fname == F("obj.button") && num_args >= 5 ) {
         // function tft.button("text", x,y,width,height, scale, forecolor ,backcolor)
         if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.button() : The first argument must be a string!")); return PARSER_FALSE; }
@@ -1539,7 +1552,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         form1.drawObject(obj);
         *value = obj;
         return PARSER_TRUE;
-      }  
+      }
       else if ( fname == F("obj.label") && num_args >= 5 ) {
         // function tft.label("text", x,y,width,height,scale, forecolor ,backcolor)
         if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.label() : The first argument must be a string!")); return PARSER_FALSE; }
@@ -1560,7 +1573,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
           form1[obj]->backcolor = args[7];
         else
           form1[obj]->backcolor = tft->color565(100,100,100);
-        
+
         form1[obj]->label = *args_str[0];
         form1.drawObject(obj);
         *value = obj;
@@ -1589,7 +1602,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
           form1[obj]->backcolor = args[7];
         else
           form1[obj]->backcolor = tft->color565(100,100,100);
-        
+
         form1[obj]->label = *args_str[0];
         form1.drawObject(obj);
         *value = obj;
@@ -1618,12 +1631,12 @@ int function_callback( void *user_data, const char *name, const int num_args, co
           form1[obj]->backcolor = args[7];
         else
           form1[obj]->backcolor = tft->color565(100,100,100);
-        
+
         form1[obj]->label = *args_str[0];
         form1.drawObject(obj);
         *value = obj;
         return PARSER_TRUE;
-      } 
+      }
       else if ( fname == F("obj.toggle") && num_args >= 5 ) {
         // function tft.toggle("icon_true", "icon_false" x,y, checked, scale, back_color)
         if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.toggle() : The first argument must be a string!")); return PARSER_FALSE; }
@@ -1643,7 +1656,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         form1.drawObject(obj);
         *value = obj;
         return PARSER_TRUE;
-      }  
+      }
       else if ( fname == F("obj.bar") && num_args >= 4 ) {
         // function tft.bar("text", x,y,width,height, scale, forecolor ,backcolor)
         if (args_str[0] == NULL)  { SendErrorMsg(F("tft.obj.radio() : The first argument must be a string!")); return PARSER_FALSE; }
@@ -1667,12 +1680,12 @@ int function_callback( void *user_data, const char *name, const int num_args, co
           form1[obj]->backcolor = args[7];
         else
           form1[obj]->backcolor = tft->color565(100,100,100);
-        
+
         form1[obj]->label = *args_str[0];
         form1.drawObject(obj);
         *value = obj;
         return PARSER_TRUE;
-      }    
+      }
       else if ( fname == F("obj.setlabel") && num_args == 2 ) {
         // function tft.setlabel(object_id, "label")
         if (args_str[1] == NULL)  { SendErrorMsg(F("tft.obj.setLabel() : The second argument must be a string!")); return PARSER_FALSE; }
@@ -1688,22 +1701,22 @@ int function_callback( void *user_data, const char *name, const int num_args, co
         // function tft.setChecked(object_id, checked)  // checked can be 0(false) or any value for true
         form1.setChecked(args[0], args[1]);
         return PARSER_TRUE;
-      } 
+      }
       else if ( fname == F("obj.getlabel") && num_args == 1 ) {
-        // function tft.getLabel(object_id) 
+        // function tft.getLabel(object_id)
         *value_str = form1.getLabel(args[0]);
         return PARSER_STRING;
-      } 
+      }
       else if ( fname == F("obj.getvalue") && num_args == 1 ) {
-        // function tft.getValue(object_id) 
+        // function tft.getValue(object_id)
         *value = form1.getValue(args[0]);
         return PARSER_TRUE;
-      }   
+      }
       else if ( fname == F("obj.getchecked") && num_args == 1 ) {
         // function tft.getChecked(object_id)  // checked can be 0(false) or any value for true
         *value = form1.getChecked(args[0]);
         return PARSER_TRUE;
-      }   
+      }
       else if ( fname == F("obj.invert") && num_args == 1 ) {
         // function tft.invertChecked(object_id)  // checked can be 0(false) or any value for true
         *value = form1.invertChecked(args[0]);
@@ -1711,11 +1724,11 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       }
 
   }
-#endif  
-  
-  
-  
-  
+#endif
+
+
+
+
   else if (fname.startsWith(F("debug.")) )      // block DEBUG functions; this reduces the number of compares
   {
     fname = fname.substring(6); // skip the term debug.
@@ -1751,7 +1764,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       *value_str = WebSockMessage;
       return PARSER_STRING;
     }
-      else if ( fname == F("object") && num_args > 1 ) 
+      else if ( fname == F("object") && num_args > 1 )
     {
         if (args_str[0] == NULL)  { SendErrorMsg(F("debug.object() : The first argument must be a string!")); return PARSER_FALSE; }
         String tmp = *args_str[0] + "~^`";   // these are special chars the single quote is the reverse one (ascii code 96)
@@ -1761,7 +1774,7 @@ int function_callback( void *user_data, const char *name, const int num_args, co
             tmp = tmp + FloatToString(args[i]);
       else
             tmp = tmp + *args_str[i];
-          tmp = tmp + "~^`"; 
+          tmp = tmp + "~^`";
         }
         webSocket->sendTXT(0,tmp.c_str());
       return PARSER_TRUE;
@@ -1998,7 +2011,7 @@ void show_bmp(String filename, uint16_t xi, uint16_t yi, int backColor)
   BMP_Pixel32  *p32;
   BMP_Pixel *px;
   BMP_Header header;
-  
+
   File fs_bmp = SPIFFS.open(filename, "r");
   if (!fs_bmp) {
       HaltBasic(F("bmp file not found"));
@@ -2041,7 +2054,7 @@ void show_bmp(String filename, uint16_t xi, uint16_t yi, int backColor)
         {
             p32 = (BMP_Pixel32 *) &bmp_buff[x * sizeof(BMP_Pixel32)];
             col = ((p32->R & 0xf8) << 8) |  (( p32->G & 0xfc) << 3) | ((p32->B & 0xf8) >> 3) ;
-  
+
             if (p32->A > 40) // means not transparent
             {
                 if (backColor != -1)
@@ -2076,7 +2089,7 @@ void show_bmp(String filename, uint16_t xi, uint16_t yi, int backColor)
           }
           digitalWrite(TFT_CS_pin, HIGH);   // TFT CS High
       }
-  }   
+  }
   else
   {
       for (y=0; y<header.height; y++) // should be 24
@@ -2093,9 +2106,9 @@ void show_bmp(String filename, uint16_t xi, uint16_t yi, int backColor)
           }
           digitalWrite(TFT_CS_pin, HIGH);   // TFT CS High
       }
-  } 
-  tft->setRotation(rt); 
-  fs_bmp.close(); 
+  }
+  tft->setRotation(rt);
+  fs_bmp.close();
 }
 
 #define AVERAGE 10
@@ -2125,12 +2138,12 @@ int ReadTouchXY(char change_only, int *raw)
         SPI.transfer(0x90);
         rxd3 = SPI.transfer(0);
         rxd4 = SPI.transfer(0);
-        mmy[i] = (rxd3<<4)|(rxd4>>4);        
+        mmy[i] = (rxd3<<4)|(rxd4>>4);
         //delay(1);
         SPI.transfer(0xd0);
         rxd1 = SPI.transfer(0);
         rxd2 = SPI.transfer(0);
-        mmx[i] = (rxd1<<4)|(rxd2>>4);        
+        mmx[i] = (rxd1<<4)|(rxd2>>4);
     }
     digitalWrite(Touch_CS_pin, HIGH);   // touch CS high
 
@@ -2194,7 +2207,7 @@ int ReadTouchXY(char change_only, int *raw)
     }
     else
        return -1;
-       
+
     if ((px == 0) || (py == 0) || (px > 0x780) || (py > 0x780))
         return -1;
     else
@@ -2243,7 +2256,7 @@ void show_bmp_old(String filename, uint16_t xi, uint16_t yi)
   BMP_Pixel *px;
   BMP_Header header;
   char bmp_buff[320 * 4];   // the buffer will contain a full line of 320 pixels
-  
+
   File fs_bmp = SPIFFS.open(filename, "r");
   if (!fs_bmp) {
       //Serial.println("bmp file not found");
@@ -2270,7 +2283,7 @@ void show_bmp_old(String filename, uint16_t xi, uint16_t yi)
         {
             p32 = (BMP_Pixel32 *) &bmp_buff[x * sizeof(BMP_Pixel32)];
             col = ((p32->R & 0xf8) << 8) |  (( p32->G & 0xfc) << 3) | ((p32->B & 0xf8) >> 3) ;
-  
+
             if (p32->A > 40) // means not transparent
             {
                 tft->drawPixel(x + xi, y + yi, col);
@@ -2295,14 +2308,14 @@ void show_bmp_old(String filename, uint16_t xi, uint16_t yi)
               tft->drawPixel(x + xi, y + yi, col);
           }
       }
-  }  
-  fs_bmp.close(); 
+  }
+  fs_bmp.close();
 }
 static void calibratePoint(uint16_t x, uint16_t y, uint16_t &vi, uint16_t &vj) {
   // Draw cross
   tft->drawFastHLine(x - 8, y, 16, 0xff);
   tft->drawFastVLine(x, y - 8, 16, 0xff);
-  
+
   while (!touch.isTouching()) {
     delay(10);
   }

@@ -1,1 +1,1 @@
-#define BASIC_TFT
+//#define BASIC_TFT

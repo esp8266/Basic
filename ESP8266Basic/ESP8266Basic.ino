@@ -72,6 +72,9 @@
 #include <time.h>
 #include <ESP8266HTTPClient.h>              // that line needs to be added for the esp8266-2.0.0 and 2.1.0-rc2
 
+//Ping stuff
+#include <ESP8266Ping.h>
+
 
 
 //LCD Stuff

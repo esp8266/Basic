@@ -737,6 +737,31 @@ int function_callback( void *user_data, const char *name, const int num_args, co
       return PARSER_FALSE;
     }
   }
+  
+#if defined(BASIC_TFT)
+    else if ( fname == F("ping") && num_args > 0 ) {
+    // function wget(url) or wget (url, port)
+    // set return value
+    if (args_str[0] != NULL)
+    {
+		if (StringToIP(String(*args_str[0])) != (0,0,0,0))
+		{
+			*value = Ping.ping( StringToIP(String(*args_str[0])));
+		}
+		else 
+		{
+			*value = Ping.ping( String(*args_str[0]).c_str());
+		}
+		
+		return PARSER_TRUE;
+    }
+    else {
+		SendErrorMsg(F("PING() : Argument must be a string!"));
+		return PARSER_FALSE;
+    }
+  }
+#endif 
+  
 
   else if ( fname == F("sendts") && num_args == 3 ) {
     // function sendts(url, field)

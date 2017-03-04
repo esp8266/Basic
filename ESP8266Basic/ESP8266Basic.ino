@@ -777,6 +777,7 @@ int debugDelaySpeed;
 
 int TimerWaitTime;
 int timerLastActiveTime;
+int timercbLastActiveTime;
 String TimerBranch;
 
 String refreshBranch;
@@ -1841,9 +1842,9 @@ void CheckForUdpData()
   }
   if (TimerCBtime > 0)
   {
-	if (millis() > (timerLastActiveTime + TimerCBtime) )
+	if (millis() > (timercbLastActiveTime + TimerCBtime) )
 	{
-	  timerLastActiveTime = millis();
+	  timercbLastActiveTime = millis();
 	  // if the program is in wait, it returns to the previous line to wait again
 	  return_Stack.push(RunningProgramCurrentLine - WaitForTheInterpertersResponse); // push the current position in the return stack
 	  WaitForTheInterpertersResponse = 0;   //exit from the wait state but comes back again after the gosub

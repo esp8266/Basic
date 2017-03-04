@@ -432,10 +432,13 @@ void ExicuteTheCurrentLine()
   {
     TimerCBtime = 0;
     int i;
+	TimerCBtime = evaluate(Param1).toInt();
+	if (TimerCBtime == 0) return;
     if ((i = JumpList.getPos(Param2)) != -1)
     {
       TimerCBBranchLine = i - 1;
-      TimerCBtime = evaluate(Param1).toInt();
+	  timercbLastActiveTime = millis();
+      
       return;
     }
     SendErrorMsg(F("timercb line not found!"));

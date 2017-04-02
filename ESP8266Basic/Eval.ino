@@ -265,10 +265,13 @@ int function_callback( void *user_data, const char *name, const int num_args, co
   else if ( (fname == F("timesetup") | fname == F("time.setup")) && num_args > 0 ) {
     String bla;
     SaveDataToFile("TimeZone", String(args[0]));
-	if (num_args >= 2) {SaveDataToFile("DaylightSavings", String(args[1])); }else {SaveDataToFile("DaylightSavings", String(F("0")));}
+	if (num_args >= 2) 
+		{SaveDataToFile("DaylightSavings", String(args[1])); }
+	else 
+		{SaveDataToFile("DaylightSavings", String(F("0")));}
 	if (num_args == 3)
 	{
-		SaveDataToFile("TimeServer", String(args[2]));
+		SaveDataToFile("TimeServer", String(*args_str[2]));
 		configTime(LoadDataFromFile("TimeZone").toFloat() * 3600, LoadDataFromFile("DaylightSavings").toInt(), LoadDataFromFile("TimeServer").c_str(), "pool.ntp.org");
 	}
 	else

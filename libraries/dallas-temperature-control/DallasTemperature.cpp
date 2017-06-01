@@ -326,10 +326,9 @@ void DallasTemperature::requestTemperatures()
   _wire->write(STARTCONVO, parasite);
 
   // ASYNC mode?
-  if (!waitForConversion) return; 
-  blockTillConversionComplete(&bitResolution, 0);
+  if (waitForConversion)
+  	blockTillConversionComplete(&bitResolution, 0);
 
-  return;
 }
 
 // sends command for one device to perform a temperature by address

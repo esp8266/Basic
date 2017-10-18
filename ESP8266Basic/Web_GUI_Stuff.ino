@@ -108,22 +108,22 @@ String BasicGraphics()
     GraphicsEliment.replace(F("*x2*"),  String(GraphicsEliments[i][3]));
     GraphicsEliment.replace(F("*y2*"),  String(GraphicsEliments[i][4]));
 
-    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*collor*", F("black"));
-    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*collor*", F("Navy"));
-    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*collor*", F("Green"));
-    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*collor*", F("Teal"));
-    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*collor*", F("Maroon"));
-    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*collor*", F("Purple"));
-    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*collor*", F("Olive"));
-    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*collor*", F("Silver"));
-    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*collor*", F("Gray"));
-    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*collor*", F("Blue"));
-    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*collor*", F("Lime"));
-    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*collor*", F("Aqua"));
-    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*collor*", F("Red"));
-    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*collor*", F("Fuchsia"));
-    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*collor*", F("Yellow"));
-    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*collor*", F("White"));
+    if (GraphicsEliments[i][5] == 0 ) GraphicsEliment.replace("*color*", F("black"));
+    if (GraphicsEliments[i][5] == 1 ) GraphicsEliment.replace("*color*", F("Navy"));
+    if (GraphicsEliments[i][5] == 2 ) GraphicsEliment.replace("*color*", F("Green"));
+    if (GraphicsEliments[i][5] == 3 ) GraphicsEliment.replace("*color*", F("Teal"));
+    if (GraphicsEliments[i][5] == 4 ) GraphicsEliment.replace("*color*", F("Maroon"));
+    if (GraphicsEliments[i][5] == 5 ) GraphicsEliment.replace("*color*", F("Purple"));
+    if (GraphicsEliments[i][5] == 6 ) GraphicsEliment.replace("*color*", F("Olive"));
+    if (GraphicsEliments[i][5] == 7 ) GraphicsEliment.replace("*color*", F("Silver"));
+    if (GraphicsEliments[i][5] == 8 ) GraphicsEliment.replace("*color*", F("Gray"));
+    if (GraphicsEliments[i][5] == 9 ) GraphicsEliment.replace("*color*", F("Blue"));
+    if (GraphicsEliments[i][5] == 10 ) GraphicsEliment.replace("*color*", F("Lime"));
+    if (GraphicsEliments[i][5] == 11 ) GraphicsEliment.replace("*color*", F("Aqua"));
+    if (GraphicsEliments[i][5] == 12 ) GraphicsEliment.replace("*color*", F("Red"));
+    if (GraphicsEliments[i][5] == 13 ) GraphicsEliment.replace("*color*", F("Fuchsia"));
+    if (GraphicsEliments[i][5] == 14 ) GraphicsEliment.replace("*color*", F("Yellow"));
+    if (GraphicsEliments[i][5] == 15 ) GraphicsEliment.replace("*color*", F("White"));
     BasicGraphicsOut += GraphicsEliment;
   }
   BasicGraphicsOut += "</svg>";
